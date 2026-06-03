@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Import | AutoGlobal Export</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./admin.css" />
+  </head>
+  <body class="admin-page">
+    <header class="admin-header">
+      <a class="brand" href="./index.html" aria-label="Back to website">
+        <span class="brand-mark">AG</span>
+        <span>
+          <strong>AutoGlobal</strong>
+          <small>Admin</small>
+        </span>
+      </a>
+      <nav class="admin-nav" aria-label="Admin navigation">
+        <a href="./index.html">Website</a>
+        <a href="./admin.html" aria-current="page">Data Import</a>
+      </nav>
+    </header>
+
+    <main class="admin-shell">
+      <section class="admin-hero">
+        <p class="eyebrow">Data operation prototype</p>
+        <h1>Upload Vehicle And Auto Parts Data</h1>
+        <p>
+          Import CSV files, validate required fields, preview rows, and save the data into this browser prototype.
+        </p>
+      </section>
+
+      <section class="admin-grid">
+        <aside class="admin-panel">
+          <h2>Import Type</h2>
+          <div class="admin-tabs" role="tablist" aria-label="Import type">
+            <button class="admin-tab active" type="button" data-import-type="vehicles">Vehicles</button>
+            <button class="admin-tab" type="button" data-import-type="parts">Auto Parts</button>
+          </div>
+
+          <div class="download-list">
+            <a class="ghost-button" href="./data/vehicle-import-template.csv" download data-template-link>
+              Download Vehicle Template
+            </a>
+            <a class="ghost-button" href="./data/vehicle-import-sample.csv" download data-sample-link>
+              Download Vehicle Sample
+            </a>
+          </div>
+
+          <form class="upload-box" data-upload-form>
+            <label>
+              <span data-upload-label>Vehicle CSV file</span>
+              <input name="file" type="file" accept=".csv,text/csv" required />
+            </label>
+            <button class="solid-button" type="submit">Validate File</button>
+          </form>
+
+          <div class="admin-actions">
+            <button class="solid-button" type="button" disabled data-save-import>Save Valid Rows</button>
+            <button class="ghost-button" type="button" data-clear-import>Clear Saved Data</button>
+          </div>
+        </aside>
+
+        <section class="admin-content" aria-live="polite">
+          <div class="status-grid">
+            <div>
+              <strong data-total-count>0</strong>
+              <span>Total rows</span>
+            </div>
+            <div>
+              <strong data-valid-count>0</strong>
+              <span>Valid rows</span>
+            </div>
+            <div>
+              <strong data-error-count>0</strong>
+              <span>Error rows</span>
+            </div>
+          </div>
+
+          <div class="import-summary" data-import-summary>
+            Upload a CSV file to preview validation results.
+          </div>
+
+          <div class="table-wrap">
+            <table class="preview-table">
+              <thead data-preview-head></thead>
+              <tbody data-preview-body>
+                <tr>
+                  <td>No uploaded data yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section class="management-grid">
+        <section class="admin-panel manual-panel">
+          <div>
+            <p class="eyebrow">Daily maintenance</p>
+            <h2>Add Single Record</h2>
+          </div>
+          <form class="manual-form" data-manual-form>
+            <div class="manual-fields" data-manual-fields></div>
+            <button class="solid-button full" type="submit">Save Record</button>
+          </form>
+        </section>
+
+        <section class="admin-content saved-panel">
+          <div class="saved-header">
+            <div>
+              <p class="eyebrow">Saved in this browser</p>
+              <h2>Saved Data</h2>
+            </div>
+            <div class="saved-actions">
+              <button class="ghost-button" type="button" data-refresh-saved>Refresh</button>
+              <button class="solid-button" type="button" data-export-saved>Export CSV</button>
+            </div>
+          </div>
+          <div class="import-summary" data-saved-summary>No saved rows yet.</div>
+          <div class="table-wrap">
+            <table class="preview-table">
+              <thead data-saved-head></thead>
+              <tbody data-saved-body>
+                <tr>
+                  <td>No saved data yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <div class="toast" data-toast role="status" aria-live="polite"></div>
+
+    <script src="./admin.js"></script>
+  </body>
+</html>

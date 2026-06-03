@@ -1,0 +1,29 @@
+# Secrets and credentials
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+.env
+.env.*
+
+# Local OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs and temporary files
+*.log
+tmp/
+temp/
+
+# Node dependencies and build output
+node_modules/
+dist/
+build/
+.next/
+.nuxt/
+
+# Prototype browser/runtime cache
+.cache/

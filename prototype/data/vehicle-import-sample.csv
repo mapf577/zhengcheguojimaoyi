@@ -1,0 +1,3 @@
+sku,brand,model,year,trim,condition,vehicle_type,energy_type,steering,seats,transmission,drive_type,range_km,battery_kwh,engine_displacement,mileage,color,stock_status,price_min,price_max,currency,export_port,images,description_en
+VEH-BYD-SONG-001,BYD,Song Plus EV,2025,Flagship,New,SUV,EV,LHD,5,Automatic,FWD,520,71.8,,0,White,In Stock,18500,23800,USD,Shanghai,hero-export-yard.png,Export-ready new energy SUV for overseas dealers.
+VEH-FOTON-LT-001,Foton,Light Truck,2025,3.5T,New,Commercial,Diesel,LHD,3,Manual,RWD,,,2.8L,0,White,Factory Order,16800,22600,USD,Tianjin,hero-export-yard.png,Commercial truck available for batch export projects.

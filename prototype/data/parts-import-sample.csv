@@ -1,0 +1,3 @@
+sku,category,brand,name,oe_numbers,part_number,applicable_brand,applicable_model,applicable_year,moq,stock_status,lead_time_days,unit_weight,package_size,price_min,price_max,currency,images,description_en
+PART-BRAKE-001,Brake,OEM,Ceramic Brake Pad Set,04465-0K340,BP-0K340,Toyota,Hilux;Fortuner,2016-2024,50 sets,In Stock,7,1.8 kg,32x18x12 cm,8,15,USD,hero-export-yard.png,Ceramic brake pad set for pickup and SUV service channels.
+PART-FILTER-001,Engine,OEM,Engine Oil Filter,90915-YZZE1,OF-YZZE1,Toyota,Lexus;Toyota,2014-2025,200 pcs,In Stock,5,0.25 kg,8x8x10 cm,1.2,2.4,USD,hero-export-yard.png,High-rotation engine oil filter for wholesale supply.
