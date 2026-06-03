@@ -8,31 +8,64 @@
   </head>
   <body>
     <section class="login-screen" data-login-screen>
-      <button class="secondary-button login-lang-switch" type="button" data-lang-toggle>中文</button>
-      <form class="login-card" data-login-form>
-        <div class="brand-row">
-          <span class="brand-mark">AG</span>
-          <div>
-            <strong>AutoGlobal Export</strong>
-            <span data-i18n="login.console">Management Console</span>
+      <button class="secondary-button login-lang-switch" type="button" data-lang-toggle>&#20013;&#25991;</button>
+      <div class="login-stage">
+        <div class="login-visual" aria-hidden="true">
+          <div class="brand-row login-brand">
+            <span class="brand-mark">AG</span>
+            <div>
+              <strong>AutoGlobal Export</strong>
+              <span data-i18n="login.console">Management Console</span>
+            </div>
+          </div>
+          <div class="login-visual-copy">
+            <p class="eyebrow" data-i18n="login.stageEyebrow">Export management</p>
+            <h1 data-i18n="login.stageTitle">From Factory to World</h1>
+            <p data-i18n="login.stageText">Manage vehicles, auto parts, inquiries and AI operation logs in one workspace.</p>
+          </div>
+          <div class="login-signal-grid">
+            <div>
+              <span data-i18n="nav.vehicles">Vehicles</span>
+              <strong data-i18n="login.metricVehicles">Catalog</strong>
+            </div>
+            <div>
+              <span data-i18n="nav.parts">Auto Parts</span>
+              <strong data-i18n="login.metricParts">Inventory</strong>
+            </div>
+            <div>
+              <span data-i18n="nav.inquiries">Inquiries</span>
+              <strong data-i18n="login.metricInquiries">Pipeline</strong>
+            </div>
           </div>
         </div>
-        <h1 data-i18n="login.title">Admin Login</h1>
-        <label>
-          <span data-i18n="login.username">Username</span>
-          <input name="username" type="text" value="admin" autocomplete="username" required />
-        </label>
-        <label>
-          <span data-i18n="login.password">Password</span>
-          <input name="password" type="password" value="admin123" autocomplete="current-password" required />
-        </label>
-        <button class="primary-button" type="submit" data-i18n="login.submit">Login</button>
-      </form>
+        <form class="login-card" data-login-form>
+          <div class="brand-row">
+            <span class="brand-mark">AG</span>
+            <div>
+              <strong>AutoGlobal Export</strong>
+              <span data-i18n="login.console">Management Console</span>
+            </div>
+          </div>
+          <div>
+            <h1 data-i18n="login.title">Admin Login</h1>
+            <p class="hint" data-i18n="login.subtitle">Sign in to manage export-ready products and customer requests.</p>
+          </div>
+          <label>
+            <span data-i18n="login.username">Username</span>
+            <input name="username" type="text" autocomplete="username" data-i18n-placeholder="login.usernamePlaceholder" placeholder="Enter username" required />
+          </label>
+          <label>
+            <span data-i18n="login.password">Password</span>
+            <input name="password" type="password" autocomplete="current-password" data-i18n-placeholder="login.passwordPlaceholder" placeholder="Enter password" required />
+          </label>
+          <button class="primary-button" type="submit" data-i18n="login.submit">Login</button>
+        </form>
+      </div>
     </section>
 
     <div class="admin-app" data-admin-app hidden>
       <aside class="sidebar">
-        <a class="brand-row compact" href="/" target="_blank" rel="noreferrer">
+        <a class="brand-row compact sidebar-brand" href="/" target="_blank" rel="noreferrer">
           <span class="brand-mark">AG</span>
           <div>
             <strong>AutoGlobal</strong>
@@ -40,27 +73,42 @@
           </div>
         </a>
         <button class="sidebar-toggle" type="button" aria-expanded="true" aria-label="Collapse sidebar" data-sidebar-toggle></button>
+        <p class="side-nav-label" data-i18n="nav.groupCommerce">Commerce</p>
         <nav class="side-nav" aria-label="Admin sections">
-          <button class="active" type="button" data-view="dashboard" data-short="D"><span data-i18n="nav.dashboard">Dashboard</span></button>
-          <button type="button" data-view="vehicles" data-short="V"><span data-i18n="nav.vehicles">Vehicles</span></button>
-          <button type="button" data-view="parts" data-short="P"><span data-i18n="nav.parts">Auto Parts</span></button>
-          <button type="button" data-view="inquiries" data-short="I"><span data-i18n="nav.inquiries">Inquiries</span></button>
-          <button type="button" data-view="aiLogs" data-short="A"><span data-i18n="nav.aiLogs">AI Logs</span></button>
-          <button type="button" data-view="settings" data-short="S"><span data-i18n="nav.settings">Settings</span></button>
+          <button class="active" type="button" data-view="dashboard" data-short="D"><span class="nav-icon">01</span><span data-i18n="nav.dashboard">Dashboard</span></button>
+          <button type="button" data-view="vehicles" data-short="V"><span class="nav-icon">02</span><span data-i18n="nav.vehicles">Vehicles</span></button>
+          <button type="button" data-view="parts" data-short="P"><span class="nav-icon">03</span><span data-i18n="nav.parts">Auto Parts</span></button>
+          <button type="button" data-view="inquiries" data-short="I"><span class="nav-icon">04</span><span data-i18n="nav.inquiries">Inquiries</span></button>
         </nav>
+        <p class="side-nav-label side-nav-label-secondary" data-i18n="nav.groupSystem">System</p>
+        <nav class="side-nav" aria-label="System sections">
+          <button type="button" data-view="aiLogs" data-short="A"><span class="nav-icon">05</span><span data-i18n="nav.aiLogs">AI Logs</span></button>
+          <button type="button" data-view="settings" data-short="S"><span class="nav-icon">06</span><span data-i18n="nav.settings">Settings</span></button>
+        </nav>
+        <div class="sidebar-account">
+          <span data-i18n="workspace.account">Current account</span>
+          <strong>admin</strong>
+        </div>
         <button class="secondary-button" type="button" data-logout data-short="L" data-i18n="action.logout">Logout</button>
       </aside>
 
       <main class="workspace">
-        <header class="workspace-header">
-          <div>
+        <header class="workspace-header page-card">
+          <div class="workspace-title-block">
             <p class="eyebrow" data-i18n="workspace.eyebrow">Backend management</p>
             <h1 data-page-title>Dashboard</h1>
+            <p class="workspace-subtitle" data-page-subtitle data-i18n="workspace.subtitle">Centralized export operations for vehicles and auto parts.</p>
           </div>
-          <div class="header-actions">
-            <button class="secondary-button lang-switch" type="button" data-lang-toggle>中文</button>
-            <a class="secondary-button" href="/" target="_blank" rel="noreferrer" data-i18n="action.openWebsite">Open Website</a>
-            <button class="primary-button" type="button" data-refresh data-i18n="action.refresh">Refresh</button>
+          <div class="header-meta">
+            <div class="header-status-card">
+              <span data-i18n="workspace.status">Console date</span>
+              <strong data-current-date>--</strong>
+            </div>
+            <div class="header-actions">
+              <button class="secondary-button lang-switch" type="button" data-lang-toggle>&#20013;&#25991;</button>
+              <a class="secondary-button" href="/" target="_blank" rel="noreferrer" data-i18n="action.openWebsite">Open Website</a>
+              <button class="primary-button" type="button" data-refresh data-i18n="action.refresh">Refresh</button>
+            </div>
           </div>
         </header>
 
@@ -69,32 +117,62 @@
             <div class="metric-card">
               <span data-i18n="nav.vehicles">Vehicles</span>
               <strong data-metric-vehicles>0</strong>
+              <small data-i18n="metric.vehiclesHint">Export catalogue records</small>
             </div>
             <div class="metric-card">
               <span data-i18n="nav.parts">Auto Parts</span>
               <strong data-metric-parts>0</strong>
+              <small data-i18n="metric.partsHint">Parts inventory records</small>
             </div>
             <div class="metric-card">
               <span data-i18n="nav.inquiries">Inquiries</span>
               <strong data-metric-inquiries>0</strong>
+              <small data-i18n="metric.inquiriesHint">Customer request pipeline</small>
+            </div>
+            <div class="metric-card">
+              <span data-i18n="nav.aiLogs">AI Logs</span>
+              <strong data-metric-ai-logs>0</strong>
+              <small data-i18n="metric.aiLogsHint">Traceable assistant actions</small>
             </div>
           </div>
-          <div class="panel">
-            <div class="panel-header">
-              <h2 data-i18n="dashboard.next">Next Steps</h2>
+          <div class="dashboard-grid">
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title-stack">
+                  <p class="eyebrow" data-i18n="dashboard.opsEyebrow">Operations</p>
+                  <h2 data-i18n="dashboard.next">Next Steps</h2>
+                </div>
+              </div>
+              <ul class="task-list">
+                <li data-i18n="dashboard.task1">Add or import the first batch of export-ready vehicles.</li>
+                <li data-i18n="dashboard.task2">Upload product images from the management forms.</li>
+                <li data-i18n="dashboard.task3">Open the website to verify product cards and inquiry forms.</li>
+              </ul>
             </div>
-            <ul class="task-list">
-              <li data-i18n="dashboard.task1">Add or import the first batch of export-ready vehicles.</li>
-              <li data-i18n="dashboard.task2">Upload product images from the management forms.</li>
-              <li data-i18n="dashboard.task3">Open the website to verify product cards and inquiry forms.</li>
-            </ul>
+            <div class="panel operations-panel">
+              <div class="panel-header">
+                <div class="panel-title-stack">
+                  <p class="eyebrow" data-i18n="dashboard.controlEyebrow">Control center</p>
+                  <h2 data-i18n="dashboard.opsTitle">Management Focus</h2>
+                </div>
+              </div>
+              <div class="ops-list">
+                <span data-i18n="dashboard.ops1">Keep vehicle and part dictionaries synchronized before product entry.</span>
+                <span data-i18n="dashboard.ops2">Review inquiries after each catalogue update.</span>
+                <span data-i18n="dashboard.ops3">Check AI logs when automated content or import actions are used.</span>
+              </div>
+            </div>
           </div>
         </section>
 
         <section class="view" data-view-panel="vehicles" hidden>
-          <section class="panel list-panel">
+          <section class="panel list-panel table-shell">
             <div class="panel-header wrap">
-              <h2 data-i18n="vehicles.data">Vehicle Data</h2>
+              <div class="panel-title-stack">
+                <p class="eyebrow" data-i18n="nav.vehicles">Vehicles</p>
+                <h2 data-i18n="vehicles.data">Vehicle Data</h2>
+                <p class="panel-hint" data-i18n="vehicles.hint">Maintain export vehicle records, pricing, stock and images.</p>
+              </div>
               <div class="toolbar">
                 <button class="primary-button" type="button" data-new-record="vehicles" data-i18n="action.addVehicle">Add Vehicle</button>
                 <label class="file-button">
@@ -139,9 +217,13 @@
         </section>
 
         <section class="view" data-view-panel="parts" hidden>
-          <section class="panel list-panel">
+          <section class="panel list-panel table-shell">
             <div class="panel-header wrap">
-              <h2 data-i18n="parts.data">Auto Parts Data</h2>
+              <div class="panel-title-stack">
+                <p class="eyebrow" data-i18n="nav.parts">Auto Parts</p>
+                <h2 data-i18n="parts.data">Auto Parts Data</h2>
+                <p class="panel-hint" data-i18n="parts.hint">Maintain parts categories, OE numbers, fitment and inventory.</p>
+              </div>
               <div class="toolbar">
                 <button class="primary-button" type="button" data-new-record="parts" data-i18n="action.addPart">Add Auto Part</button>
                 <label class="file-button">
@@ -179,9 +261,13 @@
         </section>
 
         <section class="view" data-view-panel="inquiries" hidden>
-          <section class="panel list-panel">
+          <section class="panel list-panel table-shell">
             <div class="panel-header wrap">
-              <h2 data-i18n="inquiries.title">Customer Inquiries</h2>
+              <div class="panel-title-stack">
+                <p class="eyebrow" data-i18n="nav.inquiries">Inquiries</p>
+                <h2 data-i18n="inquiries.title">Customer Inquiries</h2>
+                <p class="panel-hint" data-i18n="inquiries.hint">Track customer requests from website forms.</p>
+              </div>
               <button class="secondary-button" type="button" data-refresh data-i18n="action.refresh">Refresh</button>
             </div>
             <div class="table-wrap">
@@ -204,15 +290,20 @@
         </section>
 
         <section class="view" data-view-panel="settings" hidden>
-          <section class="panel list-panel">
+          <section class="panel list-panel table-shell">
             <div class="panel-header wrap">
-              <h2 data-i18n="settings.title">Dictionary Settings</h2>
+              <div class="panel-title-stack">
+                <p class="eyebrow" data-i18n="nav.settings">Settings</p>
+                <h2 data-i18n="settings.title">Dictionary Settings</h2>
+                <p class="panel-hint" data-i18n="settings.hint">Manage bilingual brands, models, colors and business dictionaries.</p>
+              </div>
               <div class="toolbar">
                 <button class="primary-button" type="button" data-new-dictionary data-i18n="settings.add">Add Dictionary Item</button>
               </div>
             </div>
             <div class="product-toolbar settings-toolbar">
-              <select data-dictionary-type>
+              <div class="dictionary-tabs" data-dictionary-tabs></div>
+              <select class="visually-hidden" data-dictionary-type aria-label="Dictionary type">
                 <option value="brands" data-i18n="dict.brands">Brands</option>
                 <option value="models" data-i18n="dict.models">Models</option>
                 <option value="colors" data-i18n="dict.colors">Colors</option>
@@ -234,9 +325,13 @@
         </section>
 
         <section class="view" data-view-panel="aiLogs" hidden>
-          <section class="panel list-panel">
+          <section class="panel list-panel table-shell">
             <div class="panel-header wrap">
-              <h2 data-i18n="aiLogs.title">AI Logs</h2>
+              <div class="panel-title-stack">
+                <p class="eyebrow" data-i18n="nav.aiLogs">AI Logs</p>
+                <h2 data-i18n="aiLogs.title">AI Logs</h2>
+                <p class="panel-hint" data-i18n="aiLogs.hint">Review automated actions and generated content traces.</p>
+              </div>
               <button class="secondary-button" type="button" data-refresh data-i18n="action.refresh">Refresh</button>
             </div>
             <div class="table-wrap">

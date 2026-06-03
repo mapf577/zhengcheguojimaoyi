@@ -615,6 +615,79 @@ Object.assign(columnTranslations.zh, {
   sort_order: "排序",
 });
 
+Object.assign(adminTranslations.en, {
+  "login.stageEyebrow": "Export management",
+  "login.stageTitle": "From Factory to World",
+  "login.stageText": "Manage vehicles, auto parts, inquiries and AI operation logs in one workspace.",
+  "login.metricVehicles": "Catalog",
+  "login.metricParts": "Inventory",
+  "login.metricInquiries": "Pipeline",
+  "login.subtitle": "Sign in to manage export-ready products and customer requests.",
+  "login.usernamePlaceholder": "Enter username",
+  "login.passwordPlaceholder": "Enter password",
+  "nav.groupCommerce": "Commerce",
+  "nav.groupSystem": "System",
+  "workspace.subtitle": "Centralized export operations for vehicles and auto parts.",
+  "workspace.account": "Current account",
+  "workspace.status": "Console date",
+  "metric.vehiclesHint": "Export catalogue records",
+  "metric.partsHint": "Parts inventory records",
+  "metric.inquiriesHint": "Customer request pipeline",
+  "metric.aiLogsHint": "Traceable assistant actions",
+  "dashboard.opsEyebrow": "Operations",
+  "dashboard.controlEyebrow": "Control center",
+  "dashboard.opsTitle": "Management Focus",
+  "dashboard.ops1": "Keep vehicle and part dictionaries synchronized before product entry.",
+  "dashboard.ops2": "Review inquiries after each catalogue update.",
+  "dashboard.ops3": "Check AI logs when automated content or import actions are used.",
+  "vehicles.hint": "Maintain export vehicle records, pricing, stock and images.",
+  "parts.hint": "Maintain parts categories, OE numbers, fitment and inventory.",
+  "inquiries.hint": "Track customer requests from website forms.",
+  "settings.hint": "Manage bilingual brands, models, colors and business dictionaries.",
+  "aiLogs.hint": "Review automated actions and generated content traces.",
+});
+
+Object.assign(adminTranslations.zh, {
+  "login.stageEyebrow": "出口管理",
+  "login.stageTitle": "从工厂到全球",
+  "login.stageText": "在一个工作台管理整车、汽车零配件、客户询盘和 AI 操作日志。",
+  "login.metricVehicles": "商品目录",
+  "login.metricParts": "库存",
+  "login.metricInquiries": "询盘",
+  "login.subtitle": "登录后管理可出口商品和客户需求。",
+  "login.usernamePlaceholder": "请输入用户名",
+  "login.passwordPlaceholder": "请输入密码",
+  "nav.groupCommerce": "业务管理",
+  "nav.groupSystem": "系统管理",
+  "workspace.subtitle": "集中管理整车和汽车零配件出口业务。",
+  "workspace.account": "当前账号",
+  "workspace.status": "控制台日期",
+  "metric.vehiclesHint": "整车出口商品记录",
+  "metric.partsHint": "零配件库存记录",
+  "metric.inquiriesHint": "客户询盘流程",
+  "metric.aiLogsHint": "可追踪的 AI 操作",
+  "dashboard.opsEyebrow": "运营",
+  "dashboard.controlEyebrow": "控制中心",
+  "dashboard.opsTitle": "管理重点",
+  "dashboard.ops1": "录入商品前，先同步品牌、车型、颜色等字典。",
+  "dashboard.ops2": "每次更新商品目录后，及时查看客户询盘。",
+  "dashboard.ops3": "使用自动内容或导入动作后，检查 AI 日志。",
+  "vehicles.hint": "维护整车记录、价格、库存和图片。",
+  "parts.hint": "维护零配件分类、OE 编号、适配车型和库存。",
+  "inquiries.hint": "跟进官网表单提交的客户需求。",
+  "settings.hint": "维护品牌、车型、颜色等中英文字典。",
+  "aiLogs.hint": "查看自动化动作和内容生成痕迹。",
+});
+
+const pageSubtitleKeys = {
+  dashboard: "workspace.subtitle",
+  vehicles: "vehicles.hint",
+  parts: "parts.hint",
+  inquiries: "inquiries.hint",
+  settings: "settings.hint",
+  aiLogs: "aiLogs.hint",
+};
+
 const logValueTranslations = {
   en: {
     modules: {
@@ -714,6 +787,8 @@ const adminApp = document.querySelector("[data-admin-app]");
 const loginForm = document.querySelector("[data-login-form]");
 const toast = document.querySelector("[data-toast]");
 const pageTitle = document.querySelector("[data-page-title]");
+const pageSubtitle = document.querySelector("[data-page-subtitle]");
+const currentDate = document.querySelector("[data-current-date]");
 const recordDrawer = document.querySelector("[data-record-drawer]");
 const recordForm = document.querySelector("[data-record-form]");
 const recordFields = document.querySelector("[data-fields]");
@@ -775,6 +850,7 @@ function applyLanguage() {
   document.querySelectorAll("[data-lang-toggle]").forEach((button) => {
     button.textContent = state.lang === "zh" ? "English" : "中文";
   });
+  renderChrome();
   switchView(state.view);
   if (state.drawerType && recordDrawer.getAttribute("aria-hidden") === "false") {
     renderFields(state.drawerType, state.editing[state.drawerType] ? findRecord(state.drawerType, state.editing[state.drawerType]) || {} : {});
@@ -785,6 +861,33 @@ function applyLanguage() {
   renderDictionaryTable();
   renderInquiries();
   renderAiLogs();
+}
+
+function renderChrome() {
+  if (currentDate) {
+    currentDate.textContent = new Intl.DateTimeFormat(state.lang === "zh" ? "zh-CN" : "en", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    }).format(new Date());
+  }
+  renderDictionaryTabs();
+}
+
+function renderDictionaryTabs() {
+  const tabs = document.querySelector("[data-dictionary-tabs]");
+  const select = document.querySelector("[data-dictionary-type]");
+  if (!tabs || !select) {
+    return;
+  }
+
+  select.value = state.dictionaryType;
+  tabs.innerHTML = dictionaryTypeOptions
+    .map(([value]) => {
+      const active = value === state.dictionaryType ? " active" : "";
+      return `<button class="${active.trim()}" type="button" data-dictionary-tab="${value}">${escapeHtml(dictionaryTypeLabel(value))}</button>`;
+    })
+    .join("");
 }
 
 function showToast(message) {
@@ -866,12 +969,19 @@ function switchView(view) {
             : view === "aiLogs"
               ? t("nav.aiLogs")
               : t("nav.settings");
+  if (pageSubtitle) {
+    pageSubtitle.textContent = t(pageSubtitleKeys[view] || "workspace.subtitle");
+  }
 }
 
 function renderMetrics() {
   document.querySelector("[data-metric-vehicles]").textContent = String(state.data.vehicles.length);
   document.querySelector("[data-metric-parts]").textContent = String(state.data.parts.length);
   document.querySelector("[data-metric-inquiries]").textContent = String(state.data.inquiries.length);
+  const aiLogsMetric = document.querySelector("[data-metric-ai-logs]");
+  if (aiLogsMetric) {
+    aiLogsMetric.textContent = String(state.data.aiLogs.length);
+  }
 }
 
 function getFilteredRows(type) {
@@ -1096,6 +1206,7 @@ function renderDictionaryTable() {
     return;
   }
 
+  renderDictionaryTabs();
   const schema = schemas.dictionaries;
   const rows = sortedDictionaryRows((state.data.dictionaries || []).filter((row) => row.type === state.dictionaryType));
   head.innerHTML = `
@@ -1575,6 +1686,18 @@ loginForm.addEventListener("submit", async (event) => {
 document.addEventListener("click", async (event) => {
   const target = event.target;
 
+  const dictionaryTab = target.closest("[data-dictionary-tab]");
+  if (dictionaryTab) {
+    state.dictionaryType = dictionaryTab.dataset.dictionaryTab;
+    const select = document.querySelector("[data-dictionary-type]");
+    if (select) {
+      select.value = state.dictionaryType;
+    }
+    renderDictionaryTabs();
+    renderDictionaryTable();
+    return;
+  }
+
   const viewButton = target.closest("[data-view]");
   if (viewButton) {
     switchView(viewButton.dataset.view);
@@ -1702,6 +1825,7 @@ document.querySelectorAll("[data-record-form]").forEach((form) => {
 
 document.querySelector("[data-dictionary-type]")?.addEventListener("change", (event) => {
   state.dictionaryType = event.target.value;
+  renderDictionaryTabs();
   renderDictionaryTable();
 });
 
