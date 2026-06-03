@@ -6,6 +6,7 @@
 *.pfx
 .env
 .env.*
+!.env.example
 整车出口系统重要文件.txt
 
 # Local OS and editor files
