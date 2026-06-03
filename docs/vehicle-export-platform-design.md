@@ -637,8 +637,9 @@
 一期建议：
 
 - 默认英文。
-- 中文仅后台使用。
+- 官网和后台支持中文 / 英文切换。
 - URL 预留语言前缀。
+- 产品数据本身预留中英文内容字段，例如 `name_en`、`name_zh`、`description_en`、`description_zh`。
 
 URL 示例：
 

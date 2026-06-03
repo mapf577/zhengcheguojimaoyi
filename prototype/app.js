@@ -124,6 +124,183 @@ const defaultParts = [
   },
 ];
 
+const siteTranslations = {
+  en: {
+    "meta.title": "AutoGlobal Export | Vehicle & Auto Parts Supply",
+    "nav.vehicles": "Vehicles",
+    "nav.parts": "Auto Parts",
+    "nav.export": "Export Service",
+    "nav.cases": "Cases",
+    "nav.contact": "Contact",
+    "nav.admin": "Data Admin",
+    "action.inquiry": "Inquiry",
+    "action.search": "Search",
+    "action.details": "Details",
+    "action.getQuote": "Get Quote",
+    "action.askQuote": "Ask Quote",
+    "hero.eyebrow": "For overseas dealers, importers, and fleet buyers",
+    "hero.title": "Vehicle Export & Auto Parts Supply",
+    "hero.copy": "New energy vehicles, fuel cars, commercial vehicles, and OEM spare parts shipped from China to global markets.",
+    "hero.browse": "Browse Vehicles",
+    "hero.findParts": "Find Auto Parts",
+    "search.brandModel": "Brand or model",
+    "search.partName": "Part name",
+    "search.keywordPlaceholder": "BYD, Toyota, pickup...",
+    "search.energy": "Energy",
+    "search.any": "Any",
+    "search.oe": "OE number",
+    "search.oePlaceholder": "Enter OE / OEM number",
+    "search.destination": "Destination",
+    "search.destinationPlaceholder": "Country or port",
+    "vehicles.eyebrow": "Export-ready inventory",
+    "vehicles.title": "Featured Vehicles",
+    "parts.eyebrow": "OE/OEM matching",
+    "parts.title": "Auto Parts Categories",
+    "export.eyebrow": "Export workflow",
+    "export.title": "From Inquiry To Delivery",
+    "export.start": "Start Inquiry",
+    "process.inquiry": "Inquiry",
+    "process.inquiryText": "Collect vehicle model, OE number, quantity, destination, and trade term.",
+    "process.quote": "Quotation",
+    "process.quoteText": "Confirm FOB, CIF, CFR, or EXW pricing with validity and lead time.",
+    "process.inspection": "Inspection",
+    "process.inspectionText": "Prepare photos, specification sheets, inspection records, and export files.",
+    "process.shipping": "Shipping",
+    "process.shippingText": "Arrange customs clearance, port delivery, container loading, and documents.",
+    "proof.eyebrow": "Supply capability",
+    "proof.title": "Built For B2B Vehicle Trade",
+    "proof.copy": "The platform is designed for dealers who need reliable vehicle sourcing, correct spare part matching, and fast quote follow-up.",
+    "metrics.brands": "Vehicle brands",
+    "metrics.skus": "Parts SKUs",
+    "metrics.markets": "Export markets",
+    "metrics.quoteTarget": "Quote target",
+    "contact.eyebrow": "Contact sales",
+    "contact.title": "Request A Latest Export Quote",
+    "contact.copy": "Share your target model, OE number, quantity, country, and destination port. A sales manager can reply with the latest supply plan.",
+    "form.name": "Name",
+    "form.email": "Email",
+    "form.country": "Country",
+    "form.message": "Message",
+    "form.send": "Send Inquiry",
+    "drawer.eyebrow": "Inquiry list",
+    "drawer.title": "Selected Products",
+    "drawer.email": "Your email",
+    "drawer.destinationPlaceholder": "Country / port",
+    "drawer.messagePlaceholder": "Quantity, trade term, configuration, OE number...",
+    "drawer.submit": "Submit Inquiry",
+    "drawer.empty": "No selected products yet.",
+    "footer.copy": "Vehicle export and OEM auto parts supply",
+    "footer.backTop": "Back to top",
+    "toast.added": "added to inquiry.",
+    "toast.searchMatches": "Showing {type} matches for your request.",
+    "toast.showingAvailable": "Showing available {type}.",
+    "toast.contactBackend": "Inquiry submitted to the backend.",
+    "toast.contactPrototype": "Inquiry captured in the website prototype.",
+    "toast.drawerBackend": "Inquiry submitted to the backend.",
+    "toast.drawerPrototype": "Inquiry submitted in the website prototype."
+  },
+  zh: {
+    "meta.title": "AutoGlobal Export | 整车出口与汽车零配件供应",
+    "nav.vehicles": "整车展示",
+    "nav.parts": "汽车零配件",
+    "nav.export": "出口服务",
+    "nav.cases": "案例能力",
+    "nav.contact": "联系我们",
+    "nav.admin": "后台管理",
+    "action.inquiry": "询盘",
+    "action.search": "搜索",
+    "action.details": "详情",
+    "action.getQuote": "获取报价",
+    "action.askQuote": "询价",
+    "hero.eyebrow": "面向海外经销商、进口商和车队采购商",
+    "hero.title": "整车出口与汽车零配件供应平台",
+    "hero.copy": "提供新能源汽车、燃油车、商用车及 OEM 零配件，支持从中国发往全球市场。",
+    "hero.browse": "查看整车",
+    "hero.findParts": "查找配件",
+    "search.brandModel": "品牌或车型",
+    "search.partName": "配件名称",
+    "search.keywordPlaceholder": "比亚迪、丰田、皮卡...",
+    "search.energy": "能源类型",
+    "search.any": "不限",
+    "search.oe": "OE 编号",
+    "search.oePlaceholder": "输入 OE / OEM 编号",
+    "search.destination": "目的地",
+    "search.destinationPlaceholder": "国家或港口",
+    "vehicles.eyebrow": "可出口库存",
+    "vehicles.title": "推荐整车",
+    "parts.eyebrow": "OE/OEM 精准匹配",
+    "parts.title": "汽车零配件分类",
+    "export.eyebrow": "出口流程",
+    "export.title": "从询盘到交付",
+    "export.start": "发起询盘",
+    "process.inquiry": "询盘",
+    "process.inquiryText": "收集车型、OE 编号、数量、目的地和贸易条款。",
+    "process.quote": "报价",
+    "process.quoteText": "确认 FOB、CIF、CFR 或 EXW 价格、有效期和交期。",
+    "process.inspection": "检测",
+    "process.inspectionText": "准备照片、规格表、检测记录和出口资料。",
+    "process.shipping": "发运",
+    "process.shippingText": "安排报关、送港、装柜和单证。",
+    "proof.eyebrow": "供应能力",
+    "proof.title": "为 B2B 整车贸易而设计",
+    "proof.copy": "平台适用于需要稳定整车采购、准确配件匹配和快速报价跟进的海外客户。",
+    "metrics.brands": "整车品牌",
+    "metrics.skus": "配件 SKU",
+    "metrics.markets": "出口市场",
+    "metrics.quoteTarget": "报价目标",
+    "contact.eyebrow": "联系销售",
+    "contact.title": "获取最新出口报价",
+    "contact.copy": "请提交目标车型、OE 编号、数量、国家和目的港，销售经理会回复最新供应方案。",
+    "form.name": "姓名",
+    "form.email": "邮箱",
+    "form.country": "国家",
+    "form.message": "留言",
+    "form.send": "发送询盘",
+    "drawer.eyebrow": "询盘清单",
+    "drawer.title": "已选择产品",
+    "drawer.email": "您的邮箱",
+    "drawer.destinationPlaceholder": "国家 / 港口",
+    "drawer.messagePlaceholder": "数量、贸易条款、配置、OE 编号...",
+    "drawer.submit": "提交询盘",
+    "drawer.empty": "还没有选择产品。",
+    "footer.copy": "整车出口与 OEM 汽车零配件供应",
+    "footer.backTop": "返回顶部",
+    "toast.added": "已加入询盘。",
+    "toast.searchMatches": "正在显示符合条件的{type}。",
+    "toast.showingAvailable": "正在显示可用{type}。",
+    "toast.contactBackend": "询盘已提交到后台。",
+    "toast.contactPrototype": "询盘已记录在官网原型中。",
+    "toast.drawerBackend": "询盘已提交到后台。",
+    "toast.drawerPrototype": "询盘已记录在官网原型中。"
+  },
+};
+
+let currentLang = localStorage.getItem("site_lang") === "zh" ? "zh" : "en";
+
+function t(key, values = {}) {
+  let text = siteTranslations[currentLang][key] || siteTranslations.en[key] || key;
+  Object.entries(values).forEach(([name, value]) => {
+    text = text.replace(`{${name}}`, value);
+  });
+  return text;
+}
+
+function applyLanguage() {
+  document.documentElement.lang = currentLang === "zh" ? "zh-CN" : "en";
+  document.title = t("meta.title");
+  document.querySelectorAll("[data-i18n]").forEach((node) => {
+    node.textContent = t(node.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => {
+    node.setAttribute("placeholder", t(node.dataset.i18nPlaceholder));
+  });
+  const langToggle = document.querySelector("[data-lang-toggle]");
+  if (langToggle) {
+    langToggle.textContent = currentLang === "zh" ? "English" : "中文";
+  }
+  setSearchTab(activeSearchTab);
+}
+
 function getStoredRows(key) {
   try {
     const value = JSON.parse(localStorage.getItem(key) || "[]");
@@ -309,8 +486,8 @@ function makeVehicleCard(vehicle) {
         <span class="stock">${vehicle.stock}</span>
       </div>
       <div class="card-actions">
-        <button class="ghost-button" type="button" data-open-inquiry>Details</button>
-        <button class="solid-button" type="button" data-add-inquiry="${vehicle.id}" data-kind="Vehicle">Get Quote</button>
+        <button class="ghost-button" type="button" data-open-inquiry>${t("action.details")}</button>
+        <button class="solid-button" type="button" data-add-inquiry="${vehicle.id}" data-kind="Vehicle">${t("action.getQuote")}</button>
       </div>
     </div>
   `;
@@ -333,7 +510,7 @@ function makePartCard(part) {
           <span>${part.lead}</span>
         </div>
       </div>
-      <button class="solid-button" type="button" data-add-inquiry="${part.id}" data-kind="Auto Part">Ask Quote</button>
+      <button class="solid-button" type="button" data-add-inquiry="${part.id}" data-kind="Auto Part">${t("action.askQuote")}</button>
     </div>
   `;
   return card;
@@ -366,7 +543,7 @@ function getProductById(id) {
 function renderInquiryItems() {
   const items = [...inquiryItems.values()];
   if (!items.length) {
-    inquiryItemsEl.innerHTML = '<div class="drawer-empty">No selected products yet.</div>';
+    inquiryItemsEl.innerHTML = `<div class="drawer-empty">${t("drawer.empty")}</div>`;
     return;
   }
 
@@ -431,7 +608,7 @@ function setSearchTab(tab) {
   });
   vehicleField.hidden = tab !== "vehicles";
   partField.hidden = tab !== "parts";
-  primaryLabel.textContent = tab === "vehicles" ? "Brand or model" : "Part name";
+  primaryLabel.textContent = tab === "vehicles" ? t("search.brandModel") : t("search.partName");
 }
 
 document.addEventListener("click", (event) => {
@@ -463,7 +640,7 @@ document.addEventListener("click", (event) => {
     if (product) {
       inquiryItems.set(product.id, product);
       renderInquiryItems();
-      showToast(`${product.name} added to inquiry.`);
+      showToast(`${product.name} ${t("toast.added")}`);
     }
     return;
   }
@@ -514,8 +691,8 @@ searchForm.addEventListener("submit", (event) => {
   document.querySelector(target).scrollIntoView({ behavior: "smooth", block: "start" });
   showToast(
     keyword || destination
-      ? `Showing ${activeSearchTab} matches for your request.`
-      : `Showing available ${activeSearchTab}.`,
+      ? t("toast.searchMatches", { type: activeSearchTab === "vehicles" ? t("nav.vehicles") : t("nav.parts") })
+      : t("toast.showingAvailable", { type: activeSearchTab === "vehicles" ? t("nav.vehicles") : t("nav.parts") }),
   );
 });
 
@@ -532,7 +709,7 @@ document.querySelector("[data-contact-form]").addEventListener("submit", async (
     product_type: "General",
   });
   form.reset();
-  showToast(saved ? "Inquiry submitted to the backend." : "Inquiry captured in the website prototype.");
+  showToast(saved ? t("toast.contactBackend") : t("toast.contactPrototype"));
 });
 
 document.querySelector("[data-drawer-form]").addEventListener("submit", async (event) => {
@@ -552,11 +729,21 @@ document.querySelector("[data-drawer-form]").addEventListener("submit", async (e
   inquiryItems.clear();
   renderInquiryItems();
   closeInquiry();
-  showToast(saved ? "Inquiry submitted to the backend." : "Inquiry submitted in the website prototype.");
+  showToast(saved ? t("toast.drawerBackend") : t("toast.drawerPrototype"));
+});
+
+document.querySelector("[data-lang-toggle]").addEventListener("click", () => {
+  currentLang = currentLang === "zh" ? "en" : "zh";
+  localStorage.setItem("site_lang", currentLang);
+  applyLanguage();
+  renderVehicles(document.querySelector("[data-vehicle-filter].active")?.dataset.vehicleFilter || "all");
+  renderParts(document.querySelector("[data-part-filter].active")?.dataset.partFilter || "all");
+  renderInquiryItems();
 });
 
 window.addEventListener("scroll", elevateHeader, { passive: true });
 
+applyLanguage();
 renderVehicles();
 renderParts();
 renderInquiryItems();

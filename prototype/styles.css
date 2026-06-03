@@ -131,6 +131,10 @@ img {
   gap: 10px;
 }
 
+.lang-button {
+  min-width: 76px;
+}
+
 .solid-button,
 .ghost-button,
 .light-button,

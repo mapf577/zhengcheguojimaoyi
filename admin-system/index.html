@@ -12,21 +12,21 @@
         <div class="brand-row">
           <span class="brand-mark">AG</span>
           <div>
-            <strong>AutoGlobal Export</strong>
-            <span>Management Console</span>
+          <strong>AutoGlobal Export</strong>
+          <span data-i18n="login.console">Management Console</span>
           </div>
         </div>
-        <h1>Admin Login</h1>
+        <h1 data-i18n="login.title">Admin Login</h1>
         <label>
-          <span>Username</span>
+          <span data-i18n="login.username">Username</span>
           <input name="username" type="text" value="admin" autocomplete="username" required />
         </label>
         <label>
-          <span>Password</span>
+          <span data-i18n="login.password">Password</span>
           <input name="password" type="password" value="admin123" autocomplete="current-password" required />
         </label>
-        <button class="primary-button" type="submit">Login</button>
-        <p class="hint">Default development account: admin / admin123. Change it with environment variables before deployment.</p>
+        <button class="primary-button" type="submit" data-i18n="login.submit">Login</button>
+        <p class="hint" data-i18n="login.hint">Default development account: admin / admin123. Change it with environment variables before deployment.</p>
       </form>
     </section>
 
@@ -36,27 +36,28 @@
           <span class="brand-mark">AG</span>
           <div>
             <strong>AutoGlobal</strong>
-            <span>Admin</span>
+            <span data-i18n="brand.admin">Admin</span>
           </div>
         </a>
         <nav class="side-nav" aria-label="Admin sections">
-          <button class="active" type="button" data-view="dashboard">Dashboard</button>
-          <button type="button" data-view="vehicles">Vehicles</button>
-          <button type="button" data-view="parts">Auto Parts</button>
-          <button type="button" data-view="inquiries">Inquiries</button>
+          <button class="active" type="button" data-view="dashboard" data-i18n="nav.dashboard">Dashboard</button>
+          <button type="button" data-view="vehicles" data-i18n="nav.vehicles">Vehicles</button>
+          <button type="button" data-view="parts" data-i18n="nav.parts">Auto Parts</button>
+          <button type="button" data-view="inquiries" data-i18n="nav.inquiries">Inquiries</button>
         </nav>
-        <button class="secondary-button" type="button" data-logout>Logout</button>
+        <button class="secondary-button lang-switch" type="button" data-lang-toggle>中文</button>
+        <button class="secondary-button" type="button" data-logout data-i18n="action.logout">Logout</button>
       </aside>
 
       <main class="workspace">
         <header class="workspace-header">
           <div>
-            <p class="eyebrow">Backend management</p>
+            <p class="eyebrow" data-i18n="workspace.eyebrow">Backend management</p>
             <h1 data-page-title>Dashboard</h1>
           </div>
           <div class="header-actions">
-            <a class="secondary-button" href="/" target="_blank" rel="noreferrer">Open Website</a>
-            <button class="primary-button" type="button" data-refresh>Refresh</button>
+            <a class="secondary-button" href="/" target="_blank" rel="noreferrer" data-i18n="action.openWebsite">Open Website</a>
+            <button class="primary-button" type="button" data-refresh data-i18n="action.refresh">Refresh</button>
           </div>
         </header>
 
@@ -64,25 +65,25 @@
           <div class="metric-grid">
             <div class="metric-card">
               <strong data-metric-vehicles>0</strong>
-              <span>Vehicles</span>
+              <span data-i18n="nav.vehicles">Vehicles</span>
             </div>
             <div class="metric-card">
               <strong data-metric-parts>0</strong>
-              <span>Auto Parts</span>
+              <span data-i18n="nav.parts">Auto Parts</span>
             </div>
             <div class="metric-card">
               <strong data-metric-inquiries>0</strong>
-              <span>Inquiries</span>
+              <span data-i18n="nav.inquiries">Inquiries</span>
             </div>
           </div>
           <div class="panel">
             <div class="panel-header">
-              <h2>Next Steps</h2>
+              <h2 data-i18n="dashboard.next">Next Steps</h2>
             </div>
             <ul class="task-list">
-              <li>Add or import the first batch of export-ready vehicles.</li>
-              <li>Upload product images from the management forms.</li>
-              <li>Open the website to verify product cards and inquiry forms.</li>
+              <li data-i18n="dashboard.task1">Add or import the first batch of export-ready vehicles.</li>
+              <li data-i18n="dashboard.task2">Upload product images from the management forms.</li>
+              <li data-i18n="dashboard.task3">Open the website to verify product cards and inquiry forms.</li>
             </ul>
           </div>
         </section>
@@ -92,22 +93,22 @@
             <aside class="panel editor-panel">
               <div class="panel-header">
                 <h2 data-editor-title>New Vehicle</h2>
-                <button class="secondary-button" type="button" data-reset-form>New</button>
+                <button class="secondary-button" type="button" data-reset-form data-i18n="action.new">New</button>
               </div>
               <form class="record-form" data-record-form="vehicles">
                 <div class="form-grid" data-fields="vehicles"></div>
-                <button class="primary-button full" type="submit">Save Vehicle</button>
+                <button class="primary-button full" type="submit" data-i18n="action.saveVehicle">Save Vehicle</button>
               </form>
             </aside>
             <section class="panel list-panel">
               <div class="panel-header wrap">
-                <h2>Vehicle Data</h2>
+                <h2 data-i18n="vehicles.data">Vehicle Data</h2>
                 <div class="toolbar">
                   <label class="file-button">
-                    Import CSV
+                    <span data-i18n="action.importCsv">Import CSV</span>
                     <input type="file" accept=".csv,text/csv" data-import-file="vehicles" />
                   </label>
-                  <button class="secondary-button" type="button" data-export="vehicles">Export CSV</button>
+                  <button class="secondary-button" type="button" data-export="vehicles" data-i18n="action.exportCsv">Export CSV</button>
                 </div>
               </div>
               <div class="table-wrap">
@@ -125,22 +126,22 @@
             <aside class="panel editor-panel">
               <div class="panel-header">
                 <h2 data-editor-title>New Auto Part</h2>
-                <button class="secondary-button" type="button" data-reset-form>New</button>
+                <button class="secondary-button" type="button" data-reset-form data-i18n="action.new">New</button>
               </div>
               <form class="record-form" data-record-form="parts">
                 <div class="form-grid" data-fields="parts"></div>
-                <button class="primary-button full" type="submit">Save Auto Part</button>
+                <button class="primary-button full" type="submit" data-i18n="action.savePart">Save Auto Part</button>
               </form>
             </aside>
             <section class="panel list-panel">
               <div class="panel-header wrap">
-                <h2>Auto Parts Data</h2>
+                <h2 data-i18n="parts.data">Auto Parts Data</h2>
                 <div class="toolbar">
                   <label class="file-button">
-                    Import CSV
+                    <span data-i18n="action.importCsv">Import CSV</span>
                     <input type="file" accept=".csv,text/csv" data-import-file="parts" />
                   </label>
-                  <button class="secondary-button" type="button" data-export="parts">Export CSV</button>
+                  <button class="secondary-button" type="button" data-export="parts" data-i18n="action.exportCsv">Export CSV</button>
                 </div>
               </div>
               <div class="table-wrap">
@@ -156,20 +157,20 @@
         <section class="view" data-view-panel="inquiries" hidden>
           <section class="panel list-panel">
             <div class="panel-header wrap">
-              <h2>Customer Inquiries</h2>
-              <button class="secondary-button" type="button" data-refresh>Refresh</button>
+              <h2 data-i18n="inquiries.title">Customer Inquiries</h2>
+              <button class="secondary-button" type="button" data-refresh data-i18n="action.refresh">Refresh</button>
             </div>
             <div class="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Status</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Country</th>
-                    <th>Message</th>
-                    <th>Created</th>
-                    <th>Actions</th>
+                    <th data-i18n="table.status">Status</th>
+                    <th data-i18n="table.name">Name</th>
+                    <th data-i18n="table.email">Email</th>
+                    <th data-i18n="table.country">Country</th>
+                    <th data-i18n="table.message">Message</th>
+                    <th data-i18n="table.created">Created</th>
+                    <th data-i18n="table.actions">Actions</th>
                   </tr>
                 </thead>
                 <tbody data-inquiries-body></tbody>
