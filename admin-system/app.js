@@ -138,6 +138,44 @@ const schemas = {
   },
 };
 
+const fieldGroups = {
+  vehicles: [
+    { titleKey: "form.basic", fields: ["sku", "brand", "model", "title_en", "title_zh", "year", "trim", "condition"] },
+    {
+      titleKey: "form.specs",
+      fields: [
+        "vehicle_type",
+        "energy_type",
+        "steering",
+        "seats",
+        "transmission",
+        "drive_type",
+        "range_km",
+        "battery_kwh",
+        "engine_displacement",
+        "mileage",
+        "color",
+      ],
+    },
+    { titleKey: "form.commercial", fields: ["stock_status", "price_min", "price_max", "currency", "export_port"] },
+    { titleKey: "form.media", fields: ["images", "description_en", "description_zh"] },
+  ],
+  parts: [
+    { titleKey: "form.basic", fields: ["sku", "category", "brand", "name", "title_en", "title_zh", "oe_numbers", "part_number"] },
+    { titleKey: "form.fitment", fields: ["applicable_brand", "applicable_model", "applicable_year"] },
+    {
+      titleKey: "form.commercial",
+      fields: ["moq", "stock_status", "lead_time_days", "unit_weight", "package_size", "price_min", "price_max", "currency"],
+    },
+    { titleKey: "form.media", fields: ["images", "description_en", "description_zh"] },
+  ],
+  dictionaries: [
+    { titleKey: "form.dictionaryCore", fields: ["type", "code", "status", "sort_order"] },
+    { titleKey: "form.dictionaryNames", fields: ["name_en", "name_zh"] },
+    { titleKey: "form.dictionaryRules", fields: ["brand_code", "vehicle_type", "energy_type"] },
+  ],
+};
+
 const adminTranslations = {
   en: {
     "meta.title": "Admin Console | AutoGlobal Export",
@@ -351,6 +389,14 @@ Object.assign(adminTranslations.en, {
   "singular.dictionary": "Dictionary Item",
   "select.choose": "Select...",
   "select.optional": "Optional",
+  "form.basic": "Basic Information",
+  "form.specs": "Specifications",
+  "form.commercial": "Pricing & Inventory",
+  "form.media": "Media & Description",
+  "form.fitment": "Fitment",
+  "form.dictionaryCore": "Dictionary Item",
+  "form.dictionaryNames": "Localized Names",
+  "form.dictionaryRules": "Linked Defaults",
   "dict.brands": "Brands",
   "dict.models": "Models",
   "dict.colors": "Colors",
@@ -436,6 +482,14 @@ Object.assign(adminTranslations.zh, {
   "placeholder.image": "/uploads/image.jpg 或外部图片 URL",
   "select.choose": "请选择...",
   "select.optional": "可选",
+  "form.basic": "基础信息",
+  "form.specs": "规格参数",
+  "form.commercial": "价格与库存",
+  "form.media": "图片与描述",
+  "form.fitment": "适配信息",
+  "form.dictionaryCore": "字典项",
+  "form.dictionaryNames": "中英文名称",
+  "form.dictionaryRules": "关联默认值",
   "dict.brands": "品牌",
   "dict.models": "车型",
   "dict.colors": "颜色",
@@ -914,6 +968,35 @@ function formatCell(type, column, value) {
   return value || "";
 }
 
+function statusClass(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function shouldRenderPill(type, column) {
+  return (
+    column === "stock_status" ||
+    column === "status" ||
+    column === "energy_type" ||
+    (type === "vehicles" && column === "vehicle_type")
+  );
+}
+
+function renderTableCell(type, column, row) {
+  const rawValue = row[column];
+  const displayValue = escapeHtml(formatCell(type, column, rawValue, row));
+  const className = ["year", "price_min", "price_max", "moq", "sort_order"].includes(column) ? "number-cell" : "";
+  const classAttr = className ? ` class="${className}"` : "";
+
+  if (shouldRenderPill(type, column) && displayValue) {
+    return `<td${classAttr}><span class="status-pill status-${statusClass(rawValue)}">${displayValue}</span></td>`;
+  }
+  return `<td${classAttr}>${displayValue}</td>`;
+}
+
 function renderDictionaryTable() {
   const head = document.querySelector("[data-dictionary-head]");
   const body = document.querySelector("[data-dictionary-body]");
@@ -948,7 +1031,7 @@ function renderDictionaryTable() {
     .map(
       (row) => `
         <tr>
-          ${schema.columns.map((column) => `<td>${escapeHtml(formatCell("dictionaries", column, row[column], row))}</td>`).join("")}
+          ${schema.columns.map((column) => renderTableCell("dictionaries", column, row)).join("")}
           <td>
             <div class="row-actions">
               <button class="secondary-button" type="button" data-edit="dictionaries" data-id="${row.id}">${t("action.edit")}</button>
@@ -995,50 +1078,81 @@ function applyVehicleModelDefaults(form) {
   });
 }
 
+function renderFieldControl(field, record = {}) {
+  const required = field.required ? "required" : "";
+  const value = escapeHtml(record[field.name] || "");
+
+  if (field.options || field.dictionaryType) {
+    return renderSelectField(field, record);
+  }
+
+  if (field.type === "textarea") {
+    return `
+      <label class="field-wide">
+        <span>${fieldLabel(field.label)}${field.required ? " *" : ""}</span>
+        <textarea name="${field.name}" rows="3" ${required}>${value}</textarea>
+      </label>
+    `;
+  }
+
+  if (field.type === "image") {
+    return `
+      <div class="image-field">
+        <label>
+          <span>${fieldLabel(field.label)}</span>
+          <input name="${field.name}" type="text" value="${value}" placeholder="${t("placeholder.image")}" />
+        </label>
+        <div class="image-field-row">
+          <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-image-file />
+          <button class="secondary-button" type="button" data-upload-image>${t("action.uploadImage")}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <label>
+      <span>${fieldLabel(field.label)}${field.required ? " *" : ""}</span>
+      <input name="${field.name}" type="text" value="${value}" ${required} />
+    </label>
+  `;
+}
+
+function getGroupedFields(type) {
+  const fields = schemas[type].fields;
+  const groups = fieldGroups[type] || [{ titleKey: "form.basic", fields: fields.map((field) => field.name) }];
+  const byName = new Map(fields.map((field) => [field.name, field]));
+  const used = new Set();
+
+  const renderedGroups = groups
+    .map((group) => {
+      const groupFields = group.fields.map((fieldName) => byName.get(fieldName)).filter(Boolean);
+      groupFields.forEach((field) => used.add(field.name));
+      return { ...group, fields: groupFields };
+    })
+    .filter((group) => group.fields.length);
+
+  const remainingFields = fields.filter((field) => !used.has(field.name));
+  if (remainingFields.length) {
+    renderedGroups.push({ titleKey: "form.basic", fields: remainingFields });
+  }
+  return renderedGroups;
+}
+
 function renderFields(type, record = {}) {
-  const schema = schemas[type];
   recordForm.dataset.recordForm = type;
 
-  recordFields.innerHTML = schema.fields
-    .map((field) => {
-      const required = field.required ? "required" : "";
-      const value = escapeHtml(record[field.name] || "");
-
-      if (field.options || field.dictionaryType) {
-        return renderSelectField(field, record);
-      }
-
-      if (field.type === "textarea") {
-        return `
-          <label class="field-wide">
-            <span>${fieldLabel(field.label)}${field.required ? " *" : ""}</span>
-            <textarea name="${field.name}" rows="3" ${required}>${value}</textarea>
-          </label>
-        `;
-      }
-
-      if (field.type === "image") {
-        return `
-          <div class="image-field">
-            <label>
-              <span>${fieldLabel(field.label)}</span>
-              <input name="${field.name}" type="text" value="${value}" placeholder="${t("placeholder.image")}" />
-            </label>
-            <div class="image-field-row">
-              <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-image-file />
-              <button class="secondary-button" type="button" data-upload-image>${t("action.uploadImage")}</button>
-            </div>
+  recordFields.innerHTML = getGroupedFields(type)
+    .map(
+      (group) => `
+        <section class="form-section">
+          <h3 class="form-section-title">${t(group.titleKey)}</h3>
+          <div class="form-section-grid">
+            ${group.fields.map((field) => renderFieldControl(field, record)).join("")}
           </div>
-        `;
-      }
-
-      return `
-        <label>
-          <span>${fieldLabel(field.label)}${field.required ? " *" : ""}</span>
-          <input name="${field.name}" type="text" value="${value}" ${required} />
-        </label>
-      `;
-    })
+        </section>
+      `,
+    )
     .join("");
 
   editorTitle.textContent = record.id ? `${t("action.edit")} ${singularLabel(type)}` : `${t("action.new")} ${singularLabel(type)}`;
@@ -1091,7 +1205,7 @@ function renderTable(type) {
     .map(
       (row) => `
         <tr>
-          ${schema.columns.map((column) => `<td>${escapeHtml(formatCell(type, column, row[column], row))}</td>`).join("")}
+          ${schema.columns.map((column) => renderTableCell(type, column, row)).join("")}
           <td>
             <div class="row-actions">
               <button class="secondary-button" type="button" data-edit="${type}" data-id="${row.id}">${t("action.edit")}</button>
