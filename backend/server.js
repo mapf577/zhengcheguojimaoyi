@@ -353,6 +353,15 @@ function getSessionUser(req) {
   return session.user || "";
 }
 
+function getClientIp(req) {
+  const forwarded = String(req.headers["x-forwarded-for"] || "")
+    .split(",")[0]
+    .trim();
+  const realIp = String(req.headers["x-real-ip"] || "").trim();
+  const rawIp = forwarded || realIp || req.socket?.remoteAddress || "";
+  return rawIp.replace(/^::ffff:/, "").replace(/^::1$/, "127.0.0.1");
+}
+
 function targetLabel(record = {}) {
   return record.sku || record.name || record.name_en || record.name_zh || record.model || record.code || record.email || record.id || "";
 }
@@ -489,7 +498,17 @@ async function handleLogin(req, res) {
     actor: ADMIN_USER,
     target_label: ADMIN_USER,
   });
-  sendJson(res, 200, { token, user: { username: ADMIN_USER } });
+  sendJson(res, 200, { token, user: { username: ADMIN_USER }, ip: getClientIp(req) });
+}
+
+async function handleAdminSession(req, res) {
+  if (!requireAuth(req, res)) {
+    return;
+  }
+  sendJson(res, 200, {
+    user: { username: getSessionUser(req) || ADMIN_USER },
+    ip: getClientIp(req),
+  });
 }
 
 async function handleCollection(req, res, type, id) {
@@ -754,6 +773,11 @@ async function handleApi(req, res, pathname) {
 
   if (pathname === "/api/auth/login" && req.method === "POST") {
     await handleLogin(req, res);
+    return true;
+  }
+
+  if (pathname === "/api/admin/session") {
+    await handleAdminSession(req, res);
     return true;
   }
 

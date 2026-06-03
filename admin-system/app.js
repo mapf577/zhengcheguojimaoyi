@@ -630,6 +630,8 @@ Object.assign(adminTranslations.en, {
   "workspace.subtitle": "Centralized export operations for vehicles and auto parts.",
   "workspace.account": "Current account",
   "workspace.status": "Console date",
+  "workspace.welcome": "Welcome back",
+  "workspace.ipAddress": "IP address",
   "metric.vehiclesHint": "Export catalogue records",
   "metric.partsHint": "Parts inventory records",
   "metric.inquiriesHint": "Customer request pipeline",
@@ -662,6 +664,8 @@ Object.assign(adminTranslations.zh, {
   "workspace.subtitle": "集中管理整车和汽车零配件出口业务。",
   "workspace.account": "当前账号",
   "workspace.status": "控制台日期",
+  "workspace.welcome": "欢迎登录",
+  "workspace.ipAddress": "IP 地址",
   "metric.vehiclesHint": "整车出口商品记录",
   "metric.partsHint": "零配件库存记录",
   "metric.inquiriesHint": "客户询盘流程",
@@ -771,6 +775,10 @@ const state = {
     dictionaries: [],
     aiLogs: [],
   },
+  session: {
+    username: "admin",
+    ip: "--",
+  },
 };
 
 const loginScreen = document.querySelector("[data-login-screen]");
@@ -778,6 +786,8 @@ const adminApp = document.querySelector("[data-admin-app]");
 const loginForm = document.querySelector("[data-login-form]");
 const toast = document.querySelector("[data-toast]");
 const currentDate = document.querySelector("[data-current-date]");
+const welcomeUser = document.querySelector("[data-welcome-user]");
+const clientIp = document.querySelector("[data-client-ip]");
 const recordDrawer = document.querySelector("[data-record-drawer]");
 const recordForm = document.querySelector("[data-record-form]");
 const recordFields = document.querySelector("[data-fields]");
@@ -860,7 +870,26 @@ function renderChrome() {
       day: "2-digit",
     }).format(new Date());
   }
+  renderSessionInfo();
   renderDictionaryTabs();
+}
+
+function renderSessionInfo() {
+  if (welcomeUser) {
+    welcomeUser.textContent = state.session.username || "admin";
+  }
+  if (clientIp) {
+    clientIp.textContent = state.session.ip || "--";
+  }
+}
+
+async function loadSessionInfo() {
+  const result = await api("/api/admin/session");
+  state.session = {
+    username: result.user?.username || state.session.username || "admin",
+    ip: result.ip || "--",
+  };
+  renderSessionInfo();
 }
 
 function renderDictionaryTabs() {
@@ -924,8 +953,13 @@ function escapeHtml(value) {
     .replace(/"/g, "&quot;");
 }
 
-function setAuthenticated(token) {
+function setAuthenticated(token, session = {}) {
   state.token = token;
+  state.session = {
+    username: session.user?.username || session.username || state.session.username || "admin",
+    ip: session.ip || state.session.ip || "--",
+  };
+  renderSessionInfo();
   localStorage.setItem("admin_token", token);
   loginScreen.hidden = true;
   adminApp.hidden = false;
@@ -933,6 +967,8 @@ function setAuthenticated(token) {
 
 function logout() {
   state.token = "";
+  state.session = { username: "admin", ip: "--" };
+  renderSessionInfo();
   localStorage.removeItem("admin_token");
   loginScreen.hidden = false;
   adminApp.hidden = true;
@@ -1649,7 +1685,8 @@ loginForm.addEventListener("submit", async (event) => {
         password: data.get("password"),
       }),
     });
-    setAuthenticated(result.token);
+    setAuthenticated(result.token, { user: result.user, ip: result.ip });
+    await loadSessionInfo();
     await refreshData();
     showToast(t("toast.loggedIn"));
   } catch (error) {
@@ -1878,6 +1915,9 @@ function boot() {
 
   if (state.token) {
     setAuthenticated(state.token);
+    loadSessionInfo().catch(() => {
+      renderSessionInfo();
+    });
     refreshData().catch((error) => {
       showToast(error.message);
       logout();
