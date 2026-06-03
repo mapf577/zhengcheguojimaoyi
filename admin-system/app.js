@@ -312,7 +312,9 @@ function applyLanguage() {
   document.querySelectorAll("[data-i18n]").forEach((node) => {
     node.textContent = t(node.dataset.i18n);
   });
-  document.querySelector("[data-lang-toggle]").textContent = state.lang === "zh" ? "English" : "中文";
+  document.querySelectorAll("[data-lang-toggle]").forEach((button) => {
+    button.textContent = state.lang === "zh" ? "English" : "中文";
+  });
   switchView(state.view);
   renderFields("vehicles", state.editing.vehicles ? findRecord("vehicles", state.editing.vehicles) || {} : {});
   renderFields("parts", state.editing.parts ? findRecord("parts", state.editing.parts) || {} : {});

@@ -41,6 +41,7 @@ a {
 }
 
 .login-screen {
+  position: relative;
   display: grid;
   min-height: 100vh;
   place-items: center;
@@ -48,6 +49,13 @@ a {
   background:
     linear-gradient(135deg, rgba(20, 100, 168, 0.14), rgba(228, 111, 47, 0.12)),
     var(--soft);
+}
+
+.login-lang-switch {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  min-width: 92px;
 }
 
 .login-card {
@@ -194,9 +202,20 @@ textarea:focus {
 }
 
 .sidebar [data-logout] {
+  margin-top: 8px;
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.sidebar .lang-switch {
   margin-top: auto;
   color: #fff;
   border-color: rgba(255, 255, 255, 0.32);
+}
+
+.lang-switch,
+.login-lang-switch {
+  min-width: 92px;
 }
 
 .workspace {

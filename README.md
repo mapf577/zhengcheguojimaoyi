@@ -80,7 +80,7 @@ Admin console:
 http://localhost:3000/admin/
 ```
 
-Use the `中文 / English` button in the sidebar.
+Use the `中文 / English` button on the login page, in the sidebar, or in the admin header.
 
 Product cards and detail drawers prefer `title_zh` / `description_zh` when Chinese is selected, and `title_en` / `description_en` when English is selected. If a localized field is empty, the website falls back to the original uploaded values.
 
