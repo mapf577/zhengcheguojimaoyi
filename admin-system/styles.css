@@ -160,7 +160,7 @@ textarea:focus {
 
 .admin-app {
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
+  grid-template-columns: 220px minmax(0, 1fr);
   min-height: 100vh;
 }
 
@@ -170,7 +170,7 @@ textarea:focus {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  padding: 22px;
+  padding: 18px;
   color: #fff;
   background: var(--charcoal);
 }
@@ -205,6 +205,12 @@ textarea:focus {
   margin-top: auto;
   color: #fff;
   border-color: rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar [data-logout]:hover {
+  border-color: rgba(255, 255, 255, 0.52);
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .lang-switch,
