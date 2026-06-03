@@ -833,10 +833,10 @@ textarea:focus {
 .workspace-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 18px;
-  margin-bottom: 18px;
-  padding: 18px 20px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
 }
 
 .page-card {
@@ -844,10 +844,6 @@ textarea:focus {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: var(--shadow-card);
-}
-
-.workspace-title-block {
-  min-width: 0;
 }
 
 .eyebrow {
@@ -859,29 +855,18 @@ textarea:focus {
   text-transform: uppercase;
 }
 
-.workspace-header h1 {
-  margin: 0;
-  font-size: 28px;
-  line-height: 1.15;
-  letter-spacing: 0;
-}
-
-.workspace-subtitle {
-  margin: 7px 0 0;
-  color: var(--muted);
-  font-size: 13px;
-}
-
 .header-meta {
   display: flex;
   align-items: center;
   gap: 12px;
+  justify-content: flex-end;
+  width: 100%;
 }
 
 .header-status-card {
   display: grid;
   gap: 4px;
-  min-width: 148px;
+  min-width: 138px;
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 10px 12px;
@@ -1639,10 +1624,6 @@ tbody tr:last-child td {
 
   .login-card-brand {
     display: none;
-  }
-
-  .workspace-header h1 {
-    font-size: 24px;
   }
 
   .header-actions,

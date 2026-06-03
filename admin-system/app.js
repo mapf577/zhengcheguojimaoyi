@@ -679,15 +679,6 @@ Object.assign(adminTranslations.zh, {
   "aiLogs.hint": "查看自动化动作和内容生成痕迹。",
 });
 
-const pageSubtitleKeys = {
-  dashboard: "workspace.subtitle",
-  vehicles: "vehicles.hint",
-  parts: "parts.hint",
-  inquiries: "inquiries.hint",
-  settings: "settings.hint",
-  aiLogs: "aiLogs.hint",
-};
-
 const logValueTranslations = {
   en: {
     modules: {
@@ -786,8 +777,6 @@ const loginScreen = document.querySelector("[data-login-screen]");
 const adminApp = document.querySelector("[data-admin-app]");
 const loginForm = document.querySelector("[data-login-form]");
 const toast = document.querySelector("[data-toast]");
-const pageTitle = document.querySelector("[data-page-title]");
-const pageSubtitle = document.querySelector("[data-page-subtitle]");
 const currentDate = document.querySelector("[data-current-date]");
 const recordDrawer = document.querySelector("[data-record-drawer]");
 const recordForm = document.querySelector("[data-record-form]");
@@ -957,21 +946,6 @@ function switchView(view) {
   document.querySelectorAll("[data-view-panel]").forEach((panel) => {
     panel.hidden = panel.dataset.viewPanel !== view;
   });
-  pageTitle.textContent =
-    view === "dashboard"
-      ? t("nav.dashboard")
-      : view === "vehicles"
-        ? t("nav.vehicles")
-        : view === "parts"
-          ? t("nav.parts")
-          : view === "inquiries"
-            ? t("nav.inquiries")
-            : view === "aiLogs"
-              ? t("nav.aiLogs")
-              : t("nav.settings");
-  if (pageSubtitle) {
-    pageSubtitle.textContent = t(pageSubtitleKeys[view] || "workspace.subtitle");
-  }
 }
 
 function renderMetrics() {
