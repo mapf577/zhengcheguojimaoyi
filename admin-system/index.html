@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Console | AutoGlobal Export</title>
+    <link rel="stylesheet" href="/admin-system/styles.css" />
+  </head>
+  <body>
+    <section class="login-screen" data-login-screen>
+      <form class="login-card" data-login-form>
+        <div class="brand-row">
+          <span class="brand-mark">AG</span>
+          <div>
+            <strong>AutoGlobal Export</strong>
+            <span>Management Console</span>
+          </div>
+        </div>
+        <h1>Admin Login</h1>
+        <label>
+          <span>Username</span>
+          <input name="username" type="text" value="admin" autocomplete="username" required />
+        </label>
+        <label>
+          <span>Password</span>
+          <input name="password" type="password" value="admin123" autocomplete="current-password" required />
+        </label>
+        <button class="primary-button" type="submit">Login</button>
+        <p class="hint">Default development account: admin / admin123. Change it with environment variables before deployment.</p>
+      </form>
+    </section>
+
+    <div class="admin-app" data-admin-app hidden>
+      <aside class="sidebar">
+        <a class="brand-row compact" href="/" target="_blank" rel="noreferrer">
+          <span class="brand-mark">AG</span>
+          <div>
+            <strong>AutoGlobal</strong>
+            <span>Admin</span>
+          </div>
+        </a>
+        <nav class="side-nav" aria-label="Admin sections">
+          <button class="active" type="button" data-view="dashboard">Dashboard</button>
+          <button type="button" data-view="vehicles">Vehicles</button>
+          <button type="button" data-view="parts">Auto Parts</button>
+          <button type="button" data-view="inquiries">Inquiries</button>
+        </nav>
+        <button class="secondary-button" type="button" data-logout>Logout</button>
+      </aside>
+
+      <main class="workspace">
+        <header class="workspace-header">
+          <div>
+            <p class="eyebrow">Backend management</p>
+            <h1 data-page-title>Dashboard</h1>
+          </div>
+          <div class="header-actions">
+            <a class="secondary-button" href="/" target="_blank" rel="noreferrer">Open Website</a>
+            <button class="primary-button" type="button" data-refresh>Refresh</button>
+          </div>
+        </header>
+
+        <section class="view" data-view-panel="dashboard">
+          <div class="metric-grid">
+            <div class="metric-card">
+              <strong data-metric-vehicles>0</strong>
+              <span>Vehicles</span>
+            </div>
+            <div class="metric-card">
+              <strong data-metric-parts>0</strong>
+              <span>Auto Parts</span>
+            </div>
+            <div class="metric-card">
+              <strong data-metric-inquiries>0</strong>
+              <span>Inquiries</span>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <h2>Next Steps</h2>
+            </div>
+            <ul class="task-list">
+              <li>Add or import the first batch of export-ready vehicles.</li>
+              <li>Upload product images from the management forms.</li>
+              <li>Open the website to verify product cards and inquiry forms.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="view" data-view-panel="vehicles" hidden>
+          <div class="manager-grid">
+            <aside class="panel editor-panel">
+              <div class="panel-header">
+                <h2 data-editor-title>New Vehicle</h2>
+                <button class="secondary-button" type="button" data-reset-form>New</button>
+              </div>
+              <form class="record-form" data-record-form="vehicles">
+                <div class="form-grid" data-fields="vehicles"></div>
+                <button class="primary-button full" type="submit">Save Vehicle</button>
+              </form>
+            </aside>
+            <section class="panel list-panel">
+              <div class="panel-header wrap">
+                <h2>Vehicle Data</h2>
+                <div class="toolbar">
+                  <label class="file-button">
+                    Import CSV
+                    <input type="file" accept=".csv,text/csv" data-import-file="vehicles" />
+                  </label>
+                  <button class="secondary-button" type="button" data-export="vehicles">Export CSV</button>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead data-table-head="vehicles"></thead>
+                  <tbody data-table-body="vehicles"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" data-view-panel="parts" hidden>
+          <div class="manager-grid">
+            <aside class="panel editor-panel">
+              <div class="panel-header">
+                <h2 data-editor-title>New Auto Part</h2>
+                <button class="secondary-button" type="button" data-reset-form>New</button>
+              </div>
+              <form class="record-form" data-record-form="parts">
+                <div class="form-grid" data-fields="parts"></div>
+                <button class="primary-button full" type="submit">Save Auto Part</button>
+              </form>
+            </aside>
+            <section class="panel list-panel">
+              <div class="panel-header wrap">
+                <h2>Auto Parts Data</h2>
+                <div class="toolbar">
+                  <label class="file-button">
+                    Import CSV
+                    <input type="file" accept=".csv,text/csv" data-import-file="parts" />
+                  </label>
+                  <button class="secondary-button" type="button" data-export="parts">Export CSV</button>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead data-table-head="parts"></thead>
+                  <tbody data-table-body="parts"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" data-view-panel="inquiries" hidden>
+          <section class="panel list-panel">
+            <div class="panel-header wrap">
+              <h2>Customer Inquiries</h2>
+              <button class="secondary-button" type="button" data-refresh>Refresh</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Status</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Country</th>
+                    <th>Message</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody data-inquiries-body></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" data-toast role="status" aria-live="polite"></div>
+    <script src="/admin-system/app.js"></script>
+  </body>
+</html>

@@ -229,8 +229,38 @@ function loadParts() {
   return imported.length ? imported.map(mapImportedPart) : defaultParts;
 }
 
-const vehicles = loadVehicles();
-const parts = loadParts();
+async function loadApiData() {
+  if (location.protocol === "file:") {
+    return;
+  }
+
+  try {
+    const [vehicleResponse, partResponse] = await Promise.all([fetch("/api/vehicles"), fetch("/api/parts")]);
+    if (!vehicleResponse.ok || !partResponse.ok) {
+      return;
+    }
+
+    const vehiclePayload = await vehicleResponse.json();
+    const partPayload = await partResponse.json();
+    const apiVehicles = Array.isArray(vehiclePayload.items) ? vehiclePayload.items.map(mapImportedVehicle) : [];
+    const apiParts = Array.isArray(partPayload.items) ? partPayload.items.map(mapImportedPart) : [];
+
+    if (apiVehicles.length) {
+      vehicles = apiVehicles;
+      renderVehicles();
+    }
+
+    if (apiParts.length) {
+      parts = apiParts;
+      renderParts();
+    }
+  } catch {
+    // Keep local prototype data when the backend is not running.
+  }
+}
+
+let vehicles = loadVehicles();
+let parts = loadParts();
 const inquiryItems = new Map();
 let activeSearchTab = "vehicles";
 
@@ -367,6 +397,28 @@ function closeInquiry() {
   document.body.classList.remove("drawer-open");
 }
 
+async function submitInquiry(payload) {
+  if (location.protocol === "file:") {
+    return false;
+  }
+
+  try {
+    const response = await fetch("/api/inquiries", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...payload,
+        source_url: location.href,
+      }),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 function setActiveChip(chip, selector) {
   document.querySelectorAll(selector).forEach((item) => item.classList.remove("active"));
   chip.classList.add("active");
@@ -467,19 +519,40 @@ searchForm.addEventListener("submit", (event) => {
   );
 });
 
-document.querySelector("[data-contact-form]").addEventListener("submit", (event) => {
+document.querySelector("[data-contact-form]").addEventListener("submit", async (event) => {
   event.preventDefault();
-  event.currentTarget.reset();
-  showToast("Inquiry captured in the website prototype.");
+  const form = event.currentTarget;
+  const data = new FormData(form);
+  const saved = await submitInquiry({
+    name: data.get("name"),
+    email: data.get("email"),
+    country: data.get("country"),
+    whatsapp: data.get("whatsapp"),
+    message: data.get("message"),
+    product_type: "General",
+  });
+  form.reset();
+  showToast(saved ? "Inquiry submitted to the backend." : "Inquiry captured in the website prototype.");
 });
 
-document.querySelector("[data-drawer-form]").addEventListener("submit", (event) => {
+document.querySelector("[data-drawer-form]").addEventListener("submit", async (event) => {
   event.preventDefault();
-  event.currentTarget.reset();
+  const form = event.currentTarget;
+  const data = new FormData(form);
+  const items = [...inquiryItems.values()];
+  const saved = await submitInquiry({
+    name: data.get("email"),
+    email: data.get("email"),
+    country: data.get("destination"),
+    message: data.get("message") || `Selected products: ${items.map((item) => item.name).join(", ")}`,
+    product_type: items.some((item) => item.kind === "Vehicle") && items.some((item) => item.kind === "Auto Part") ? "Mixed" : items[0]?.kind || "General",
+    items,
+  });
+  form.reset();
   inquiryItems.clear();
   renderInquiryItems();
   closeInquiry();
-  showToast("Inquiry submitted in the website prototype.");
+  showToast(saved ? "Inquiry submitted to the backend." : "Inquiry submitted in the website prototype.");
 });
 
 window.addEventListener("scroll", elevateHeader, { passive: true });
@@ -488,3 +561,4 @@ renderVehicles();
 renderParts();
 renderInquiryItems();
 elevateHeader();
+loadApiData();

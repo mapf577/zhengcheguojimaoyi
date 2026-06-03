@@ -2,7 +2,61 @@
 
 ## 当前原型怎么上传
 
-当前版本是静态官网原型，没有真实后端和数据库。为了演示数据上传流程，后台上传页会把数据保存到浏览器 `localStorage`。
+当前项目现在有两个后台入口：
+
+- 真实后台管理系统：`http://localhost:3000/admin/`
+- 旧的静态上传原型：`prototype/admin.html`
+
+真实后台通过 Node 后端保存数据到 `backend/data/*.json`，上传图片保存到 `backend/uploads/`。
+
+旧静态上传原型没有真实后端和数据库，只会把数据保存到浏览器 `localStorage`，保留它是为了离线演示。
+
+## 真实后台怎么上传
+
+启动后端：
+
+```text
+npm start
+```
+
+打开后台：
+
+```text
+http://localhost:3000/admin/
+```
+
+默认开发账号：
+
+```text
+admin / admin123
+```
+
+真实后台支持：
+
+- 整车新增、编辑、删除。
+- 零配件新增、编辑、删除。
+- CSV 批量导入。
+- CSV 导出。
+- 图片上传。
+- 询盘查看和状态更新。
+
+官网入口：
+
+```text
+http://localhost:3000/
+```
+
+通过这个地址访问官网时，页面会读取后端 API：
+
+```text
+/api/vehicles
+/api/parts
+/api/inquiries
+```
+
+## 静态原型怎么上传
+
+静态原型入口：
 
 入口：
 

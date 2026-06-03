@@ -1,0 +1,12 @@
+{
+  "name": "vehicle-export-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vehicle export and auto parts platform prototype with a lightweight backend admin system.",
+  "scripts": {
+    "start": "node backend/server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

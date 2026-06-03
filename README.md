@@ -4,13 +4,37 @@ This repository contains the first design and static prototype for an overseas v
 
 ## Open The Prototype
 
-Website:
+Start the lightweight backend:
+
+```text
+npm start
+```
+
+Website served by the backend:
+
+```text
+http://localhost:3000/
+```
+
+Real admin console:
+
+```text
+http://localhost:3000/admin/
+```
+
+Default development login:
+
+```text
+admin / admin123
+```
+
+Static prototype file:
 
 ```text
 prototype/index.html
 ```
 
-Admin data import:
+Legacy static import prototype:
 
 ```text
 prototype/admin.html
@@ -26,11 +50,16 @@ prototype/admin.html
 - Vehicle and auto parts landing page.
 - Product filters.
 - Inquiry drawer.
+- Lightweight backend API with JSON persistence.
+- Admin login.
+- Vehicle and auto parts CRUD.
+- Image upload to `backend/uploads`.
+- Inquiry management.
 - CSV import for vehicles and auto parts.
 - Manual data entry.
 - Saved data list.
 - CSV export.
-- Local prototype data stored in browser `localStorage`.
+- Local static prototype data stored in browser `localStorage`.
 
 ## Security Note
 
