@@ -639,7 +639,8 @@
 - 默认英文。
 - 官网和后台支持中文 / 英文切换。
 - URL 预留语言前缀。
-- 产品数据本身预留中英文内容字段，例如 `name_en`、`name_zh`、`description_en`、`description_zh`。
+- 产品数据支持中英文内容字段，例如 `title_en`、`title_zh`、`description_en`、`description_zh`。
+- 产品卡片和产品详情按当前语言优先展示对应语言内容。
 
 URL 示例：
 

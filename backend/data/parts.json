@@ -5,6 +5,8 @@
     "category": "Brake",
     "brand": "OEM",
     "name": "Ceramic Brake Pad Set",
+    "title_en": "Ceramic Brake Pad Set",
+    "title_zh": "陶瓷刹车片套装",
     "oe_numbers": "04465-0K340",
     "part_number": "BP-0K340",
     "applicable_brand": "Toyota",
@@ -20,6 +22,7 @@
     "currency": "USD",
     "images": "/assets/hero-export-yard.png",
     "description_en": "Ceramic brake pad set for pickup and SUV service channels.",
+    "description_zh": "适用于皮卡和 SUV 维修渠道的陶瓷刹车片套装，适合批发供应。",
     "created_at": "2026-06-03T00:00:00.000Z",
     "updated_at": "2026-06-03T00:00:00.000Z"
   },
@@ -29,6 +32,8 @@
     "category": "Engine",
     "brand": "OEM",
     "name": "Engine Oil Filter",
+    "title_en": "Engine Oil Filter",
+    "title_zh": "发动机机油滤清器",
     "oe_numbers": "90915-YZZE1",
     "part_number": "OF-YZZE1",
     "applicable_brand": "Toyota",
@@ -44,6 +49,7 @@
     "currency": "USD",
     "images": "/assets/hero-export-yard.png",
     "description_en": "High-rotation engine oil filter for wholesale supply.",
+    "description_zh": "高周转发动机机油滤清器，适合维修厂和配件批发商采购。",
     "created_at": "2026-06-03T00:00:00.000Z",
     "updated_at": "2026-06-03T00:00:00.000Z"
   }

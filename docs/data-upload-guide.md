@@ -39,6 +39,7 @@ admin / admin123
 - CSV 导出。
 - 图片上传。
 - 询盘查看和状态更新。
+- 产品中英文标题和描述维护。
 
 官网入口：
 
@@ -174,6 +175,25 @@ VEH-BYD-SONG-001-1.jpg;VEH-BYD-SONG-001-2.jpg
 ```
 
 系统导入时根据 SKU 和图片文件名自动匹配。
+
+## 产品多语言字段
+
+整车和配件都支持以下多语言字段：
+
+```text
+title_en
+title_zh
+description_en
+description_zh
+```
+
+官网显示规则：
+
+- 当前语言为英文时，优先使用 `title_en` 和 `description_en`。
+- 当前语言为中文时，优先使用 `title_zh` 和 `description_zh`。
+- 如果对应语言字段为空，会回退到原始产品名称或英文描述。
+
+CSV 模板已经包含这些字段，后台手动新增表单也可以维护这些字段。
 
 ## 当前原型的图片字段
 

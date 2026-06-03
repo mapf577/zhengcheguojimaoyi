@@ -49,6 +49,8 @@ prototype/admin.html
 
 - Vehicle and auto parts landing page.
 - Chinese / English language switching for the website and admin console.
+- Multilingual product fields: `title_en`, `title_zh`, `description_en`, `description_zh`.
+- Product detail drawer with localized title, description, specs, image, and inquiry action.
 - Product filters.
 - Inquiry drawer.
 - Lightweight backend API with JSON persistence.
@@ -80,7 +82,7 @@ http://localhost:3000/admin/
 
 Use the `中文 / English` button in the sidebar.
 
-Product names and imported product descriptions keep the original uploaded values. For full multilingual product content, add fields such as `name_zh`, `description_zh`, `name_en`, and `description_en` in the next data-model iteration.
+Product cards and detail drawers prefer `title_zh` / `description_zh` when Chinese is selected, and `title_en` / `description_en` when English is selected. If a localized field is empty, the website falls back to the original uploaded values.
 
 ## Security Note
 

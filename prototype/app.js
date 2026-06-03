@@ -189,6 +189,22 @@ const siteTranslations = {
     "drawer.messagePlaceholder": "Quantity, trade term, configuration, OE number...",
     "drawer.submit": "Submit Inquiry",
     "drawer.empty": "No selected products yet.",
+    "detail.eyebrow": "Product detail",
+    "detail.specifications": "Specifications",
+    "detail.descriptionFallback": "No detailed description has been added yet.",
+    "detail.addInquiry": "Add To Inquiry",
+    "detail.contact": "Contact Sales",
+    "detail.vehicleType": "Vehicle Type",
+    "detail.energyType": "Energy Type",
+    "detail.year": "Year",
+    "detail.steering": "Steering",
+    "detail.stockStatus": "Stock Status",
+    "detail.price": "Price",
+    "detail.exportPort": "Export Port",
+    "detail.oeNumber": "OE Number",
+    "detail.fitment": "Fitment",
+    "detail.moq": "MOQ",
+    "detail.leadTime": "Lead Time",
     "footer.copy": "Vehicle export and OEM auto parts supply",
     "footer.backTop": "Back to top",
     "toast.added": "added to inquiry.",
@@ -263,6 +279,22 @@ const siteTranslations = {
     "drawer.messagePlaceholder": "数量、贸易条款、配置、OE 编号...",
     "drawer.submit": "提交询盘",
     "drawer.empty": "还没有选择产品。",
+    "detail.eyebrow": "产品详情",
+    "detail.specifications": "参数信息",
+    "detail.descriptionFallback": "暂未添加详细描述。",
+    "detail.addInquiry": "加入询盘",
+    "detail.contact": "联系销售",
+    "detail.vehicleType": "车辆类型",
+    "detail.energyType": "能源类型",
+    "detail.year": "年份",
+    "detail.steering": "方向盘",
+    "detail.stockStatus": "库存状态",
+    "detail.price": "价格",
+    "detail.exportPort": "出口港",
+    "detail.oeNumber": "OE 编号",
+    "detail.fitment": "适配车型",
+    "detail.moq": "最小起订量",
+    "detail.leadTime": "交期",
     "footer.copy": "整车出口与 OEM 汽车零配件供应",
     "footer.backTop": "返回顶部",
     "toast.added": "已加入询盘。",
@@ -347,6 +379,20 @@ function compact(values) {
   return values.filter((value) => String(value || "").trim()).map((value) => String(value).trim());
 }
 
+function localizedName(item) {
+  if (currentLang === "zh" && item.nameZh) {
+    return item.nameZh;
+  }
+  return item.nameEn || item.name || "";
+}
+
+function localizedDescription(item) {
+  if (currentLang === "zh" && item.descriptionZh) {
+    return item.descriptionZh;
+  }
+  return item.descriptionEn || item.description || "";
+}
+
 function mapImportedVehicle(record) {
   const condition = String(record.condition || "").trim();
   const vehicleType = String(record.vehicle_type || "").trim();
@@ -357,6 +403,10 @@ function mapImportedVehicle(record) {
   return {
     id: record.sku,
     name: compact([record.brand, record.model, record.trim]).join(" "),
+    nameEn: record.title_en || record.name_en || compact([record.brand, record.model, record.trim]).join(" "),
+    nameZh: record.title_zh || record.name_zh || "",
+    descriptionEn: record.description_en || "",
+    descriptionZh: record.description_zh || "",
     type,
     badge: compact([condition, energy || vehicleType]).join(" "),
     specs: compact([
@@ -370,6 +420,7 @@ function mapImportedVehicle(record) {
     stock: record.stock_status || "Ask sales",
     media: type === "Commercial" ? "truck" : type === "Used" ? "used" : String(type || "ev").toLowerCase(),
     image: getFirstImage(record.images),
+    record,
   };
 }
 
@@ -386,6 +437,10 @@ function mapImportedPart(record) {
   return {
     id: record.sku,
     name,
+    nameEn: record.title_en || record.name_en || name,
+    nameZh: record.title_zh || record.name_zh || "",
+    descriptionEn: record.description_en || "",
+    descriptionZh: record.description_zh || "",
     category: record.category || "Other",
     oe: record.oe_numbers || record.part_number || "OE matching",
     fitment: compact([record.applicable_brand, record.applicable_model]).join(" / ") || "Model-specific",
@@ -393,6 +448,7 @@ function mapImportedPart(record) {
     lead: record.stock_status || (record.lead_time_days ? `${record.lead_time_days} days` : "Ask sales"),
     mark: mark || "AP",
     image: getFirstImage(record.images),
+    record,
   };
 }
 
@@ -446,6 +502,9 @@ const menuToggle = document.querySelector(".menu-toggle");
 const vehicleGrid = document.querySelector("[data-vehicle-grid]");
 const partGrid = document.querySelector("[data-part-grid]");
 const inquiryDrawer = document.querySelector("[data-inquiry-drawer]");
+const detailDrawer = document.querySelector("[data-detail-drawer]");
+const detailTitle = document.querySelector("[data-detail-title]");
+const detailContent = document.querySelector("[data-detail-content]");
 const inquiryItemsEl = document.querySelector("[data-inquiry-items]");
 const toast = document.querySelector("[data-toast]");
 const searchForm = document.querySelector("[data-search-form]");
@@ -476,7 +535,7 @@ function makeVehicleCard(vehicle) {
     </div>
     <div class="product-body">
       <div>
-        <h3>${vehicle.name}</h3>
+        <h3>${localizedName(vehicle)}</h3>
         <div class="spec-list">
           ${vehicle.specs.map((spec) => `<span>${spec}</span>`).join("")}
         </div>
@@ -486,7 +545,7 @@ function makeVehicleCard(vehicle) {
         <span class="stock">${vehicle.stock}</span>
       </div>
       <div class="card-actions">
-        <button class="ghost-button" type="button" data-open-inquiry>${t("action.details")}</button>
+        <button class="ghost-button" type="button" data-open-detail="${vehicle.id}">${t("action.details")}</button>
         <button class="solid-button" type="button" data-add-inquiry="${vehicle.id}" data-kind="Vehicle">${t("action.getQuote")}</button>
       </div>
     </div>
@@ -502,7 +561,7 @@ function makePartCard(part) {
     <div class="part-visual ${part.image ? "has-image" : ""}" ${imageStyle}>${part.image ? "" : part.mark}</div>
     <div class="part-body">
       <div>
-        <h3>${part.name}</h3>
+        <h3>${localizedName(part)}</h3>
         <div class="part-meta">
           <span>${part.oe}</span>
           <span>${part.fitment}</span>
@@ -510,7 +569,10 @@ function makePartCard(part) {
           <span>${part.lead}</span>
         </div>
       </div>
-      <button class="solid-button" type="button" data-add-inquiry="${part.id}" data-kind="Auto Part">${t("action.askQuote")}</button>
+      <div class="card-actions">
+        <button class="ghost-button" type="button" data-open-detail="${part.id}">${t("action.details")}</button>
+        <button class="solid-button" type="button" data-add-inquiry="${part.id}" data-kind="Auto Part">${t("action.askQuote")}</button>
+      </div>
     </div>
   `;
   return card;
@@ -529,12 +591,12 @@ function renderParts(filter = "all") {
 function getProductById(id) {
   const vehicle = vehicles.find((item) => item.id === id);
   if (vehicle) {
-    return { id, kind: "Vehicle", name: vehicle.name, meta: `${vehicle.type} | ${vehicle.stock}` };
+    return { id, kind: "Vehicle", name: localizedName(vehicle), meta: `${vehicle.type} | ${vehicle.stock}` };
   }
 
   const part = parts.find((item) => item.id === id);
   if (part) {
-    return { id, kind: "Auto Part", name: part.name, meta: `${part.oe} | ${part.fitment}` };
+    return { id, kind: "Auto Part", name: localizedName(part), meta: `${part.oe} | ${part.fitment}` };
   }
 
   return null;
@@ -571,6 +633,92 @@ function openInquiry() {
 
 function closeInquiry() {
   inquiryDrawer.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("drawer-open");
+}
+
+function findProduct(id) {
+  const vehicle = vehicles.find((item) => item.id === id);
+  if (vehicle) {
+    return { kind: "Vehicle", item: vehicle };
+  }
+  const part = parts.find((item) => item.id === id);
+  if (part) {
+    return { kind: "Auto Part", item: part };
+  }
+  return null;
+}
+
+function specBlock(label, value) {
+  if (!String(value || "").trim()) {
+    return "";
+  }
+  return `
+    <div>
+      <span>${label}</span>
+      <strong>${value}</strong>
+    </div>
+  `;
+}
+
+function renderDetail(product) {
+  const { kind, item } = product;
+  const isVehicle = kind === "Vehicle";
+  const record = item.record || {};
+  const title = localizedName(item);
+  const description = localizedDescription(item) || t("detail.descriptionFallback");
+  const specs = isVehicle
+    ? [
+        [t("detail.vehicleType"), record.vehicle_type || item.type],
+        [t("detail.energyType"), record.energy_type || item.type],
+        [t("detail.year"), record.year || item.specs?.[0]],
+        [t("detail.steering"), record.steering || ""],
+        [t("detail.stockStatus"), record.stock_status || item.stock],
+        [t("detail.price"), item.price],
+        [t("detail.exportPort"), record.export_port || ""],
+      ]
+    : [
+        [t("parts.title"), record.category || item.category],
+        [t("detail.oeNumber"), record.oe_numbers || item.oe],
+        [t("detail.fitment"), compact([record.applicable_brand, record.applicable_model]).join(" / ") || item.fitment],
+        [t("detail.moq"), record.moq || item.moq],
+        [t("detail.leadTime"), record.lead_time_days ? `${record.lead_time_days} days` : item.lead],
+        [t("detail.price"), buildPrice(record)],
+      ];
+
+  detailTitle.textContent = title;
+  detailContent.innerHTML = `
+    <div class="detail-visual ${item.image ? "has-image" : ""}" ${item.image ? `style="background-image:url('${item.image.replace(/'/g, "%27")}')"` : ""}></div>
+    <div class="detail-summary">
+      <h3>${title}</h3>
+      <p>${description}</p>
+    </div>
+    <div>
+      <p class="eyebrow">${t("detail.specifications")}</p>
+      <div class="detail-specs">
+        ${specs.map(([label, value]) => specBlock(label, value)).join("")}
+      </div>
+    </div>
+    <div class="detail-actions">
+      <button class="solid-button" type="button" data-add-inquiry="${item.id}" data-kind="${kind}">${t("detail.addInquiry")}</button>
+      <button class="ghost-button" type="button" data-open-inquiry>${t("detail.contact")}</button>
+    </div>
+  `;
+}
+
+function openDetail(id) {
+  const product = findProduct(id);
+  if (!product) {
+    return;
+  }
+  renderDetail(product);
+  detailDrawer.dataset.currentProductId = id;
+  detailDrawer.setAttribute("aria-hidden", "false");
+  document.body.classList.add("drawer-open");
+}
+
+function closeDetail() {
+  detailDrawer.setAttribute("aria-hidden", "true");
+  detailDrawer.dataset.currentProductId = "";
   document.body.classList.remove("drawer-open");
 }
 
@@ -646,12 +794,24 @@ document.addEventListener("click", (event) => {
   }
 
   if (target.closest("[data-open-inquiry]")) {
+    closeDetail();
     openInquiry();
     return;
   }
 
   if (target.closest("[data-close-inquiry]")) {
     closeInquiry();
+    return;
+  }
+
+  const detailButton = target.closest("[data-open-detail]");
+  if (detailButton) {
+    openDetail(detailButton.dataset.openDetail);
+    return;
+  }
+
+  if (target.closest("[data-close-detail]")) {
+    closeDetail();
     return;
   }
 
@@ -664,6 +824,10 @@ document.addEventListener("click", (event) => {
 
   if (target === inquiryDrawer) {
     closeInquiry();
+  }
+
+  if (target === detailDrawer) {
+    closeDetail();
   }
 });
 
@@ -739,6 +903,9 @@ document.querySelector("[data-lang-toggle]").addEventListener("click", () => {
   renderVehicles(document.querySelector("[data-vehicle-filter].active")?.dataset.vehicleFilter || "all");
   renderParts(document.querySelector("[data-part-filter].active")?.dataset.partFilter || "all");
   renderInquiryItems();
+  if (detailDrawer.getAttribute("aria-hidden") === "false" && detailDrawer.dataset.currentProductId) {
+    openDetail(detailDrawer.dataset.currentProductId);
+  }
 });
 
 window.addEventListener("scroll", elevateHeader, { passive: true });

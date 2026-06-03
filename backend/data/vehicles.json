@@ -4,6 +4,8 @@
     "sku": "VEH-BYD-SONG-001",
     "brand": "BYD",
     "model": "Song Plus EV",
+    "title_en": "BYD Song Plus EV 2025",
+    "title_zh": "比亚迪宋 PLUS EV 2025 款",
     "year": "2025",
     "trim": "Flagship",
     "condition": "New",
@@ -25,6 +27,7 @@
     "export_port": "Shanghai",
     "images": "/assets/hero-export-yard.png",
     "description_en": "Export-ready new energy SUV for overseas dealers.",
+    "description_zh": "面向海外经销商的可出口新能源 SUV，支持批量询价和出口发运。",
     "created_at": "2026-06-03T00:00:00.000Z",
     "updated_at": "2026-06-03T00:00:00.000Z"
   },
@@ -33,6 +36,8 @@
     "sku": "VEH-FOTON-LT-001",
     "brand": "Foton",
     "model": "Light Truck",
+    "title_en": "Foton 3.5T Light Truck",
+    "title_zh": "福田 3.5 吨轻卡",
     "year": "2025",
     "trim": "3.5T",
     "condition": "New",
@@ -54,6 +59,7 @@
     "export_port": "Tianjin",
     "images": "/assets/hero-export-yard.png",
     "description_en": "Commercial truck available for batch export projects.",
+    "description_zh": "适合海外工程和车队采购的商用轻卡，可按项目批量供应。",
     "created_at": "2026-06-03T00:00:00.000Z",
     "updated_at": "2026-06-03T00:00:00.000Z"
   }
