@@ -202,8 +202,12 @@ textarea:focus {
 
 .admin-app {
   display: grid;
-  grid-template-columns: 224px minmax(0, 1fr);
+  grid-template-columns: 188px minmax(0, 1fr);
   min-height: 100vh;
+}
+
+.admin-app.sidebar-collapsed {
+  grid-template-columns: 72px minmax(0, 1fr);
 }
 
 .sidebar {
@@ -215,6 +219,40 @@ textarea:focus {
   padding: 18px 14px;
   color: var(--nav-ink);
   background: var(--nav);
+  overflow: visible;
+}
+
+.sidebar-toggle {
+  position: absolute;
+  top: 78px;
+  right: -13px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  color: #fff;
+  background: var(--nav);
+  box-shadow: 0 8px 18px rgba(18, 27, 38, 0.18);
+  cursor: pointer;
+}
+
+.sidebar-toggle::before {
+  content: "<";
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.admin-app.sidebar-collapsed .sidebar-toggle::before {
+  content: ">";
+}
+
+.sidebar-toggle:hover {
+  border-color: rgba(255, 255, 255, 0.44);
+  background: #2c333b;
 }
 
 .side-nav {
@@ -271,6 +309,7 @@ textarea:focus {
 }
 
 .sidebar [data-logout] {
+  position: relative;
   margin-top: auto;
   color: var(--nav-ink);
   border-color: rgba(255, 255, 255, 0.18);
@@ -280,6 +319,54 @@ textarea:focus {
 .sidebar [data-logout]:hover {
   border-color: rgba(255, 255, 255, 0.32);
   background: rgba(255, 255, 255, 0.14);
+}
+
+.admin-app.sidebar-collapsed .sidebar {
+  align-items: stretch;
+  padding: 18px 10px;
+}
+
+.admin-app.sidebar-collapsed .brand-row.compact {
+  justify-content: center;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+}
+
+.admin-app.sidebar-collapsed .sidebar .brand-row div {
+  display: none;
+}
+
+.admin-app.sidebar-collapsed .side-nav button,
+.admin-app.sidebar-collapsed .sidebar [data-logout] {
+  justify-content: center;
+  min-width: 0;
+  padding: 0;
+  color: transparent;
+  text-align: center;
+}
+
+.admin-app.sidebar-collapsed .side-nav button::before {
+  content: none;
+}
+
+.admin-app.sidebar-collapsed .side-nav button::after,
+.admin-app.sidebar-collapsed .sidebar [data-logout]::after {
+  content: attr(data-short);
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--nav-muted);
+  font-weight: 900;
+}
+
+.admin-app.sidebar-collapsed .side-nav button span {
+  display: none;
+}
+
+.admin-app.sidebar-collapsed .side-nav button.active::after,
+.admin-app.sidebar-collapsed .sidebar [data-logout]::after {
+  color: #fff;
 }
 
 .workspace {
@@ -433,6 +520,14 @@ textarea:focus {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 14px;
+}
+
+.metric-card,
+panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
 }
 
 .metric-card,
@@ -804,17 +899,64 @@ tbody tr:last-child td {
     grid-template-columns: 1fr;
   }
 
+  .admin-app.sidebar-collapsed {
+    grid-template-columns: 1fr;
+  }
+
   .sidebar {
     position: static;
     height: auto;
+  }
+
+  .sidebar-toggle {
+    display: none;
   }
 
   .brand-row.compact {
     margin-bottom: 14px;
   }
 
+  .admin-app.sidebar-collapsed .sidebar {
+    padding: 18px 14px;
+  }
+
+  .admin-app.sidebar-collapsed .brand-row.compact {
+    justify-content: flex-start;
+    margin-bottom: 14px;
+    padding-bottom: 18px;
+  }
+
+  .admin-app.sidebar-collapsed .sidebar .brand-row div {
+    display: block;
+  }
+
   .side-nav {
     grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  }
+
+  .admin-app.sidebar-collapsed .side-nav button,
+  .admin-app.sidebar-collapsed .sidebar [data-logout] {
+    justify-content: flex-start;
+    padding: 0 12px 0 30px;
+    color: var(--nav-muted);
+    text-align: left;
+  }
+
+  .admin-app.sidebar-collapsed .side-nav button.active {
+    color: #fff;
+  }
+
+  .admin-app.sidebar-collapsed .side-nav button::before {
+    content: "";
+  }
+
+  .admin-app.sidebar-collapsed .side-nav button::after,
+  .admin-app.sidebar-collapsed .sidebar [data-logout]::after {
+    content: none;
+  }
+
+  .admin-app.sidebar-collapsed .side-nav button span {
+    display: block;
   }
 
   .sidebar [data-logout] {

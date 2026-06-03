@@ -39,14 +39,15 @@
             <span data-i18n="brand.admin">Admin</span>
           </div>
         </a>
+        <button class="sidebar-toggle" type="button" aria-expanded="true" aria-label="Collapse sidebar" data-sidebar-toggle></button>
         <nav class="side-nav" aria-label="Admin sections">
-          <button class="active" type="button" data-view="dashboard"><span data-i18n="nav.dashboard">Dashboard</span></button>
-          <button type="button" data-view="vehicles"><span data-i18n="nav.vehicles">Vehicles</span></button>
-          <button type="button" data-view="parts"><span data-i18n="nav.parts">Auto Parts</span></button>
-          <button type="button" data-view="inquiries"><span data-i18n="nav.inquiries">Inquiries</span></button>
-          <button type="button" data-view="settings"><span data-i18n="nav.settings">Settings</span></button>
+          <button class="active" type="button" data-view="dashboard" data-short="D"><span data-i18n="nav.dashboard">Dashboard</span></button>
+          <button type="button" data-view="vehicles" data-short="V"><span data-i18n="nav.vehicles">Vehicles</span></button>
+          <button type="button" data-view="parts" data-short="P"><span data-i18n="nav.parts">Auto Parts</span></button>
+          <button type="button" data-view="inquiries" data-short="I"><span data-i18n="nav.inquiries">Inquiries</span></button>
+          <button type="button" data-view="settings" data-short="S"><span data-i18n="nav.settings">Settings</span></button>
         </nav>
-        <button class="secondary-button" type="button" data-logout data-i18n="action.logout">Logout</button>
+        <button class="secondary-button" type="button" data-logout data-short="L" data-i18n="action.logout">Logout</button>
       </aside>
 
       <main class="workspace">
@@ -251,6 +252,28 @@
     </aside>
 
     <div class="toast" data-toast role="status" aria-live="polite"></div>
+    <script>
+      (() => {
+        const adminApp = document.querySelector("[data-admin-app]");
+        const sidebarToggle = document.querySelector("[data-sidebar-toggle]");
+        if (!adminApp || !sidebarToggle) {
+          return;
+        }
+
+        const storageKey = "admin_sidebar_collapsed";
+        const setSidebarCollapsed = (collapsed) => {
+          adminApp.classList.toggle("sidebar-collapsed", collapsed);
+          localStorage.setItem(storageKey, String(collapsed));
+          sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
+          sidebarToggle.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
+        };
+
+        setSidebarCollapsed(localStorage.getItem(storageKey) === "true");
+        sidebarToggle.addEventListener("click", () => {
+          setSidebarCollapsed(!adminApp.classList.contains("sidebar-collapsed"));
+        });
+      })();
+    </script>
     <script src="/admin-system/app.js"></script>
   </body>
 </html>
