@@ -89,69 +89,90 @@
         </section>
 
         <section class="view" data-view-panel="vehicles" hidden>
-          <div class="manager-grid">
-            <aside class="panel editor-panel">
-              <div class="panel-header">
-                <h2 data-editor-title>New Vehicle</h2>
-                <button class="secondary-button" type="button" data-reset-form data-i18n="action.new">New</button>
+          <section class="panel list-panel">
+            <div class="panel-header wrap">
+              <h2 data-i18n="vehicles.data">Vehicle Data</h2>
+              <div class="toolbar">
+                <button class="primary-button" type="button" data-new-record="vehicles" data-i18n="action.addVehicle">Add Vehicle</button>
+                <label class="file-button">
+                  <span data-i18n="action.importCsv">Import CSV</span>
+                  <input type="file" accept=".csv,text/csv" data-import-file="vehicles" />
+                </label>
+                <button class="secondary-button" type="button" data-export="vehicles" data-i18n="action.exportCsv">Export CSV</button>
               </div>
-              <form class="record-form" data-record-form="vehicles">
-                <div class="form-grid" data-fields="vehicles"></div>
-                <button class="primary-button full" type="submit" data-i18n="action.saveVehicle">Save Vehicle</button>
-              </form>
-            </aside>
-            <section class="panel list-panel">
-              <div class="panel-header wrap">
-                <h2 data-i18n="vehicles.data">Vehicle Data</h2>
-                <div class="toolbar">
-                  <label class="file-button">
-                    <span data-i18n="action.importCsv">Import CSV</span>
-                    <input type="file" accept=".csv,text/csv" data-import-file="vehicles" />
-                  </label>
-                  <button class="secondary-button" type="button" data-export="vehicles" data-i18n="action.exportCsv">Export CSV</button>
-                </div>
-              </div>
-              <div class="table-wrap">
-                <table>
-                  <thead data-table-head="vehicles"></thead>
-                  <tbody data-table-body="vehicles"></tbody>
-                </table>
-              </div>
-            </section>
-          </div>
+            </div>
+            <div class="product-toolbar">
+              <input type="search" data-search-records="vehicles" data-i18n-placeholder="filter.searchVehicles" placeholder="Search SKU, brand, model..." />
+              <select data-filter-records="vehicles" data-filter-field="energy_type">
+                <option value="" data-i18n="filter.allEnergy">All energy</option>
+                <option>EV</option>
+                <option>PHEV</option>
+                <option>Gasoline</option>
+                <option>Diesel</option>
+              </select>
+              <select data-filter-records="vehicles" data-filter-field="vehicle_type">
+                <option value="" data-i18n="filter.allVehicleTypes">All types</option>
+                <option>SUV</option>
+                <option>Sedan</option>
+                <option>Commercial</option>
+                <option>Truck</option>
+                <option>Van</option>
+              </select>
+              <select data-filter-records="vehicles" data-filter-field="stock_status">
+                <option value="" data-i18n="filter.allStock">All stock</option>
+                <option>In Stock</option>
+                <option>Factory Order</option>
+                <option>Sold</option>
+                <option>Draft</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead data-table-head="vehicles"></thead>
+                <tbody data-table-body="vehicles"></tbody>
+              </table>
+            </div>
+          </section>
         </section>
 
         <section class="view" data-view-panel="parts" hidden>
-          <div class="manager-grid">
-            <aside class="panel editor-panel">
-              <div class="panel-header">
-                <h2 data-editor-title>New Auto Part</h2>
-                <button class="secondary-button" type="button" data-reset-form data-i18n="action.new">New</button>
+          <section class="panel list-panel">
+            <div class="panel-header wrap">
+              <h2 data-i18n="parts.data">Auto Parts Data</h2>
+              <div class="toolbar">
+                <button class="primary-button" type="button" data-new-record="parts" data-i18n="action.addPart">Add Auto Part</button>
+                <label class="file-button">
+                  <span data-i18n="action.importCsv">Import CSV</span>
+                  <input type="file" accept=".csv,text/csv" data-import-file="parts" />
+                </label>
+                <button class="secondary-button" type="button" data-export="parts" data-i18n="action.exportCsv">Export CSV</button>
               </div>
-              <form class="record-form" data-record-form="parts">
-                <div class="form-grid" data-fields="parts"></div>
-                <button class="primary-button full" type="submit" data-i18n="action.savePart">Save Auto Part</button>
-              </form>
-            </aside>
-            <section class="panel list-panel">
-              <div class="panel-header wrap">
-                <h2 data-i18n="parts.data">Auto Parts Data</h2>
-                <div class="toolbar">
-                  <label class="file-button">
-                    <span data-i18n="action.importCsv">Import CSV</span>
-                    <input type="file" accept=".csv,text/csv" data-import-file="parts" />
-                  </label>
-                  <button class="secondary-button" type="button" data-export="parts" data-i18n="action.exportCsv">Export CSV</button>
-                </div>
-              </div>
-              <div class="table-wrap">
-                <table>
-                  <thead data-table-head="parts"></thead>
-                  <tbody data-table-body="parts"></tbody>
-                </table>
-              </div>
-            </section>
-          </div>
+            </div>
+            <div class="product-toolbar">
+              <input type="search" data-search-records="parts" data-i18n-placeholder="filter.searchParts" placeholder="Search SKU, name, OE number..." />
+              <select data-filter-records="parts" data-filter-field="category">
+                <option value="" data-i18n="filter.allCategories">All categories</option>
+                <option>Brake</option>
+                <option>Engine</option>
+                <option>Electrical</option>
+                <option>Body</option>
+                <option>Chassis</option>
+              </select>
+              <select data-filter-records="parts" data-filter-field="stock_status">
+                <option value="" data-i18n="filter.allStock">All stock</option>
+                <option>In Stock</option>
+                <option>Factory Order</option>
+                <option>Sold</option>
+                <option>Draft</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead data-table-head="parts"></thead>
+                <tbody data-table-body="parts"></tbody>
+              </table>
+            </div>
+          </section>
         </section>
 
         <section class="view" data-view-panel="inquiries" hidden>
@@ -180,6 +201,23 @@
         </section>
       </main>
     </div>
+
+    <aside class="record-drawer" aria-hidden="true" data-record-drawer>
+      <div class="record-drawer-backdrop" data-close-record-drawer></div>
+      <section class="record-drawer-panel" aria-label="Product editor">
+        <header class="record-drawer-header">
+          <h2 data-editor-title>New Record</h2>
+          <button class="icon-button close-button" type="button" aria-label="Close editor" data-close-record-drawer></button>
+        </header>
+        <form class="record-form drawer-record-form" data-record-form>
+          <div class="form-grid" data-fields></div>
+          <footer class="drawer-actions">
+            <button class="secondary-button" type="button" data-close-record-drawer data-i18n="action.cancel">Cancel</button>
+            <button class="primary-button" type="submit" data-save-record>Save</button>
+          </footer>
+        </form>
+      </section>
+    </aside>
 
     <div class="toast" data-toast role="status" aria-live="polite"></div>
     <script src="/admin-system/app.js"></script>

@@ -84,9 +84,12 @@ const adminTranslations = {
     "action.openWebsite": "Open Website",
     "action.refresh": "Refresh",
     "action.new": "New",
+    "action.addVehicle": "Add Vehicle",
+    "action.addPart": "Add Auto Part",
     "action.edit": "Edit",
     "action.delete": "Delete",
     "action.email": "Email",
+    "action.cancel": "Cancel",
     "action.importCsv": "Import CSV",
     "action.exportCsv": "Export CSV",
     "action.saveVehicle": "Save Vehicle",
@@ -108,7 +111,15 @@ const adminTranslations = {
     "table.actions": "Actions",
     "empty.vehicles": "No vehicles yet.",
     "empty.parts": "No auto parts yet.",
+    "empty.noMatches": "No matching records.",
+    "empty.adjustFilters": "Adjust search keywords or filters.",
     "empty.inquiries": "No inquiries yet.",
+    "filter.searchVehicles": "Search SKU, brand, model...",
+    "filter.searchParts": "Search SKU, name, OE number...",
+    "filter.allEnergy": "All energy",
+    "filter.allVehicleTypes": "All types",
+    "filter.allCategories": "All categories",
+    "filter.allStock": "All stock",
     "singular.vehicle": "Vehicle",
     "singular.part": "Auto Part",
     "toast.chooseImage": "Choose an image first.",
@@ -140,9 +151,12 @@ const adminTranslations = {
     "action.openWebsite": "打开官网",
     "action.refresh": "刷新",
     "action.new": "新增",
+    "action.addVehicle": "新增整车",
+    "action.addPart": "新增配件",
     "action.edit": "编辑",
     "action.delete": "删除",
     "action.email": "发邮件",
+    "action.cancel": "取消",
     "action.importCsv": "导入 CSV",
     "action.exportCsv": "导出 CSV",
     "action.saveVehicle": "保存整车",
@@ -164,7 +178,15 @@ const adminTranslations = {
     "table.actions": "操作",
     "empty.vehicles": "暂无整车数据。",
     "empty.parts": "暂无零配件数据。",
+    "empty.noMatches": "没有找到匹配结果。",
+    "empty.adjustFilters": "请调整搜索关键词或筛选条件。",
     "empty.inquiries": "暂无询盘。",
+    "filter.searchVehicles": "搜索 SKU、品牌、车型...",
+    "filter.searchParts": "搜索 SKU、名称、OE 编号...",
+    "filter.allEnergy": "全部能源",
+    "filter.allVehicleTypes": "全部类型",
+    "filter.allCategories": "全部分类",
+    "filter.allStock": "全部库存",
     "singular.vehicle": "整车",
     "singular.part": "零配件",
     "toast.chooseImage": "请先选择图片。",
@@ -256,6 +278,20 @@ const state = {
     vehicles: null,
     parts: null,
   },
+  drawerType: "",
+  filters: {
+    vehicles: {
+      query: "",
+      energy_type: "",
+      vehicle_type: "",
+      stock_status: "",
+    },
+    parts: {
+      query: "",
+      category: "",
+      stock_status: "",
+    },
+  },
   data: {
     vehicles: [],
     parts: [],
@@ -268,6 +304,11 @@ const adminApp = document.querySelector("[data-admin-app]");
 const loginForm = document.querySelector("[data-login-form]");
 const toast = document.querySelector("[data-toast]");
 const pageTitle = document.querySelector("[data-page-title]");
+const recordDrawer = document.querySelector("[data-record-drawer]");
+const recordForm = document.querySelector("[data-record-form]");
+const recordFields = document.querySelector("[data-fields]");
+const editorTitle = document.querySelector("[data-editor-title]");
+const saveRecordButton = document.querySelector("[data-save-record]");
 
 function t(key, values = {}) {
   let text = adminTranslations[state.lang][key] || adminTranslations.en[key] || key;
@@ -312,12 +353,16 @@ function applyLanguage() {
   document.querySelectorAll("[data-i18n]").forEach((node) => {
     node.textContent = t(node.dataset.i18n);
   });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => {
+    node.setAttribute("placeholder", t(node.dataset.i18nPlaceholder));
+  });
   document.querySelectorAll("[data-lang-toggle]").forEach((button) => {
     button.textContent = state.lang === "zh" ? "English" : "中文";
   });
   switchView(state.view);
-  renderFields("vehicles", state.editing.vehicles ? findRecord("vehicles", state.editing.vehicles) || {} : {});
-  renderFields("parts", state.editing.parts ? findRecord("parts", state.editing.parts) || {} : {});
+  if (state.drawerType && recordDrawer.getAttribute("aria-hidden") === "false") {
+    renderFields(state.drawerType, state.editing[state.drawerType] ? findRecord(state.drawerType, state.editing[state.drawerType]) || {} : {});
+  }
   renderTable("vehicles");
   renderTable("parts");
   renderInquiries();
@@ -406,11 +451,41 @@ function renderMetrics() {
   document.querySelector("[data-metric-inquiries]").textContent = String(state.data.inquiries.length);
 }
 
-function renderFields(type, record = {}) {
-  const fieldsRoot = document.querySelector(`[data-fields="${type}"]`);
-  const schema = schemas[type];
+function getFilteredRows(type) {
+  const filters = state.filters[type];
+  const query = String(filters.query || "").trim().toLowerCase();
+  const queryFields =
+    type === "vehicles"
+      ? ["sku", "brand", "model", "title_en", "title_zh", "vehicle_type", "energy_type"]
+      : ["sku", "name", "title_en", "title_zh", "oe_numbers", "applicable_brand", "applicable_model", "category"];
 
-  fieldsRoot.innerHTML = schema.fields
+  return state.data[type].filter((row) => {
+    const matchesQuery =
+      !query ||
+      queryFields.some((field) =>
+        String(row[field] || "")
+          .toLowerCase()
+          .includes(query),
+      );
+
+    if (!matchesQuery) {
+      return false;
+    }
+
+    return Object.entries(filters).every(([field, value]) => {
+      if (field === "query" || !value) {
+        return true;
+      }
+      return String(row[field] || "") === value;
+    });
+  });
+}
+
+function renderFields(type, record = {}) {
+  const schema = schemas[type];
+  recordForm.dataset.recordForm = type;
+
+  recordFields.innerHTML = schema.fields
     .map((field) => {
       const required = field.required ? "required" : "";
       const value = escapeHtml(record[field.name] || "");
@@ -448,14 +523,15 @@ function renderFields(type, record = {}) {
     })
     .join("");
 
-  const editorTitle = document.querySelector(`[data-view-panel="${type}"] [data-editor-title]`);
   editorTitle.textContent = record.id ? `${t("action.edit")} ${singularLabel(type)}` : `${t("action.new")} ${singularLabel(type)}`;
+  saveRecordButton.textContent = type === "vehicles" ? t("action.saveVehicle") : t("action.savePart");
 }
 
 function renderTable(type) {
   const schema = schemas[type];
   const head = document.querySelector(`[data-table-head="${type}"]`);
   const body = document.querySelector(`[data-table-body="${type}"]`);
+  const rows = getFilteredRows(type);
 
   head.innerHTML = `
     <tr>
@@ -465,11 +541,34 @@ function renderTable(type) {
   `;
 
   if (!state.data[type].length) {
-    body.innerHTML = `<tr><td colspan="${schema.columns.length + 1}">${t(type === "vehicles" ? "empty.vehicles" : "empty.parts")}</td></tr>`;
+    body.innerHTML = `
+      <tr>
+        <td colspan="${schema.columns.length + 1}">
+          <div class="empty-state">
+            <strong>${t(type === "vehicles" ? "empty.vehicles" : "empty.parts")}</strong>
+            <button class="primary-button" type="button" data-new-record="${type}">${type === "vehicles" ? t("action.addVehicle") : t("action.addPart")}</button>
+          </div>
+        </td>
+      </tr>
+    `;
     return;
   }
 
-  body.innerHTML = state.data[type]
+  if (!rows.length) {
+    body.innerHTML = `
+      <tr>
+        <td colspan="${schema.columns.length + 1}">
+          <div class="empty-state">
+            <strong>${t("empty.noMatches")}</strong>
+            <span>${t("empty.adjustFilters")}</span>
+          </div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  body.innerHTML = rows
     .map(
       (row) => `
         <tr>
@@ -544,12 +643,29 @@ function collectForm(type, form) {
 
 function resetForm(type) {
   state.editing[type] = null;
-  document.querySelector(`[data-record-form="${type}"]`).reset();
-  renderFields(type);
+  recordForm.reset();
+  state.drawerType = "";
+  recordDrawer.setAttribute("aria-hidden", "true");
 }
 
 function findRecord(type, id) {
   return state.data[type].find((row) => row.id === id);
+}
+
+function openRecordDrawer(type, record = {}) {
+  state.drawerType = type;
+  state.editing[type] = record.id || null;
+  renderFields(type, record);
+  recordDrawer.setAttribute("aria-hidden", "false");
+}
+
+function closeRecordDrawer() {
+  if (state.drawerType) {
+    state.editing[state.drawerType] = null;
+  }
+  state.drawerType = "";
+  recordForm.reset();
+  recordDrawer.setAttribute("aria-hidden", "true");
 }
 
 function parseCsv(text) {
@@ -714,10 +830,14 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
-  const resetButton = target.closest("[data-reset-form]");
-  if (resetButton) {
-    const panel = resetButton.closest("[data-view-panel]");
-    resetForm(panel.dataset.viewPanel);
+  const newRecordButton = target.closest("[data-new-record]");
+  if (newRecordButton) {
+    openRecordDrawer(newRecordButton.dataset.newRecord, {});
+    return;
+  }
+
+  if (target.closest("[data-close-record-drawer]")) {
+    closeRecordDrawer();
     return;
   }
 
@@ -736,8 +856,7 @@ document.addEventListener("click", async (event) => {
     const type = editButton.dataset.edit;
     const record = findRecord(type, editButton.dataset.id);
     if (record) {
-      state.editing[type] = record.id;
-      renderFields(type, record);
+      openRecordDrawer(type, record);
       showToast(t("toast.loaded"));
     }
     return;
@@ -753,7 +872,9 @@ document.addEventListener("click", async (event) => {
     try {
       await api(`${schemas[type].api}/${record.id}`, { method: "DELETE" });
       await refreshData();
-      resetForm(type);
+      if (state.editing[type] === record.id) {
+        closeRecordDrawer();
+      }
       showToast(t("toast.deleted"));
     } catch (error) {
       showToast(error.message);
@@ -764,7 +885,7 @@ document.addEventListener("click", async (event) => {
   const exportButton = target.closest("[data-export]");
   if (exportButton) {
     const type = exportButton.dataset.export;
-    downloadCsv(`${type}.csv`, state.data[type], schemas[type].columns);
+    downloadCsv(`${type}.csv`, getFilteredRows(type), schemas[type].columns);
   }
 });
 
@@ -786,6 +907,22 @@ document.querySelectorAll("[data-record-form]").forEach((form) => {
     } catch (error) {
       showToast(error.message);
     }
+  });
+});
+
+document.querySelectorAll("[data-search-records]").forEach((input) => {
+  input.addEventListener("input", () => {
+    const type = input.dataset.searchRecords;
+    state.filters[type].query = input.value;
+    renderTable(type);
+  });
+});
+
+document.querySelectorAll("[data-filter-records]").forEach((select) => {
+  select.addEventListener("change", () => {
+    const type = select.dataset.filterRecords;
+    state.filters[type][select.dataset.filterField] = select.value;
+    renderTable(type);
   });
 });
 
@@ -830,8 +967,6 @@ document.querySelector("[data-inquiries-body]").addEventListener("change", async
 });
 
 function boot() {
-  renderFields("vehicles");
-  renderFields("parts");
   applyLanguage();
   switchView("dashboard");
 

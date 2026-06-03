@@ -56,6 +56,7 @@ prototype/admin.html
 - Lightweight backend API with JSON persistence.
 - Admin login.
 - Vehicle and auto parts CRUD.
+- List-first product management with drawer-based add/edit forms.
 - Image upload to `backend/uploads`.
 - Inquiry management.
 - CSV import for vehicles and auto parts.
