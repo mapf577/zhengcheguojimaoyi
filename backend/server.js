@@ -35,6 +35,11 @@ const stores = {
     required: ["type", "code", "name_en", "name_zh"],
     numeric: ["sort_order"],
   },
+  aiLogs: {
+    file: path.join(DATA_DIR, "ai-logs.json"),
+    required: ["category", "module", "action", "status"],
+    numeric: [],
+  },
 };
 
 const mimeTypes = {
@@ -134,7 +139,10 @@ function normalizeRecord(type, input, existing = {}) {
   return {
     ...existing,
     ...input,
-    id: existing.id || input.id || createId(type === "vehicles" ? "veh" : type === "parts" ? "part" : type === "dictionaries" ? "dict" : "inq"),
+    id:
+      existing.id ||
+      input.id ||
+      createId(type === "vehicles" ? "veh" : type === "parts" ? "part" : type === "dictionaries" ? "dict" : type === "aiLogs" ? "log" : "inq"),
     created_at: existing.created_at || input.created_at || timestamp,
     updated_at: timestamp,
   };
@@ -205,6 +213,41 @@ function isAuthorized(req) {
     return false;
   }
   return true;
+}
+
+function getSessionUser(req) {
+  const token = getBearerToken(req);
+  const session = sessions.get(token);
+  if (!session || session.expiresAt < Date.now()) {
+    return "";
+  }
+  return session.user || "";
+}
+
+function targetLabel(record = {}) {
+  return record.sku || record.name || record.name_en || record.name_zh || record.model || record.code || record.email || record.id || "";
+}
+
+function appendAiLog(req, entry) {
+  const logs = readRows("aiLogs");
+  const record = normalizeRecord("aiLogs", {
+    category: "operation",
+    module: "",
+    action: "",
+    status: "success",
+    source: "admin",
+    actor: getSessionUser(req) || "system",
+    target_type: "",
+    target_id: "",
+    target_label: "",
+    prompt: "",
+    output: "",
+    detail: "",
+    ...entry,
+  });
+  logs.unshift(record);
+  writeRows("aiLogs", logs.slice(0, 500));
+  return record;
 }
 
 function requireAuth(req, res) {
@@ -289,6 +332,16 @@ function serveStatic(req, res, pathname) {
 async function handleLogin(req, res) {
   const body = await readJson(req);
   if (body.username !== ADMIN_USER || body.password !== ADMIN_PASSWORD) {
+    appendAiLog(req, {
+      category: "security",
+      module: "auth",
+      action: "login_failed",
+      status: "failed",
+      source: "admin",
+      actor: body.username || "unknown",
+      target_label: body.username || "",
+      detail: "Invalid username or password",
+    });
     sendJson(res, 401, { error: "Invalid username or password" });
     return;
   }
@@ -297,6 +350,15 @@ async function handleLogin(req, res) {
   sessions.set(token, {
     user: ADMIN_USER,
     expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+  });
+  appendAiLog(req, {
+    category: "security",
+    module: "auth",
+    action: "login",
+    status: "success",
+    source: "admin",
+    actor: ADMIN_USER,
+    target_label: ADMIN_USER,
   });
   sendJson(res, 200, { token, user: { username: ADMIN_USER } });
 }
@@ -341,6 +403,14 @@ async function handleCollection(req, res, type, id) {
     const record = normalizeRecord(type, body);
     rows.push(record);
     writeRows(type, rows);
+    appendAiLog(req, {
+      module: type,
+      action: "create",
+      target_type: type,
+      target_id: record.id,
+      target_label: targetLabel(record),
+      detail: `Created ${type} record.`,
+    });
     sendJson(res, 201, record);
     return;
   }
@@ -383,6 +453,14 @@ async function handleCollection(req, res, type, id) {
     }
     rows[index] = next;
     writeRows(type, rows);
+    appendAiLog(req, {
+      module: type,
+      action: "update",
+      target_type: type,
+      target_id: next.id,
+      target_label: targetLabel(next),
+      detail: `Updated ${type} record.`,
+    });
     sendJson(res, 200, next);
     return;
   }
@@ -390,6 +468,14 @@ async function handleCollection(req, res, type, id) {
   if (req.method === "DELETE") {
     const [removed] = rows.splice(index, 1);
     writeRows(type, rows);
+    appendAiLog(req, {
+      module: type,
+      action: "delete",
+      target_type: type,
+      target_id: removed.id,
+      target_label: targetLabel(removed),
+      detail: `Deleted ${type} record.`,
+    });
     sendJson(res, 200, { removed });
     return;
   }
@@ -404,6 +490,13 @@ async function handleImport(req, res, type) {
   const body = await readJson(req);
   const rows = Array.isArray(body.rows) ? body.rows : [];
   const result = mergeBySku(type, rows);
+  appendAiLog(req, {
+    module: type,
+    action: "import",
+    target_type: type,
+    target_label: `${result.saved.length} saved, ${result.rejected.length} rejected`,
+    detail: `Imported ${rows.length} ${type} row(s).`,
+  });
   sendJson(res, result.rejected.length ? 207 : 200, result);
 }
 
@@ -430,6 +523,14 @@ async function handleUpload(req, res) {
   const filename = `${Date.now().toString(36)}-${crypto.randomBytes(4).toString("hex")}${ext}`;
   const target = path.join(UPLOAD_DIR, filename);
   fs.writeFileSync(target, buffer);
+  appendAiLog(req, {
+    module: "uploads",
+    action: "upload_image",
+    target_type: "upload",
+    target_id: filename,
+    target_label: originalName,
+    detail: `Uploaded image ${originalName}.`,
+  });
   sendJson(res, 201, {
     filename,
     url: `/uploads/${filename}`,
@@ -460,6 +561,16 @@ async function handleInquiryPost(req, res) {
   const rows = readRows("inquiries");
   rows.unshift(record);
   writeRows("inquiries", rows);
+  appendAiLog(req, {
+    module: "inquiries",
+    action: "create",
+    source: "website",
+    actor: record.email || record.name || "visitor",
+    target_type: "inquiries",
+    target_id: record.id,
+    target_label: targetLabel(record),
+    detail: "Website inquiry submitted.",
+  });
   sendJson(res, 201, record);
 }
 
@@ -476,7 +587,29 @@ async function handleInquiryUpdate(req, res, id) {
   const body = await readJson(req);
   rows[index] = normalizeRecord("inquiries", body, rows[index]);
   writeRows("inquiries", rows);
+  appendAiLog(req, {
+    module: "inquiries",
+    action: "update_status",
+    target_type: "inquiries",
+    target_id: rows[index].id,
+    target_label: targetLabel(rows[index]),
+    detail: `Inquiry status updated to ${rows[index].status || ""}.`,
+  });
   sendJson(res, 200, rows[index]);
+}
+
+async function handleAiLogs(req, res) {
+  if (!requireAuth(req, res)) {
+    return;
+  }
+
+  if (req.method === "GET") {
+    const rows = readRows("aiLogs").sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+    sendJson(res, 200, { items: rows.slice(0, 500) });
+    return;
+  }
+
+  sendJson(res, 405, { error: "Method not allowed" });
 }
 
 async function handleApi(req, res, pathname) {
@@ -497,6 +630,11 @@ async function handleApi(req, res, pathname) {
 
   if (pathname === "/api/uploads" && req.method === "POST") {
     await handleUpload(req, res);
+    return true;
+  }
+
+  if (pathname === "/api/ai-logs") {
+    await handleAiLogs(req, res);
     return true;
   }
 

@@ -171,6 +171,7 @@ backend/data/vehicles.json
 backend/data/parts.json
 backend/data/inquiries.json
 backend/data/dictionaries.json
+backend/data/ai-logs.json
 ```
 
 上传图片：

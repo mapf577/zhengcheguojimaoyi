@@ -58,6 +58,7 @@ prototype/admin.html
 - Vehicle and auto parts CRUD.
 - List-first product management with drawer-based add/edit forms.
 - Dictionary settings for brands, models, colors, stock statuses, categories, currencies, and ports.
+- AI log page for admin operations, imports, uploads, inquiries, and future AI-generated content.
 - Image upload to `backend/uploads`.
 - Inquiry management.
 - CSV import for vehicles and auto parts.

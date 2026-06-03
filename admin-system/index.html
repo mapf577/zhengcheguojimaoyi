@@ -45,6 +45,7 @@
           <button type="button" data-view="vehicles" data-short="V"><span data-i18n="nav.vehicles">Vehicles</span></button>
           <button type="button" data-view="parts" data-short="P"><span data-i18n="nav.parts">Auto Parts</span></button>
           <button type="button" data-view="inquiries" data-short="I"><span data-i18n="nav.inquiries">Inquiries</span></button>
+          <button type="button" data-view="aiLogs" data-short="A"><span data-i18n="nav.aiLogs">AI Logs</span></button>
           <button type="button" data-view="settings" data-short="S"><span data-i18n="nav.settings">Settings</span></button>
         </nav>
         <button class="secondary-button" type="button" data-logout data-short="L" data-i18n="action.logout">Logout</button>
@@ -227,6 +228,32 @@
               <table>
                 <thead data-dictionary-head></thead>
                 <tbody data-dictionary-body></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" data-view-panel="aiLogs" hidden>
+          <section class="panel list-panel">
+            <div class="panel-header wrap">
+              <h2 data-i18n="aiLogs.title">AI Logs</h2>
+              <button class="secondary-button" type="button" data-refresh data-i18n="action.refresh">Refresh</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-i18n="table.status">Status</th>
+                    <th data-i18n="table.module">Module</th>
+                    <th data-i18n="table.action">Action</th>
+                    <th data-i18n="table.target">Target</th>
+                    <th data-i18n="table.source">Source</th>
+                    <th data-i18n="table.actor">Actor</th>
+                    <th data-i18n="table.created">Created</th>
+                    <th data-i18n="table.details">Details</th>
+                  </tr>
+                </thead>
+                <tbody data-ai-logs-body></tbody>
               </table>
             </div>
           </section>

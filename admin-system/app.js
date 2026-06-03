@@ -189,6 +189,7 @@ const adminTranslations = {
     "nav.vehicles": "Vehicles",
     "nav.parts": "Auto Parts",
     "nav.inquiries": "Inquiries",
+    "nav.aiLogs": "AI Logs",
     "workspace.eyebrow": "Backend management",
     "action.logout": "Logout",
     "action.openWebsite": "Open Website",
@@ -212,7 +213,14 @@ const adminTranslations = {
     "vehicles.data": "Vehicle Data",
     "parts.data": "Auto Parts Data",
     "inquiries.title": "Customer Inquiries",
+    "aiLogs.title": "AI Logs",
     "table.status": "Status",
+    "table.module": "Module",
+    "table.action": "Action",
+    "table.target": "Target",
+    "table.source": "Source",
+    "table.actor": "Actor",
+    "table.details": "Details",
     "table.name": "Name",
     "table.email": "Email",
     "table.country": "Country",
@@ -224,6 +232,7 @@ const adminTranslations = {
     "empty.noMatches": "No matching records.",
     "empty.adjustFilters": "Adjust search keywords or filters.",
     "empty.inquiries": "No inquiries yet.",
+    "empty.aiLogs": "No AI logs yet.",
     "filter.searchVehicles": "Search SKU, brand, model...",
     "filter.searchParts": "Search SKU, name, OE number...",
     "filter.allEnergy": "All energy",
@@ -256,6 +265,7 @@ const adminTranslations = {
     "nav.vehicles": "整车管理",
     "nav.parts": "零配件管理",
     "nav.inquiries": "询盘管理",
+    "nav.aiLogs": "AI日志",
     "workspace.eyebrow": "后台管理",
     "action.logout": "退出登录",
     "action.openWebsite": "打开官网",
@@ -279,7 +289,14 @@ const adminTranslations = {
     "vehicles.data": "整车数据",
     "parts.data": "零配件数据",
     "inquiries.title": "客户询盘",
+    "aiLogs.title": "AI日志",
     "table.status": "状态",
+    "table.module": "模块",
+    "table.action": "操作",
+    "table.target": "对象",
+    "table.source": "来源",
+    "table.actor": "操作者",
+    "table.details": "详情",
     "table.name": "姓名",
     "table.email": "邮箱",
     "table.country": "国家",
@@ -291,6 +308,7 @@ const adminTranslations = {
     "empty.noMatches": "没有找到匹配结果。",
     "empty.adjustFilters": "请调整搜索关键词或筛选条件。",
     "empty.inquiries": "暂无询盘。",
+    "empty.aiLogs": "暂无AI日志。",
     "filter.searchVehicles": "搜索 SKU、品牌、车型...",
     "filter.searchParts": "搜索 SKU、名称、OE 编号...",
     "filter.allEnergy": "全部能源",
@@ -420,6 +438,7 @@ Object.assign(adminTranslations.zh, {
   "nav.vehicles": "整车管理",
   "nav.parts": "零配件管理",
   "nav.inquiries": "询盘管理",
+  "nav.aiLogs": "AI日志",
   "nav.settings": "设置",
   "workspace.eyebrow": "后台管理",
   "action.logout": "退出登录",
@@ -445,9 +464,16 @@ Object.assign(adminTranslations.zh, {
   "vehicles.data": "整车数据",
   "parts.data": "零配件数据",
   "inquiries.title": "客户询盘",
+  "aiLogs.title": "AI日志",
   "settings.title": "字典设置",
   "settings.add": "新增字典项",
   "table.status": "状态",
+  "table.module": "模块",
+  "table.action": "操作",
+  "table.target": "对象",
+  "table.source": "来源",
+  "table.actor": "操作者",
+  "table.details": "详情",
   "table.name": "姓名",
   "table.email": "邮箱",
   "table.country": "国家",
@@ -460,6 +486,7 @@ Object.assign(adminTranslations.zh, {
   "empty.noMatches": "没有找到匹配结果。",
   "empty.adjustFilters": "请调整搜索关键词或筛选条件。",
   "empty.inquiries": "暂无询盘。",
+  "empty.aiLogs": "暂无AI日志。",
   "filter.searchVehicles": "搜索 SKU、品牌、车型...",
   "filter.searchParts": "搜索 SKU、名称、OE 编号...",
   "filter.allEnergy": "全部能源",
@@ -588,6 +615,67 @@ Object.assign(columnTranslations.zh, {
   sort_order: "排序",
 });
 
+const logValueTranslations = {
+  en: {
+    modules: {
+      auth: "Auth",
+      vehicles: "Vehicles",
+      parts: "Auto Parts",
+      dictionaries: "Settings",
+      inquiries: "Inquiries",
+      uploads: "Uploads",
+    },
+    actions: {
+      login: "Login",
+      login_failed: "Login Failed",
+      create: "Create",
+      update: "Update",
+      delete: "Delete",
+      import: "Import",
+      upload_image: "Upload Image",
+      update_status: "Update Status",
+    },
+    sources: {
+      admin: "Admin",
+      website: "Website",
+      system: "System",
+    },
+    statuses: {
+      success: "Success",
+      failed: "Failed",
+    },
+  },
+  zh: {
+    modules: {
+      auth: "登录认证",
+      vehicles: "整车",
+      parts: "零配件",
+      dictionaries: "设置",
+      inquiries: "询盘",
+      uploads: "图片上传",
+    },
+    actions: {
+      login: "登录",
+      login_failed: "登录失败",
+      create: "新增",
+      update: "编辑",
+      delete: "删除",
+      import: "导入",
+      upload_image: "上传图片",
+      update_status: "更新状态",
+    },
+    sources: {
+      admin: "后台",
+      website: "官网",
+      system: "系统",
+    },
+    statuses: {
+      success: "成功",
+      failed: "失败",
+    },
+  },
+};
+
 const state = {
   token: localStorage.getItem("admin_token") || "",
   lang: localStorage.getItem("admin_lang") === "zh" ? "zh" : "en",
@@ -617,6 +705,7 @@ const state = {
     parts: [],
     inquiries: [],
     dictionaries: [],
+    aiLogs: [],
   },
 };
 
@@ -695,6 +784,7 @@ function applyLanguage() {
   renderTable("parts");
   renderDictionaryTable();
   renderInquiries();
+  renderAiLogs();
 }
 
 function showToast(message) {
@@ -771,9 +861,11 @@ function switchView(view) {
         ? t("nav.vehicles")
         : view === "parts"
           ? t("nav.parts")
-          : view === "settings"
-            ? t("nav.settings")
-            : t("nav.inquiries");
+          : view === "inquiries"
+            ? t("nav.inquiries")
+            : view === "aiLogs"
+              ? t("nav.aiLogs")
+              : t("nav.settings");
 }
 
 function renderMetrics() {
@@ -1250,23 +1342,63 @@ function renderInquiries() {
     .join("");
 }
 
+function logValue(group, value) {
+  const key = String(value || "");
+  return logValueTranslations[state.lang]?.[group]?.[key] || logValueTranslations.en[group]?.[key] || key;
+}
+
+function renderAiLogs() {
+  const body = document.querySelector("[data-ai-logs-body]");
+  if (!body) {
+    return;
+  }
+
+  if (!state.data.aiLogs.length) {
+    body.innerHTML = `<tr><td colspan="8">${t("empty.aiLogs")}</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = state.data.aiLogs
+    .map((row) => {
+      const status = row.status || "success";
+      const target = row.target_label || row.target_id || "";
+      const created = (row.created_at || "").slice(0, 19).replace("T", " ");
+      return `
+        <tr>
+          <td><span class="status-pill status-${statusClass(status)}">${escapeHtml(logValue("statuses", status))}</span></td>
+          <td>${escapeHtml(logValue("modules", row.module))}</td>
+          <td>${escapeHtml(logValue("actions", row.action))}</td>
+          <td>${escapeHtml(target)}</td>
+          <td>${escapeHtml(logValue("sources", row.source))}</td>
+          <td>${escapeHtml(row.actor || "")}</td>
+          <td>${escapeHtml(created)}</td>
+          <td>${escapeHtml(row.detail || row.output || row.prompt || "")}</td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
 async function refreshData() {
-  const [vehicles, parts, inquiries, dictionaries] = await Promise.all([
+  const [vehicles, parts, inquiries, dictionaries, aiLogs] = await Promise.all([
     api("/api/vehicles"),
     api("/api/parts"),
     api("/api/inquiries"),
     api("/api/dictionaries"),
+    api("/api/ai-logs"),
   ]);
   state.data.vehicles = vehicles.items || [];
   state.data.parts = parts.items || [];
   state.data.inquiries = inquiries.items || [];
   state.data.dictionaries = dictionaries.items || [];
+  state.data.aiLogs = aiLogs.items || [];
   renderMetrics();
   renderFilterOptions();
   renderTable("vehicles");
   renderTable("parts");
   renderDictionaryTable();
   renderInquiries();
+  renderAiLogs();
 }
 
 function collectForm(type, form) {
