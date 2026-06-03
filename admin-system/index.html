@@ -8,7 +8,15 @@
   </head>
   <body>
     <section class="login-screen" data-login-screen>
+      <div class="login-aurora" aria-hidden="true">
+        <span class="aurora aurora-1"></span>
+        <span class="aurora aurora-2"></span>
+        <span class="aurora aurora-3"></span>
+        <span class="login-grid"></span>
+      </div>
+
       <button class="secondary-button login-lang-switch" type="button" data-lang-toggle>&#20013;&#25991;</button>
+
       <div class="login-stage">
         <div class="login-visual" aria-hidden="true">
           <div class="brand-row login-brand">
@@ -18,11 +26,16 @@
               <span data-i18n="login.console">Management Console</span>
             </div>
           </div>
+
           <div class="login-visual-copy">
-            <p class="eyebrow" data-i18n="login.stageEyebrow">Export management</p>
+            <span class="login-chip">
+              <span class="login-chip-dot" aria-hidden="true"></span>
+              <span data-i18n="login.stageEyebrow">Export management</span>
+            </span>
             <h1 data-i18n="login.stageTitle">From Factory to World</h1>
             <p data-i18n="login.stageText">Manage vehicles, auto parts, inquiries and AI operation logs in one workspace.</p>
           </div>
+
           <div class="login-signal-grid">
             <div>
               <span data-i18n="nav.vehicles">Vehicles</span>
@@ -38,27 +51,54 @@
             </div>
           </div>
         </div>
-        <form class="login-card" data-login-form>
-          <div class="brand-row">
+
+        <form class="login-card" data-login-form autocomplete="on">
+          <div class="brand-row login-card-brand">
             <span class="brand-mark">AG</span>
             <div>
               <strong>AutoGlobal Export</strong>
               <span data-i18n="login.console">Management Console</span>
             </div>
           </div>
-          <div>
+
+          <div class="login-card-heading">
             <h1 data-i18n="login.title">Admin Login</h1>
             <p class="hint" data-i18n="login.subtitle">Sign in to manage export-ready products and customer requests.</p>
           </div>
-          <label>
+
+          <label class="login-field">
             <span data-i18n="login.username">Username</span>
-            <input name="username" type="text" autocomplete="username" data-i18n-placeholder="login.usernamePlaceholder" placeholder="Enter username" required />
+            <span class="login-input">
+              <svg class="login-input-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path fill="currentColor" d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-3.33 0-8 1.67-8 5v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-3.33-4.67-5-8-5Z"/>
+              </svg>
+              <input name="username" type="text" autocomplete="username" data-i18n-placeholder="login.usernamePlaceholder" placeholder="Enter username" required />
+            </span>
           </label>
-          <label>
+
+          <label class="login-field">
             <span data-i18n="login.password">Password</span>
-            <input name="password" type="password" autocomplete="current-password" data-i18n-placeholder="login.passwordPlaceholder" placeholder="Enter password" required />
+            <span class="login-input">
+              <svg class="login-input-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path fill="currentColor" d="M17 9V7a5 5 0 0 0-10 0v2H5v12h14V9Zm-8-2a3 3 0 0 1 6 0v2H9Z"/>
+              </svg>
+              <input name="password" type="password" autocomplete="current-password" data-i18n-placeholder="login.passwordPlaceholder" placeholder="Enter password" required />
+              <button class="login-input-toggle" type="button" data-password-toggle aria-label="Show password" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path fill="currentColor" d="M12 5C6.5 5 2.7 9.5 1.5 12c1.2 2.5 5 7 10.5 7s9.3-4.5 10.5-7C21.3 9.5 17.5 5 12 5Zm0 11a4 4 0 1 1 4-4 4 4 0 0 1-4 4Zm0-6a2 2 0 1 0 2 2 2 2 0 0 0-2-2Z"/>
+                </svg>
+              </button>
+            </span>
           </label>
-          <button class="primary-button" type="submit" data-i18n="login.submit">Login</button>
+
+          <button class="primary-button login-submit" type="submit">
+            <span data-i18n="login.submit">Login</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path fill="currentColor" d="M13.3 5.3a1 1 0 0 0 0 1.4L17.6 11H4a1 1 0 0 0 0 2h13.6l-4.3 4.3a1 1 0 1 0 1.4 1.4l6-6a1 1 0 0 0 0-1.4l-6-6a1 1 0 0 0-1.4 0Z"/>
+            </svg>
+          </button>
+
+          <p class="login-footnote" data-i18n="login.footnote">Secured admin access &middot; v2026.06</p>
         </form>
       </div>
     </section>

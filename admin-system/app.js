@@ -1683,6 +1683,19 @@ loginForm.addEventListener("submit", async (event) => {
   }
 });
 
+document.querySelectorAll("[data-password-toggle]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const input = button.parentElement && button.parentElement.querySelector("input");
+    if (!input) return;
+    const isPassword = input.type === "password";
+    input.type = isPassword ? "text" : "password";
+    button.classList.toggle("is-active", isPassword);
+    button.setAttribute("aria-pressed", String(isPassword));
+    button.setAttribute("aria-label", isPassword ? "Hide password" : "Show password");
+    input.focus();
+  });
+});
+
 document.addEventListener("click", async (event) => {
   const target = event.target;
 
