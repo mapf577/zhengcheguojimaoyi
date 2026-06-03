@@ -6,6 +6,7 @@
 *.pfx
 .env
 .env.*
+整车出口系统重要文件.txt
 
 # Local OS and editor files
 .DS_Store
