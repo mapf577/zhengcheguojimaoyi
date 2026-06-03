@@ -122,8 +122,10 @@
         </nav>
         <p class="side-nav-label side-nav-label-secondary" data-i18n="nav.groupSystem">System</p>
         <nav class="side-nav" aria-label="System sections">
-          <button type="button" data-view="aiLogs" data-short="A"><span class="nav-icon">05</span><span data-i18n="nav.aiLogs">AI Logs</span></button>
-          <button type="button" data-view="settings" data-short="S"><span class="nav-icon">06</span><span data-i18n="nav.settings">Settings</span></button>
+          <button type="button" data-view="users" data-short="U"><span class="nav-icon">05</span><span data-i18n="nav.users">Users</span></button>
+          <button type="button" data-view="roles" data-short="R"><span class="nav-icon">06</span><span data-i18n="nav.roles">Roles</span></button>
+          <button type="button" data-view="settings" data-short="S"><span class="nav-icon">07</span><span data-i18n="nav.settings">Settings</span></button>
+          <button type="button" data-view="aiLogs" data-short="A"><span class="nav-icon">08</span><span data-i18n="nav.aiLogs">AI Logs</span></button>
         </nav>
         <div class="sidebar-account">
           <span data-i18n="workspace.account">Current account</span>
@@ -364,6 +366,67 @@
               <table>
                 <thead data-dictionary-head></thead>
                 <tbody data-dictionary-body></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" data-view-panel="users" hidden>
+          <section class="panel list-panel table-shell">
+            <div class="panel-header wrap">
+              <div class="panel-title-stack">
+                <p class="eyebrow" data-i18n="nav.users">Users</p>
+                <h2 data-i18n="users.title">User Management</h2>
+                <p class="panel-hint" data-i18n="users.hint">Create admin accounts, assign roles and control account status.</p>
+              </div>
+              <div class="toolbar">
+                <button class="primary-button" type="button" data-new-record="adminUsers" data-i18n="users.add">Add User</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-i18n="table.username">Username</th>
+                    <th data-i18n="table.name">Name</th>
+                    <th data-i18n="table.email">Email</th>
+                    <th data-i18n="table.roles">Roles</th>
+                    <th data-i18n="table.status">Status</th>
+                    <th data-i18n="table.lastLogin">Last Login</th>
+                    <th data-i18n="table.actions">Actions</th>
+                  </tr>
+                </thead>
+                <tbody data-users-body></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" data-view-panel="roles" hidden>
+          <section class="panel list-panel table-shell">
+            <div class="panel-header wrap">
+              <div class="panel-title-stack">
+                <p class="eyebrow" data-i18n="nav.roles">Roles</p>
+                <h2 data-i18n="roles.title">Role Permissions</h2>
+                <p class="panel-hint" data-i18n="roles.hint">Define backend roles and assign permission scopes.</p>
+              </div>
+              <div class="toolbar">
+                <button class="primary-button" type="button" data-new-record="adminRoles" data-i18n="roles.add">Add Role</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-i18n="table.code">Code</th>
+                    <th data-i18n="table.nameEn">English Name</th>
+                    <th data-i18n="table.nameZh">Chinese Name</th>
+                    <th data-i18n="table.permissions">Permissions</th>
+                    <th data-i18n="table.status">Status</th>
+                    <th data-i18n="table.actions">Actions</th>
+                  </tr>
+                </thead>
+                <tbody data-roles-body></tbody>
               </table>
             </div>
           </section>

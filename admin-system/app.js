@@ -136,6 +136,34 @@ const schemas = {
       { name: "sort_order", label: "Sort Order" },
     ],
   },
+  adminUsers: {
+    title: "Users",
+    api: "/api/admin/users",
+    columns: ["username", "name", "email", "role_ids", "status", "last_login_at"],
+    fields: [
+      { name: "username", label: "Username", required: true },
+      { name: "name", label: "Display Name", required: true },
+      { name: "email", label: "Email" },
+      { name: "phone", label: "Phone" },
+      { name: "password", label: "Password", type: "password" },
+      { name: "role_ids", label: "Roles", type: "rolePicker", required: true },
+      { name: "status", label: "Status", required: true, options: [["active", "Active"], ["disabled", "Disabled"]] },
+    ],
+  },
+  adminRoles: {
+    title: "Roles",
+    api: "/api/admin/roles",
+    columns: ["code", "name_en", "name_zh", "permissions", "status"],
+    fields: [
+      { name: "code", label: "Role Code", required: true },
+      { name: "name_en", label: "English Name", required: true },
+      { name: "name_zh", label: "Chinese Name", required: true },
+      { name: "description_en", label: "English Description", type: "textarea" },
+      { name: "description_zh", label: "Chinese Description", type: "textarea" },
+      { name: "status", label: "Status", required: true, options: [["active", "Active"], ["disabled", "Disabled"]] },
+      { name: "permissions", label: "Permissions", type: "permissionMatrix", required: true },
+    ],
+  },
 };
 
 const fieldGroups = {
@@ -173,6 +201,16 @@ const fieldGroups = {
     { titleKey: "form.dictionaryCore", fields: ["type", "code", "status", "sort_order"] },
     { titleKey: "form.dictionaryNames", fields: ["name_en", "name_zh"] },
     { titleKey: "form.dictionaryRules", fields: ["brand_code", "vehicle_type", "energy_type"] },
+  ],
+  adminUsers: [
+    { titleKey: "form.account", fields: ["username", "password", "status"] },
+    { titleKey: "form.profile", fields: ["name", "email", "phone"] },
+    { titleKey: "form.access", fields: ["role_ids"] },
+  ],
+  adminRoles: [
+    { titleKey: "form.roleCore", fields: ["code", "name_en", "name_zh", "status"] },
+    { titleKey: "form.roleDescription", fields: ["description_en", "description_zh"] },
+    { titleKey: "form.permissions", fields: ["permissions"] },
   ],
 };
 
@@ -587,6 +625,14 @@ Object.assign(fieldTranslations.zh, {
   "Export Ports": "出口港口",
   Active: "启用",
   Disabled: "停用",
+  Username: "用户名",
+  "Display Name": "显示名称",
+  Email: "邮箱",
+  Phone: "电话",
+  Password: "密码",
+  Roles: "角色",
+  "Role Code": "角色编码",
+  Permissions: "权限",
 });
 
 Object.assign(columnTranslations.zh, {
@@ -647,6 +693,40 @@ Object.assign(adminTranslations.en, {
   "inquiries.hint": "Track customer requests from website forms.",
   "settings.hint": "Manage bilingual brands, models, colors and business dictionaries.",
   "aiLogs.hint": "Review automated actions and generated content traces.",
+  "nav.users": "Users",
+  "nav.roles": "Roles",
+  "users.title": "User Management",
+  "users.hint": "Create admin accounts, assign roles and control account status.",
+  "users.add": "Add User",
+  "roles.title": "Role Permissions",
+  "roles.hint": "Define backend roles and assign permission scopes.",
+  "roles.add": "Add Role",
+  "roles.permissionCount": "{count} permission(s)",
+  "action.saveUser": "Save User",
+  "action.saveRole": "Save Role",
+  "action.enable": "Enable",
+  "action.disable": "Disable",
+  "action.resetPassword": "Reset Password",
+  "table.username": "Username",
+  "table.roles": "Roles",
+  "table.lastLogin": "Last Login",
+  "table.code": "Code",
+  "table.nameEn": "English Name",
+  "table.nameZh": "Chinese Name",
+  "table.permissions": "Permissions",
+  "empty.users": "No users yet.",
+  "empty.roles": "No roles yet.",
+  "singular.user": "User",
+  "singular.role": "Role",
+  "toast.userStatusUpdated": "User status updated.",
+  "toast.passwordReset": "Password reset.",
+  "prompt.newPassword": "Enter a new password, at least 8 characters.",
+  "form.account": "Account",
+  "form.profile": "Profile",
+  "form.access": "Access",
+  "form.roleCore": "Role",
+  "form.roleDescription": "Description",
+  "form.permissions": "Permissions",
 });
 
 Object.assign(adminTranslations.zh, {
@@ -681,6 +761,40 @@ Object.assign(adminTranslations.zh, {
   "inquiries.hint": "跟进官网表单提交的客户需求。",
   "settings.hint": "维护品牌、车型、颜色等中英文字典。",
   "aiLogs.hint": "查看自动化动作和内容生成痕迹。",
+  "nav.users": "用户管理",
+  "nav.roles": "权限角色",
+  "users.title": "用户管理",
+  "users.hint": "创建后台账号、分配角色并控制账号启停。",
+  "users.add": "新增用户",
+  "roles.title": "权限角色",
+  "roles.hint": "定义后台角色，并分配可操作的权限范围。",
+  "roles.add": "新增角色",
+  "roles.permissionCount": "{count} 项权限",
+  "action.saveUser": "保存用户",
+  "action.saveRole": "保存角色",
+  "action.enable": "启用",
+  "action.disable": "停用",
+  "action.resetPassword": "重置密码",
+  "table.username": "用户名",
+  "table.roles": "角色",
+  "table.lastLogin": "最后登录",
+  "table.code": "编码",
+  "table.nameEn": "英文名称",
+  "table.nameZh": "中文名称",
+  "table.permissions": "权限",
+  "empty.users": "暂无用户。",
+  "empty.roles": "暂无角色。",
+  "singular.user": "用户",
+  "singular.role": "角色",
+  "toast.userStatusUpdated": "用户状态已更新。",
+  "toast.passwordReset": "密码已重置。",
+  "prompt.newPassword": "请输入新密码，至少 8 位。",
+  "form.account": "账号",
+  "form.profile": "资料",
+  "form.access": "权限分配",
+  "form.roleCore": "角色",
+  "form.roleDescription": "描述",
+  "form.permissions": "权限范围",
 });
 
 const logValueTranslations = {
@@ -692,6 +806,8 @@ const logValueTranslations = {
       dictionaries: "Settings",
       inquiries: "Inquiries",
       uploads: "Uploads",
+      adminUsers: "Users",
+      adminRoles: "Roles",
     },
     actions: {
       login: "Login",
@@ -702,6 +818,9 @@ const logValueTranslations = {
       import: "Import",
       upload_image: "Upload Image",
       update_status: "Update Status",
+      reset_password: "Reset Password",
+      enable: "Enable",
+      disable: "Disable",
     },
     sources: {
       admin: "Admin",
@@ -721,6 +840,8 @@ const logValueTranslations = {
       dictionaries: "设置",
       inquiries: "询盘",
       uploads: "图片上传",
+      adminUsers: "用户管理",
+      adminRoles: "权限角色",
     },
     actions: {
       login: "登录",
@@ -731,6 +852,9 @@ const logValueTranslations = {
       import: "导入",
       upload_image: "上传图片",
       update_status: "更新状态",
+      reset_password: "重置密码",
+      enable: "启用",
+      disable: "停用",
     },
     sources: {
       admin: "后台",
@@ -752,6 +876,8 @@ const state = {
     vehicles: null,
     parts: null,
     dictionaries: null,
+    adminUsers: null,
+    adminRoles: null,
   },
   drawerType: "",
   dictionaryType: "brands",
@@ -774,10 +900,15 @@ const state = {
     inquiries: [],
     dictionaries: [],
     aiLogs: [],
+    adminUsers: [],
+    adminRoles: [],
   },
+  permissions: [],
   session: {
     username: "admin",
     ip: "--",
+    permissions: null,
+    roles: [],
   },
 };
 
@@ -816,6 +947,12 @@ function singularLabel(type) {
   }
   if (type === "parts") {
     return t("singular.part");
+  }
+  if (type === "adminUsers") {
+    return t("singular.user");
+  }
+  if (type === "adminRoles") {
+    return t("singular.role");
   }
   return t("singular.dictionary");
 }
@@ -860,6 +997,8 @@ function applyLanguage() {
   renderDictionaryTable();
   renderInquiries();
   renderAiLogs();
+  renderUsers();
+  renderRoles();
 }
 
 function renderChrome() {
@@ -888,7 +1027,10 @@ async function loadSessionInfo() {
   state.session = {
     username: result.user?.username || state.session.username || "admin",
     ip: result.ip || "--",
+    permissions: result.permissions || [],
+    roles: result.roles || result.user?.roles || [],
   };
+  state.permissions = result.permissionCatalog || state.permissions || [];
   renderSessionInfo();
 }
 
@@ -939,10 +1081,37 @@ async function api(path, options = {}) {
     if (response.status === 401) {
       logout();
     }
-    throw new Error(payload.error || (payload.errors ? payload.errors.join("; ") : "Request failed"));
+    const error = new Error(payload.error || (payload.errors ? payload.errors.join("; ") : "Request failed"));
+    error.status = response.status;
+    throw error;
   }
 
   return payload;
+}
+
+function can(permission) {
+  if (!permission) {
+    return true;
+  }
+  const permissions = state.session.permissions;
+  if (!Array.isArray(permissions)) {
+    return true;
+  }
+  return permissions.includes(permission);
+}
+
+async function apiIfAllowed(path, permission, fallback = { items: [] }) {
+  if (!can(permission)) {
+    return fallback;
+  }
+  try {
+    return await api(path);
+  } catch (error) {
+    if (error.status === 403) {
+      return fallback;
+    }
+    throw error;
+  }
 }
 
 function escapeHtml(value) {
@@ -958,6 +1127,8 @@ function setAuthenticated(token, session = {}) {
   state.session = {
     username: session.user?.username || session.username || state.session.username || "admin",
     ip: session.ip || state.session.ip || "--",
+    permissions: Array.isArray(session.permissions) ? session.permissions : state.session.permissions,
+    roles: session.roles || session.user?.roles || state.session.roles || [],
   };
   renderSessionInfo();
   localStorage.setItem("admin_token", token);
@@ -967,7 +1138,7 @@ function setAuthenticated(token, session = {}) {
 
 function logout() {
   state.token = "";
-  state.session = { username: "admin", ip: "--" };
+  state.session = { username: "admin", ip: "--", permissions: null, roles: [] };
   renderSessionInfo();
   localStorage.removeItem("admin_token");
   loginScreen.hidden = false;
@@ -1291,9 +1462,106 @@ function applyVehicleModelDefaults(form) {
   });
 }
 
+function listValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item || "").trim()).filter(Boolean);
+  }
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function roleLabel(role = {}) {
+  return state.lang === "zh" ? role.name_zh || role.name_en || role.code || "" : role.name_en || role.name_zh || role.code || "";
+}
+
+function roleNames(roleIds = []) {
+  const ids = new Set(listValue(roleIds));
+  return state.data.adminRoles.filter((role) => ids.has(role.id) || ids.has(role.code)).map(roleLabel);
+}
+
+function permissionGroupLabel(group = {}) {
+  return state.lang === "zh" ? group.label_zh || group.label_en || group.group || "" : group.label_en || group.label_zh || group.group || "";
+}
+
+function permissionLabel(permission = {}) {
+  return state.lang === "zh" ? permission.label_zh || permission.label_en || permission.code || "" : permission.label_en || permission.label_zh || permission.code || "";
+}
+
+function renderRolePicker(field, record = {}) {
+  const selected = new Set(listValue(record[field.name]));
+  const roles = state.data.adminRoles || [];
+  return `
+    <div class="field-wide choice-field">
+      <span>${fieldLabel(field.label)}${field.required ? " *" : ""}</span>
+      <div class="choice-grid">
+        ${
+          roles.length
+            ? roles
+                .map(
+                  (role) => `
+                    <label class="choice-item">
+                      <input type="checkbox" name="${field.name}" value="${escapeHtml(role.id)}" ${selected.has(role.id) || selected.has(role.code) ? "checked" : ""} />
+                      <span>
+                        <strong>${escapeHtml(roleLabel(role))}</strong>
+                        <small>${escapeHtml(role.code || "")}</small>
+                      </span>
+                    </label>
+                  `,
+                )
+                .join("")
+            : `<div class="empty-inline">${t("empty.roles")}</div>`
+        }
+      </div>
+    </div>
+  `;
+}
+
+function renderPermissionMatrix(field, record = {}) {
+  const selected = new Set(listValue(record[field.name]));
+  return `
+    <div class="field-wide permission-field">
+      <span>${fieldLabel(field.label)}${field.required ? " *" : ""}</span>
+      <div class="permission-matrix">
+        ${(state.permissions || [])
+          .map(
+            (group) => `
+              <fieldset>
+                <legend>${escapeHtml(permissionGroupLabel(group))}</legend>
+                ${(group.permissions || [])
+                  .map(
+                    (permission) => `
+                      <label class="permission-item">
+                        <input type="checkbox" name="${field.name}" value="${escapeHtml(permission.code)}" ${selected.has(permission.code) ? "checked" : ""} />
+                        <span>${escapeHtml(permissionLabel(permission))}</span>
+                      </label>
+                    `,
+                  )
+                  .join("")}
+              </fieldset>
+            `,
+          )
+          .join("")}
+      </div>
+    </div>
+  `;
+}
+
 function renderFieldControl(field, record = {}) {
   const required = field.required ? "required" : "";
   const value = escapeHtml(record[field.name] || "");
+
+  if (field.type === "rolePicker") {
+    return renderRolePicker(field, record);
+  }
+
+  if (field.type === "permissionMatrix") {
+    return renderPermissionMatrix(field, record);
+  }
 
   if (field.options || field.dictionaryType) {
     return renderSelectField(field, record);
@@ -1320,6 +1588,15 @@ function renderFieldControl(field, record = {}) {
           <button class="secondary-button" type="button" data-upload-image>${t("action.uploadImage")}</button>
         </div>
       </div>
+    `;
+  }
+
+  if (field.type === "password") {
+    return `
+      <label>
+        <span>${fieldLabel(field.label)}${field.required ? " *" : ""}</span>
+        <input name="${field.name}" type="password" value="" autocomplete="new-password" ${required} />
+      </label>
     `;
   }
 
@@ -1370,7 +1647,15 @@ function renderFields(type, record = {}) {
 
   editorTitle.textContent = record.id ? `${t("action.edit")} ${singularLabel(type)}` : `${t("action.new")} ${singularLabel(type)}`;
   saveRecordButton.textContent =
-    type === "vehicles" ? t("action.saveVehicle") : type === "parts" ? t("action.savePart") : t("action.saveDictionary");
+    type === "vehicles"
+      ? t("action.saveVehicle")
+      : type === "parts"
+        ? t("action.savePart")
+        : type === "adminUsers"
+          ? t("action.saveUser")
+          : type === "adminRoles"
+            ? t("action.saveRole")
+            : t("action.saveDictionary");
 }
 
 function renderTable(type) {
@@ -1500,19 +1785,107 @@ function renderAiLogs() {
     .join("");
 }
 
+function formatDateTime(value) {
+  return String(value || "").slice(0, 19).replace("T", " ");
+}
+
+function renderUsers() {
+  const body = document.querySelector("[data-users-body]");
+  if (!body) {
+    return;
+  }
+
+  const rows = state.data.adminUsers || [];
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="7">${t("empty.users")}</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = rows
+    .map((row) => {
+      const roles = roleNames(row.role_ids).join(", ") || "--";
+      const status = row.status === "disabled" ? "disabled" : "active";
+      return `
+        <tr>
+          <td><strong>${escapeHtml(row.username || "")}</strong></td>
+          <td>${escapeHtml(row.name || "")}</td>
+          <td>${escapeHtml(row.email || "")}</td>
+          <td>${escapeHtml(roles)}</td>
+          <td><span class="status-pill status-${statusClass(status)}">${escapeHtml(fieldLabel(status === "disabled" ? "Disabled" : "Active"))}</span></td>
+          <td>${escapeHtml(formatDateTime(row.last_login_at) || "--")}</td>
+          <td>
+            <div class="row-actions">
+              ${can("users:update") ? `<button class="secondary-button" type="button" data-edit="adminUsers" data-id="${row.id}">${t("action.edit")}</button>` : ""}
+              ${
+                can("users:disable")
+                  ? `<button class="secondary-button" type="button" data-user-status="${status === "disabled" ? "enable" : "disable"}" data-id="${row.id}">${
+                      status === "disabled" ? t("action.enable") : t("action.disable")
+                    }</button>`
+                  : ""
+              }
+              ${can("users:reset_password") ? `<button class="secondary-button" type="button" data-reset-password="${row.id}">${t("action.resetPassword")}</button>` : ""}
+            </div>
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
+function renderRoles() {
+  const body = document.querySelector("[data-roles-body]");
+  if (!body) {
+    return;
+  }
+
+  const rows = state.data.adminRoles || [];
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="6">${t("empty.roles")}</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = rows
+    .map((row) => {
+      const permissions = listValue(row.permissions);
+      const status = row.status === "disabled" ? "disabled" : "active";
+      return `
+        <tr>
+          <td><strong>${escapeHtml(row.code || "")}</strong></td>
+          <td>${escapeHtml(row.name_en || "")}</td>
+          <td>${escapeHtml(row.name_zh || "")}</td>
+          <td>${escapeHtml(t("roles.permissionCount", { count: permissions.length }))}</td>
+          <td><span class="status-pill status-${statusClass(status)}">${escapeHtml(fieldLabel(status === "disabled" ? "Disabled" : "Active"))}</span></td>
+          <td>
+            <div class="row-actions">
+              ${can("roles:update") ? `<button class="secondary-button" type="button" data-edit="adminRoles" data-id="${row.id}">${t("action.edit")}</button>` : ""}
+              ${can("roles:delete") && !row.system ? `<button class="danger-button" type="button" data-delete="adminRoles" data-id="${row.id}">${t("action.delete")}</button>` : ""}
+            </div>
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
 async function refreshData() {
-  const [vehicles, parts, inquiries, dictionaries, aiLogs] = await Promise.all([
+  const [vehicles, parts, inquiries, dictionaries, aiLogs, adminUsers, adminRoles, permissions] = await Promise.all([
     api("/api/vehicles"),
     api("/api/parts"),
-    api("/api/inquiries"),
+    apiIfAllowed("/api/inquiries", "inquiries:view"),
     api("/api/dictionaries"),
-    api("/api/ai-logs"),
+    apiIfAllowed("/api/ai-logs", "ai_logs:view"),
+    apiIfAllowed("/api/admin/users", "users:view"),
+    apiIfAllowed("/api/admin/roles", "roles:view"),
+    api("/api/admin/permissions"),
   ]);
   state.data.vehicles = vehicles.items || [];
   state.data.parts = parts.items || [];
   state.data.inquiries = inquiries.items || [];
   state.data.dictionaries = dictionaries.items || [];
   state.data.aiLogs = aiLogs.items || [];
+  state.data.adminUsers = adminUsers.items || [];
+  state.data.adminRoles = adminRoles.items || [];
+  state.permissions = permissions.items || [];
   renderMetrics();
   renderFilterOptions();
   renderTable("vehicles");
@@ -1520,13 +1893,23 @@ async function refreshData() {
   renderDictionaryTable();
   renderInquiries();
   renderAiLogs();
+  renderUsers();
+  renderRoles();
 }
 
 function collectForm(type, form) {
   const data = new FormData(form);
   const record = {};
   schemas[type].fields.forEach((field) => {
-    record[field.name] = String(data.get(field.name) || "").trim();
+    if (field.type === "rolePicker" || field.type === "permissionMatrix") {
+      record[field.name] = data.getAll(field.name).map((value) => String(value || "").trim()).filter(Boolean);
+      return;
+    }
+    const value = String(data.get(field.name) || "").trim();
+    if (field.type === "password" && !value) {
+      return;
+    }
+    record[field.name] = value;
   });
   return record;
 }
@@ -1685,7 +2068,7 @@ loginForm.addEventListener("submit", async (event) => {
         password: data.get("password"),
       }),
     });
-    setAuthenticated(result.token, { user: result.user, ip: result.ip });
+    setAuthenticated(result.token, { user: result.user, roles: result.roles, permissions: result.permissions, ip: result.ip });
     await loadSessionInfo();
     await refreshData();
     showToast(t("toast.loggedIn"));
@@ -1759,7 +2142,9 @@ document.addEventListener("click", async (event) => {
 
   const newRecordButton = target.closest("[data-new-record]");
   if (newRecordButton) {
-    openRecordDrawer(newRecordButton.dataset.newRecord, {});
+    const type = newRecordButton.dataset.newRecord;
+    const defaults = type === "adminUsers" || type === "adminRoles" ? { status: "active" } : {};
+    openRecordDrawer(type, defaults);
     return;
   }
 
@@ -1785,6 +2170,37 @@ document.addEventListener("click", async (event) => {
     if (record) {
       openRecordDrawer(type, record);
       showToast(t("toast.loaded"));
+    }
+    return;
+  }
+
+  const userStatusButton = target.closest("[data-user-status]");
+  if (userStatusButton) {
+    try {
+      await api(`/api/admin/users/${userStatusButton.dataset.id}/${userStatusButton.dataset.userStatus}`, { method: "POST" });
+      await refreshData();
+      showToast(t("toast.userStatusUpdated"));
+    } catch (error) {
+      showToast(error.message);
+    }
+    return;
+  }
+
+  const resetPasswordButton = target.closest("[data-reset-password]");
+  if (resetPasswordButton) {
+    const password = window.prompt(t("prompt.newPassword"));
+    if (!password) {
+      return;
+    }
+    try {
+      await api(`/api/admin/users/${resetPasswordButton.dataset.resetPassword}/reset-password`, {
+        method: "POST",
+        body: JSON.stringify({ password }),
+      });
+      await refreshData();
+      showToast(t("toast.passwordReset"));
+    } catch (error) {
+      showToast(error.message);
     }
     return;
   }

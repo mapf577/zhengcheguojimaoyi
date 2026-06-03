@@ -42,7 +42,161 @@ const stores = {
     required: ["category", "module", "action", "status"],
     numeric: [],
   },
+  adminUsers: {
+    file: path.join(DATA_DIR, "admin-users.json"),
+    required: ["username", "name", "status"],
+    numeric: [],
+  },
+  adminRoles: {
+    file: path.join(DATA_DIR, "admin-roles.json"),
+    required: ["code", "name_en", "name_zh", "status"],
+    numeric: [],
+  },
 };
+
+const permissionCatalog = [
+  {
+    group: "dashboard",
+    label_en: "Dashboard",
+    label_zh: "工作台",
+    permissions: [{ code: "dashboard:view", label_en: "View dashboard", label_zh: "查看工作台" }],
+  },
+  {
+    group: "vehicles",
+    label_en: "Vehicles",
+    label_zh: "整车管理",
+    permissions: [
+      { code: "vehicles:view", label_en: "View vehicles", label_zh: "查看整车" },
+      { code: "vehicles:create", label_en: "Create vehicles", label_zh: "新增整车" },
+      { code: "vehicles:update", label_en: "Update vehicles", label_zh: "编辑整车" },
+      { code: "vehicles:delete", label_en: "Delete vehicles", label_zh: "删除整车" },
+      { code: "vehicles:import", label_en: "Import vehicles", label_zh: "导入整车" },
+      { code: "vehicles:export", label_en: "Export vehicles", label_zh: "导出整车" },
+    ],
+  },
+  {
+    group: "parts",
+    label_en: "Parts",
+    label_zh: "零配件管理",
+    permissions: [
+      { code: "parts:view", label_en: "View parts", label_zh: "查看零配件" },
+      { code: "parts:create", label_en: "Create parts", label_zh: "新增零配件" },
+      { code: "parts:update", label_en: "Update parts", label_zh: "编辑零配件" },
+      { code: "parts:delete", label_en: "Delete parts", label_zh: "删除零配件" },
+      { code: "parts:import", label_en: "Import parts", label_zh: "导入零配件" },
+      { code: "parts:export", label_en: "Export parts", label_zh: "导出零配件" },
+    ],
+  },
+  {
+    group: "inquiries",
+    label_en: "Inquiries",
+    label_zh: "询盘管理",
+    permissions: [
+      { code: "inquiries:view", label_en: "View inquiries", label_zh: "查看询盘" },
+      { code: "inquiries:update", label_en: "Update inquiries", label_zh: "处理询盘" },
+    ],
+  },
+  {
+    group: "dictionaries",
+    label_en: "Dictionaries",
+    label_zh: "字典设置",
+    permissions: [
+      { code: "dictionaries:view", label_en: "View dictionaries", label_zh: "查看字典" },
+      { code: "dictionaries:create", label_en: "Create dictionaries", label_zh: "新增字典" },
+      { code: "dictionaries:update", label_en: "Update dictionaries", label_zh: "编辑字典" },
+      { code: "dictionaries:delete", label_en: "Delete dictionaries", label_zh: "删除字典" },
+    ],
+  },
+  {
+    group: "users",
+    label_en: "Users",
+    label_zh: "用户管理",
+    permissions: [
+      { code: "users:view", label_en: "View users", label_zh: "查看用户" },
+      { code: "users:create", label_en: "Create users", label_zh: "新增用户" },
+      { code: "users:update", label_en: "Update users", label_zh: "编辑用户" },
+      { code: "users:disable", label_en: "Enable or disable users", label_zh: "启用/停用用户" },
+      { code: "users:reset_password", label_en: "Reset passwords", label_zh: "重置密码" },
+    ],
+  },
+  {
+    group: "roles",
+    label_en: "Roles",
+    label_zh: "权限角色",
+    permissions: [
+      { code: "roles:view", label_en: "View roles", label_zh: "查看角色" },
+      { code: "roles:create", label_en: "Create roles", label_zh: "新增角色" },
+      { code: "roles:update", label_en: "Update roles", label_zh: "编辑角色" },
+      { code: "roles:delete", label_en: "Delete roles", label_zh: "删除角色" },
+    ],
+  },
+  {
+    group: "ai_logs",
+    label_en: "AI Logs",
+    label_zh: "AI日志",
+    permissions: [{ code: "ai_logs:view", label_en: "View AI logs", label_zh: "查看AI日志" }],
+  },
+];
+
+const allPermissionCodes = permissionCatalog.flatMap((group) => group.permissions.map((permission) => permission.code));
+
+const defaultRoleSeeds = [
+  {
+    id: "role_super_admin",
+    code: "super_admin",
+    name_en: "Super Administrator",
+    name_zh: "超级管理员",
+    description_en: "Full system access.",
+    description_zh: "拥有系统全部权限。",
+    status: "active",
+    permissions: allPermissionCodes,
+    system: true,
+  },
+  {
+    id: "role_manager",
+    code: "manager",
+    name_en: "Operations Manager",
+    name_zh: "运营经理",
+    description_en: "Manage catalog, inquiries, dictionaries and logs.",
+    description_zh: "管理商品、询盘、字典和日志。",
+    status: "active",
+    permissions: allPermissionCodes.filter((code) => !code.startsWith("users:") && !code.startsWith("roles:")),
+    system: true,
+  },
+  {
+    id: "role_editor",
+    code: "editor",
+    name_en: "Catalog Editor",
+    name_zh: "商品编辑",
+    description_en: "Maintain vehicles, parts and dictionaries.",
+    description_zh: "维护整车、零配件和字典。",
+    status: "active",
+    permissions: allPermissionCodes.filter((code) => code.startsWith("vehicles:") || code.startsWith("parts:") || code.startsWith("dictionaries:") || code === "dashboard:view"),
+    system: true,
+  },
+  {
+    id: "role_sales",
+    code: "sales",
+    name_en: "Sales",
+    name_zh: "销售",
+    description_en: "View products and process inquiries.",
+    description_zh: "查看商品并处理询盘。",
+    status: "active",
+    permissions: ["dashboard:view", "vehicles:view", "parts:view", "inquiries:view", "inquiries:update"],
+    system: true,
+  },
+  {
+    id: "role_viewer",
+    code: "viewer",
+    name_en: "Viewer",
+    name_zh: "只读用户",
+    description_en: "Read-only access.",
+    description_zh: "只读访问。",
+    status: "active",
+    permissions: ["dashboard:view", "vehicles:view", "parts:view", "inquiries:view", "dictionaries:view"],
+    system: true,
+  },
+];
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -150,6 +304,8 @@ async function ensureStorage() {
   if (isMysqlEnabled()) {
     await ensureMysqlStorage();
   }
+
+  await ensureAuthBootstrap();
 }
 
 async function readMysqlRows(type) {
@@ -209,6 +365,138 @@ async function writeRows(type, rows) {
   writeJsonRows(type, rows);
 }
 
+function normalizeStringList(value) {
+  if (Array.isArray(value)) {
+    return [...new Set(value.map((item) => String(item || "").trim()).filter(Boolean))];
+  }
+  if (typeof value === "string") {
+    return normalizeStringList(value.split(","));
+  }
+  return [];
+}
+
+function normalizePermissions(value) {
+  const allowed = new Set(allPermissionCodes);
+  return normalizeStringList(value).filter((permission) => allowed.has(permission));
+}
+
+function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString("hex");
+  const hash = crypto.pbkdf2Sync(String(password || ""), salt, 120000, 32, "sha256").toString("hex");
+  return `pbkdf2$sha256$120000$${salt}$${hash}`;
+}
+
+function verifyPassword(password, storedHash) {
+  if (!storedHash) {
+    return false;
+  }
+  const [scheme, digest, iterations, salt, expected] = String(storedHash).split("$");
+  if (scheme !== "pbkdf2" || digest !== "sha256" || !salt || !expected) {
+    return false;
+  }
+  const actual = crypto
+    .pbkdf2Sync(String(password || ""), salt, Number(iterations || 0), Buffer.from(expected, "hex").length, "sha256")
+    .toString("hex");
+  try {
+    return crypto.timingSafeEqual(Buffer.from(actual, "hex"), Buffer.from(expected, "hex"));
+  } catch {
+    return false;
+  }
+}
+
+function sanitizeUser(user = {}) {
+  const { password, password_hash, ...safe } = user;
+  return {
+    ...safe,
+    role_ids: normalizeStringList(user.role_ids),
+  };
+}
+
+function sanitizeRole(role = {}) {
+  return {
+    ...role,
+    permissions: normalizePermissions(role.permissions),
+  };
+}
+
+function getUserRoles(user, roles) {
+  const roleIds = new Set(normalizeStringList(user.role_ids));
+  return roles.filter((role) => role.status !== "disabled" && (roleIds.has(role.id) || roleIds.has(role.code)));
+}
+
+function getUserPermissions(user, roles) {
+  const permissions = new Set();
+  getUserRoles(user, roles).forEach((role) => {
+    normalizePermissions(role.permissions).forEach((permission) => permissions.add(permission));
+  });
+  return [...permissions];
+}
+
+async function buildAuthPayload(user) {
+  const roles = (await readRows("adminRoles")).map(sanitizeRole);
+  const userRoles = getUserRoles(user, roles);
+  const permissions = getUserPermissions(user, roles);
+  return {
+    user: {
+      ...sanitizeUser(user),
+      roles: userRoles.map((role) => ({ id: role.id, code: role.code, name_en: role.name_en, name_zh: role.name_zh })),
+    },
+    roles: userRoles,
+    permissions,
+  };
+}
+
+async function ensureAuthBootstrap() {
+  const roles = await readRows("adminRoles");
+  const byCode = new Map(roles.map((role) => [role.code, role]));
+  let rolesChanged = false;
+
+  defaultRoleSeeds.forEach((seed) => {
+    const existing = byCode.get(seed.code);
+    if (!existing) {
+      roles.push(normalizeRecord("adminRoles", sanitizeRole(seed), { id: seed.id }));
+      rolesChanged = true;
+      return;
+    }
+
+    if (existing.system) {
+      const mergedPermissions = normalizePermissions([...(existing.permissions || []), ...seed.permissions]);
+      Object.assign(existing, {
+        name_en: existing.name_en || seed.name_en,
+        name_zh: existing.name_zh || seed.name_zh,
+        description_en: existing.description_en || seed.description_en,
+        description_zh: existing.description_zh || seed.description_zh,
+        permissions: mergedPermissions,
+        status: existing.status || "active",
+        system: true,
+      });
+      rolesChanged = true;
+    }
+  });
+
+  if (rolesChanged) {
+    await writeRows("adminRoles", roles);
+  }
+
+  const users = await readRows("adminUsers");
+  if (!users.length) {
+    users.push(
+      normalizeRecord("adminUsers", {
+        username: ADMIN_USER,
+        name: "Administrator",
+        email: "",
+        phone: "",
+        status: "active",
+        role_ids: ["role_super_admin"],
+        password_hash: hashPassword(ADMIN_PASSWORD),
+        last_login_at: "",
+        system: true,
+      }, { id: "user_admin" }),
+    );
+    await writeRows("adminUsers", users);
+  }
+}
+
 function sendJson(res, status, payload) {
   const body = JSON.stringify(payload);
   res.writeHead(status, {
@@ -265,13 +553,19 @@ function now() {
 
 function normalizeRecord(type, input, existing = {}) {
   const timestamp = now();
+  const prefixes = {
+    vehicles: "veh",
+    parts: "part",
+    dictionaries: "dict",
+    aiLogs: "log",
+    adminUsers: "user",
+    adminRoles: "role",
+    inquiries: "inq",
+  };
   return {
     ...existing,
     ...input,
-    id:
-      existing.id ||
-      input.id ||
-      createId(type === "vehicles" ? "veh" : type === "parts" ? "part" : type === "dictionaries" ? "dict" : type === "aiLogs" ? "log" : "inq"),
+    id: existing.id || input.id || createId(prefixes[type] || "rec"),
     created_at: existing.created_at || input.created_at || timestamp,
     updated_at: timestamp,
   };
@@ -331,26 +625,108 @@ function getBearerToken(req) {
   return match ? match[1] : "";
 }
 
-function isAuthorized(req) {
+function getSession(req) {
   const token = getBearerToken(req);
   const session = sessions.get(token);
   if (!session) {
-    return false;
+    return null;
   }
   if (session.expiresAt < Date.now()) {
     sessions.delete(token);
-    return false;
+    return null;
   }
-  return true;
+  return { token, ...session };
+}
+
+function isAuthorized(req) {
+  return Boolean(getSession(req));
 }
 
 function getSessionUser(req) {
-  const token = getBearerToken(req);
-  const session = sessions.get(token);
-  if (!session || session.expiresAt < Date.now()) {
-    return "";
+  const session = getSession(req);
+  return session?.username || session?.user || "";
+}
+
+async function requirePermission(req, res, permission) {
+  const session = getSession(req);
+  if (!session) {
+    sendJson(res, 401, { error: "Unauthorized" });
+    return null;
   }
-  return session.user || "";
+
+  const users = await readRows("adminUsers");
+  const user = users.find((item) => item.id === session.userId || item.username === session.username);
+  if (!user || user.status === "disabled") {
+    sessions.delete(session.token);
+    sendJson(res, 401, { error: "Unauthorized" });
+    return null;
+  }
+
+  const roles = (await readRows("adminRoles")).map(sanitizeRole);
+  const permissions = getUserPermissions(user, roles);
+  if (permission && !permissions.includes(permission)) {
+    sendJson(res, 403, { error: "Forbidden", permission });
+    return null;
+  }
+
+  return { session, user, roles, permissions };
+}
+
+function invalidateUserSessions(userId) {
+  sessions.forEach((session, token) => {
+    if (session.userId === userId) {
+      sessions.delete(token);
+    }
+  });
+}
+
+function mutationPermission(type, method) {
+  const actions = {
+    POST: "create",
+    PUT: "update",
+    DELETE: "delete",
+  };
+  const action = actions[method];
+  return action ? `${type}:${action}` : "";
+}
+
+function sortByUpdated(rows) {
+  return [...rows].sort((a, b) => String(b.updated_at || b.created_at || "").localeCompare(String(a.updated_at || a.created_at || "")));
+}
+
+function safeUserPayload(body = {}, existing = {}) {
+  const password = String(body.password || "").trim();
+  const next = {
+    username: String(body.username || existing.username || "").trim(),
+    name: String(body.name || existing.name || "").trim(),
+    email: String(body.email || existing.email || "").trim(),
+    phone: String(body.phone || existing.phone || "").trim(),
+    status: body.status === "disabled" ? "disabled" : "active",
+    role_ids: normalizeStringList(body.role_ids || existing.role_ids),
+    system: Boolean(existing.system),
+  };
+
+  if (password) {
+    next.password_hash = hashPassword(password);
+  } else if (existing.password_hash) {
+    next.password_hash = existing.password_hash;
+  }
+
+  return next;
+}
+
+function safeRolePayload(body = {}, existing = {}) {
+  const isSystemRole = Boolean(existing.system);
+  return {
+    code: String(isSystemRole ? existing.code : body.code || existing.code || "").trim(),
+    name_en: String(body.name_en || existing.name_en || "").trim(),
+    name_zh: String(body.name_zh || existing.name_zh || "").trim(),
+    description_en: String(body.description_en || existing.description_en || "").trim(),
+    description_zh: String(body.description_zh || existing.description_zh || "").trim(),
+    status: isSystemRole && existing.code === "super_admin" ? "active" : body.status === "disabled" ? "disabled" : "active",
+    permissions: isSystemRole && existing.code === "super_admin" ? allPermissionCodes : normalizePermissions(body.permissions || existing.permissions),
+    system: isSystemRole,
+  };
 }
 
 function getClientIp(req) {
@@ -469,24 +845,35 @@ function serveStatic(req, res, pathname) {
 
 async function handleLogin(req, res) {
   const body = await readJson(req);
-  if (body.username !== ADMIN_USER || body.password !== ADMIN_PASSWORD) {
+  const username = String(body.username || "").trim();
+  const users = await readRows("adminUsers");
+  const index = users.findIndex((user) => user.username === username);
+  const user = index >= 0 ? users[index] : null;
+
+  if (!user || user.status === "disabled" || !verifyPassword(body.password, user.password_hash)) {
     await appendAiLog(req, {
       category: "security",
       module: "auth",
       action: "login_failed",
       status: "failed",
       source: "admin",
-      actor: body.username || "unknown",
-      target_label: body.username || "",
+      actor: username || "unknown",
+      target_label: username || "",
       detail: "Invalid username or password",
     });
     sendJson(res, 401, { error: "Invalid username or password" });
     return;
   }
 
+  users[index] = normalizeRecord("adminUsers", { ...user, last_login_at: now() }, user);
+  await writeRows("adminUsers", users);
+
+  const authPayload = await buildAuthPayload(users[index]);
   const token = crypto.randomBytes(32).toString("hex");
   sessions.set(token, {
-    user: ADMIN_USER,
+    userId: user.id,
+    username: user.username,
+    permissions: authPayload.permissions,
     expiresAt: Date.now() + 24 * 60 * 60 * 1000,
   });
   await appendAiLog(req, {
@@ -495,18 +882,20 @@ async function handleLogin(req, res) {
     action: "login",
     status: "success",
     source: "admin",
-    actor: ADMIN_USER,
-    target_label: ADMIN_USER,
+    actor: user.username,
+    target_label: user.username,
   });
-  sendJson(res, 200, { token, user: { username: ADMIN_USER }, ip: getClientIp(req) });
+  sendJson(res, 200, { token, ...authPayload, ip: getClientIp(req) });
 }
 
 async function handleAdminSession(req, res) {
-  if (!requireAuth(req, res)) {
+  const auth = await requirePermission(req, res);
+  if (!auth) {
     return;
   }
+  const authPayload = await buildAuthPayload(auth.user);
   sendJson(res, 200, {
-    user: { username: getSessionUser(req) || ADMIN_USER },
+    ...authPayload,
     ip: getClientIp(req),
   });
 }
@@ -523,7 +912,7 @@ async function handleCollection(req, res, type, id) {
     return;
   }
 
-  if (!requireAuth(req, res)) {
+  if (!(await requirePermission(req, res, mutationPermission(type, req.method)))) {
     return;
   }
 
@@ -632,7 +1021,7 @@ async function handleCollection(req, res, type, id) {
 }
 
 async function handleImport(req, res, type) {
-  if (!requireAuth(req, res)) {
+  if (!(await requirePermission(req, res, `${type}:import`))) {
     return;
   }
   const body = await readJson(req);
@@ -723,7 +1112,7 @@ async function handleInquiryPost(req, res) {
 }
 
 async function handleInquiryUpdate(req, res, id) {
-  if (!requireAuth(req, res)) {
+  if (!(await requirePermission(req, res, "inquiries:update"))) {
     return;
   }
   const rows = await readRows("inquiries");
@@ -747,13 +1136,286 @@ async function handleInquiryUpdate(req, res, id) {
 }
 
 async function handleAiLogs(req, res) {
-  if (!requireAuth(req, res)) {
+  if (!(await requirePermission(req, res, "ai_logs:view"))) {
     return;
   }
 
   if (req.method === "GET") {
     const rows = (await readRows("aiLogs")).sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
     sendJson(res, 200, { items: rows.slice(0, 500) });
+    return;
+  }
+
+  sendJson(res, 405, { error: "Method not allowed" });
+}
+
+async function handlePermissions(req, res) {
+  if (!(await requirePermission(req, res))) {
+    return;
+  }
+  sendJson(res, 200, { items: permissionCatalog });
+}
+
+async function handleAdminUsers(req, res, id, action) {
+  if (req.method === "GET") {
+    if (!(await requirePermission(req, res, "users:view"))) {
+      return;
+    }
+    const rows = sortByUpdated(await readRows("adminUsers")).map(sanitizeUser);
+    sendJson(res, 200, { items: rows });
+    return;
+  }
+
+  if (req.method === "POST" && action === "reset-password") {
+    if (!(await requirePermission(req, res, "users:reset_password"))) {
+      return;
+    }
+    const body = await readJson(req);
+    const password = String(body.password || "").trim();
+    if (password.length < 8) {
+      sendJson(res, 400, { errors: ["password must be at least 8 characters"] });
+      return;
+    }
+    const rows = await readRows("adminUsers");
+    const index = rows.findIndex((row) => row.id === id);
+    if (index === -1) {
+      sendJson(res, 404, { error: "Not found" });
+      return;
+    }
+    rows[index] = normalizeRecord("adminUsers", { ...rows[index], password_hash: hashPassword(password) }, rows[index]);
+    await writeRows("adminUsers", rows);
+    invalidateUserSessions(rows[index].id);
+    await appendAiLog(req, {
+      module: "adminUsers",
+      action: "reset_password",
+      target_type: "adminUsers",
+      target_id: rows[index].id,
+      target_label: rows[index].username,
+      detail: "Admin user password was reset.",
+    });
+    sendJson(res, 200, sanitizeUser(rows[index]));
+    return;
+  }
+
+  if (req.method === "POST" && (action === "disable" || action === "enable")) {
+    if (!(await requirePermission(req, res, "users:disable"))) {
+      return;
+    }
+    const rows = await readRows("adminUsers");
+    const index = rows.findIndex((row) => row.id === id);
+    if (index === -1) {
+      sendJson(res, 404, { error: "Not found" });
+      return;
+    }
+    rows[index] = normalizeRecord("adminUsers", { ...rows[index], status: action === "disable" ? "disabled" : "active" }, rows[index]);
+    await writeRows("adminUsers", rows);
+    if (rows[index].status === "disabled") {
+      invalidateUserSessions(rows[index].id);
+    }
+    await appendAiLog(req, {
+      module: "adminUsers",
+      action,
+      target_type: "adminUsers",
+      target_id: rows[index].id,
+      target_label: rows[index].username,
+      detail: `Admin user ${action}d.`,
+    });
+    sendJson(res, 200, sanitizeUser(rows[index]));
+    return;
+  }
+
+  if (req.method === "POST") {
+    if (!(await requirePermission(req, res, "users:create"))) {
+      return;
+    }
+    const body = await readJson(req);
+    const password = String(body.password || "").trim();
+    const record = normalizeRecord("adminUsers", safeUserPayload(body));
+    const errors = validateRecord("adminUsers", record);
+    if (!password) {
+      errors.push("password is required");
+    } else if (password.length < 8) {
+      errors.push("password must be at least 8 characters");
+    }
+    if (!record.role_ids.length) {
+      errors.push("role_ids is required");
+    }
+    if (errors.length) {
+      sendJson(res, 400, { errors });
+      return;
+    }
+    const rows = await readRows("adminUsers");
+    if (rows.some((row) => row.username === record.username)) {
+      sendJson(res, 409, { error: "Username already exists." });
+      return;
+    }
+    rows.push(record);
+    await writeRows("adminUsers", rows);
+    await appendAiLog(req, {
+      module: "adminUsers",
+      action: "create",
+      target_type: "adminUsers",
+      target_id: record.id,
+      target_label: record.username,
+      detail: "Admin user created.",
+    });
+    sendJson(res, 201, sanitizeUser(record));
+    return;
+  }
+
+  if (req.method === "PUT" && id) {
+    if (!(await requirePermission(req, res, "users:update"))) {
+      return;
+    }
+    const body = await readJson(req);
+    const rows = await readRows("adminUsers");
+    const index = rows.findIndex((row) => row.id === id);
+    if (index === -1) {
+      sendJson(res, 404, { error: "Not found" });
+      return;
+    }
+    const record = normalizeRecord("adminUsers", safeUserPayload(body, rows[index]), rows[index]);
+    const errors = validateRecord("adminUsers", record);
+    if (body.password && String(body.password || "").trim().length < 8) {
+      errors.push("password must be at least 8 characters");
+    }
+    if (!record.role_ids.length) {
+      errors.push("role_ids is required");
+    }
+    if (errors.length) {
+      sendJson(res, 400, { errors });
+      return;
+    }
+    if (rows.some((row, rowIndex) => rowIndex !== index && row.username === record.username)) {
+      sendJson(res, 409, { error: "Username already exists." });
+      return;
+    }
+    rows[index] = record;
+    await writeRows("adminUsers", rows);
+    invalidateUserSessions(record.id);
+    await appendAiLog(req, {
+      module: "adminUsers",
+      action: "update",
+      target_type: "adminUsers",
+      target_id: record.id,
+      target_label: record.username,
+      detail: "Admin user updated.",
+    });
+    sendJson(res, 200, sanitizeUser(record));
+    return;
+  }
+
+  sendJson(res, 405, { error: "Method not allowed" });
+}
+
+async function handleAdminRoles(req, res, id) {
+  if (req.method === "GET") {
+    if (!(await requirePermission(req, res, "roles:view"))) {
+      return;
+    }
+    sendJson(res, 200, { items: sortByUpdated(await readRows("adminRoles")).map(sanitizeRole) });
+    return;
+  }
+
+  if (req.method === "POST") {
+    if (!(await requirePermission(req, res, "roles:create"))) {
+      return;
+    }
+    const body = await readJson(req);
+    const record = normalizeRecord("adminRoles", safeRolePayload(body));
+    const errors = validateRecord("adminRoles", record);
+    if (!record.permissions.length) {
+      errors.push("permissions is required");
+    }
+    if (errors.length) {
+      sendJson(res, 400, { errors });
+      return;
+    }
+    const rows = await readRows("adminRoles");
+    if (rows.some((row) => row.code === record.code)) {
+      sendJson(res, 409, { error: "Role code already exists." });
+      return;
+    }
+    rows.push(record);
+    await writeRows("adminRoles", rows);
+    await appendAiLog(req, {
+      module: "adminRoles",
+      action: "create",
+      target_type: "adminRoles",
+      target_id: record.id,
+      target_label: record.code,
+      detail: "Admin role created.",
+    });
+    sendJson(res, 201, sanitizeRole(record));
+    return;
+  }
+
+  const rows = await readRows("adminRoles");
+  const index = rows.findIndex((row) => row.id === id);
+  if (index === -1) {
+    sendJson(res, 404, { error: "Not found" });
+    return;
+  }
+
+  if (req.method === "PUT") {
+    if (!(await requirePermission(req, res, "roles:update"))) {
+      return;
+    }
+    const body = await readJson(req);
+    const record = normalizeRecord("adminRoles", safeRolePayload(body, rows[index]), rows[index]);
+    const errors = validateRecord("adminRoles", record);
+    if (!record.permissions.length) {
+      errors.push("permissions is required");
+    }
+    if (errors.length) {
+      sendJson(res, 400, { errors });
+      return;
+    }
+    if (rows.some((row, rowIndex) => rowIndex !== index && row.code === record.code)) {
+      sendJson(res, 409, { error: "Role code already exists." });
+      return;
+    }
+    rows[index] = record;
+    await writeRows("adminRoles", rows);
+    await appendAiLog(req, {
+      module: "adminRoles",
+      action: "update",
+      target_type: "adminRoles",
+      target_id: record.id,
+      target_label: record.code,
+      detail: "Admin role updated.",
+    });
+    sendJson(res, 200, sanitizeRole(record));
+    return;
+  }
+
+  if (req.method === "DELETE") {
+    if (!(await requirePermission(req, res, "roles:delete"))) {
+      return;
+    }
+    if (rows[index].system) {
+      sendJson(res, 400, { error: "System roles cannot be deleted." });
+      return;
+    }
+    const users = await readRows("adminUsers");
+    if (users.some((user) => {
+      const roleIds = normalizeStringList(user.role_ids);
+      return roleIds.includes(rows[index].id) || roleIds.includes(rows[index].code);
+    })) {
+      sendJson(res, 409, { error: "Role is assigned to users and cannot be deleted." });
+      return;
+    }
+    const [removed] = rows.splice(index, 1);
+    await writeRows("adminRoles", rows);
+    await appendAiLog(req, {
+      module: "adminRoles",
+      action: "delete",
+      target_type: "adminRoles",
+      target_id: removed.id,
+      target_label: removed.code,
+      detail: "Admin role deleted.",
+    });
+    sendJson(res, 200, { removed: sanitizeRole(removed) });
     return;
   }
 
@@ -778,6 +1440,23 @@ async function handleApi(req, res, pathname) {
 
   if (pathname === "/api/admin/session") {
     await handleAdminSession(req, res);
+    return true;
+  }
+
+  if (pathname === "/api/admin/permissions") {
+    await handlePermissions(req, res);
+    return true;
+  }
+
+  const adminUserMatch = pathname.match(/^\/api\/admin\/users(?:\/([^/]+)(?:\/([^/]+))?)?$/);
+  if (adminUserMatch) {
+    await handleAdminUsers(req, res, adminUserMatch[1], adminUserMatch[2]);
+    return true;
+  }
+
+  const adminRoleMatch = pathname.match(/^\/api\/admin\/roles(?:\/([^/]+))?$/);
+  if (adminRoleMatch) {
+    await handleAdminRoles(req, res, adminRoleMatch[1]);
     return true;
   }
 
@@ -820,7 +1499,7 @@ async function handleApi(req, res, pathname) {
 
   if (pathname === "/api/inquiries") {
     if (req.method === "GET") {
-      if (!requireAuth(req, res)) {
+      if (!(await requirePermission(req, res, "inquiries:view"))) {
         return true;
       }
       sendJson(res, 200, { items: await readRows("inquiries") });

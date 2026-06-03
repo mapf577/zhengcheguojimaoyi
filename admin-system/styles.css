@@ -1277,6 +1277,88 @@ textarea:focus {
   gap: 8px;
 }
 
+.choice-field,
+.permission-field {
+  display: grid;
+  gap: 8px;
+}
+
+.choice-field > span,
+.permission-field > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.choice-item,
+.permission-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  min-height: 42px;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdff;
+}
+
+.choice-item input,
+.permission-item input {
+  margin-top: 2px;
+}
+
+.choice-item span {
+  display: grid;
+  gap: 2px;
+}
+
+.choice-item strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.choice-item small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.permission-matrix {
+  display: grid;
+  gap: 10px;
+}
+
+.permission-matrix fieldset {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.permission-matrix legend {
+  padding: 0 6px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.empty-inline {
+  padding: 10px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  background: #fbfdff;
+}
+
 .record-drawer {
   position: fixed;
   inset: 0;
@@ -1684,6 +1766,8 @@ tbody tr:last-child td {
   .metric-grid,
   .dashboard-grid,
   .form-section-grid,
+  .choice-grid,
+  .permission-matrix fieldset,
   .image-field-row,
   .product-toolbar {
     grid-template-columns: 1fr;
