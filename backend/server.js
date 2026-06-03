@@ -11,8 +11,10 @@ const PORT = Number(process.env.PORT || 3000);
 const ADMIN_USER = process.env.ADMIN_USER || "admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 const TOKEN_SECRET = process.env.TOKEN_SECRET || crypto.randomBytes(32).toString("hex");
+const DB_DRIVER = String(process.env.DB_DRIVER || (process.env.DATABASE_URL ? "mysql" : "json")).toLowerCase();
 
 const sessions = new Map();
+let mysqlPool = null;
 
 const stores = {
   vehicles: {
@@ -57,17 +59,28 @@ const mimeTypes = {
   ".ico": "image/x-icon",
 };
 
-function ensureStorage() {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-  Object.values(stores).forEach((store) => {
-    if (!fs.existsSync(store.file)) {
-      fs.writeFileSync(store.file, "[]", "utf8");
-    }
-  });
+function isMysqlEnabled() {
+  return DB_DRIVER === "mysql";
 }
 
-function readRows(type) {
+function getMysqlConfig() {
+  if (process.env.DATABASE_URL) {
+    return process.env.DATABASE_URL;
+  }
+
+  return {
+    host: process.env.MYSQL_HOST || process.env.DB_HOST || "127.0.0.1",
+    port: Number(process.env.MYSQL_PORT || process.env.DB_PORT || 3306),
+    user: process.env.MYSQL_USER || process.env.DB_USER || "vehicle_export",
+    password: process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD || "",
+    database: process.env.MYSQL_DATABASE || process.env.DB_NAME || "vehicle_export",
+    waitForConnections: true,
+    connectionLimit: Number(process.env.MYSQL_CONNECTION_LIMIT || 10),
+    charset: "utf8mb4",
+  };
+}
+
+function readJsonRows(type) {
   const file = stores[type].file;
   try {
     return JSON.parse(fs.readFileSync(file, "utf8"));
@@ -76,8 +89,124 @@ function readRows(type) {
   }
 }
 
-function writeRows(type, rows) {
+function writeJsonRows(type, rows) {
   fs.writeFileSync(stores[type].file, `${JSON.stringify(rows, null, 2)}\n`, "utf8");
+}
+
+async function ensureMysqlStorage() {
+  let mysql;
+  try {
+    mysql = require("mysql2/promise");
+  } catch (error) {
+    throw new Error("MySQL mode requires the mysql2 package. Run npm install before starting the server.");
+  }
+
+  mysqlPool = mysql.createPool(getMysqlConfig());
+  await mysqlPool.execute(`
+    CREATE TABLE IF NOT EXISTS app_records (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      store_type VARCHAR(32) NOT NULL,
+      record_id VARCHAR(80) NOT NULL,
+      sku VARCHAR(120) NULL,
+      code VARCHAR(120) NULL,
+      dictionary_type VARCHAR(80) NULL,
+      payload JSON NOT NULL,
+      created_at VARCHAR(40) NULL,
+      updated_at VARCHAR(40) NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uniq_store_record (store_type, record_id),
+      KEY idx_store_type (store_type),
+      KEY idx_store_sku (store_type, sku),
+      KEY idx_dictionary (store_type, dictionary_type, code)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
+  await seedMysqlFromJson();
+}
+
+async function seedMysqlFromJson() {
+  const [rows] = await mysqlPool.execute("SELECT COUNT(*) AS count FROM app_records");
+  if (Number(rows[0]?.count || 0) > 0) {
+    return;
+  }
+
+  for (const type of Object.keys(stores)) {
+    const jsonRows = readJsonRows(type);
+    if (jsonRows.length) {
+      await writeMysqlRows(type, jsonRows);
+    }
+  }
+}
+
+async function ensureStorage() {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  Object.values(stores).forEach((store) => {
+    if (!fs.existsSync(store.file)) {
+      fs.writeFileSync(store.file, "[]", "utf8");
+    }
+  });
+
+  if (isMysqlEnabled()) {
+    await ensureMysqlStorage();
+  }
+}
+
+async function readMysqlRows(type) {
+  const [rows] = await mysqlPool.execute("SELECT payload FROM app_records WHERE store_type = ? ORDER BY id ASC", [type]);
+  return rows.map((row) => {
+    if (typeof row.payload === "string") {
+      return JSON.parse(row.payload);
+    }
+    return row.payload || {};
+  });
+}
+
+async function writeMysqlRows(type, rows) {
+  const connection = await mysqlPool.getConnection();
+  try {
+    await connection.beginTransaction();
+    await connection.execute("DELETE FROM app_records WHERE store_type = ?", [type]);
+    for (const row of rows) {
+      const persisted = row.id ? row : normalizeRecord(type, row);
+      await connection.execute(
+        `INSERT INTO app_records
+          (store_type, record_id, sku, code, dictionary_type, payload, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          type,
+          persisted.id,
+          persisted.sku || null,
+          persisted.code || null,
+          type === "dictionaries" ? persisted.type || null : null,
+          JSON.stringify(persisted),
+          persisted.created_at || null,
+          persisted.updated_at || null,
+        ],
+      );
+    }
+    await connection.commit();
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+async function readRows(type) {
+  if (mysqlPool) {
+    return readMysqlRows(type);
+  }
+  return readJsonRows(type);
+}
+
+async function writeRows(type, rows) {
+  if (mysqlPool) {
+    await writeMysqlRows(type, rows);
+    return;
+  }
+  writeJsonRows(type, rows);
 }
 
 function sendJson(res, status, payload) {
@@ -168,8 +297,8 @@ function validateRecord(type, record) {
   return errors;
 }
 
-function mergeBySku(type, rows) {
-  const existing = readRows(type);
+async function mergeBySku(type, rows) {
+  const existing = await readRows(type);
   const bySku = new Map();
   existing.forEach((row) => {
     if (row.sku) {
@@ -192,7 +321,7 @@ function mergeBySku(type, rows) {
     saved.push(normalized);
   });
 
-  writeRows(type, [...bySku.values()]);
+  await writeRows(type, [...bySku.values()]);
   return { saved, rejected, total: bySku.size };
 }
 
@@ -228,8 +357,8 @@ function targetLabel(record = {}) {
   return record.sku || record.name || record.name_en || record.name_zh || record.model || record.code || record.email || record.id || "";
 }
 
-function appendAiLog(req, entry) {
-  const logs = readRows("aiLogs");
+async function appendAiLog(req, entry) {
+  const logs = await readRows("aiLogs");
   const record = normalizeRecord("aiLogs", {
     category: "operation",
     module: "",
@@ -246,7 +375,7 @@ function appendAiLog(req, entry) {
     ...entry,
   });
   logs.unshift(record);
-  writeRows("aiLogs", logs.slice(0, 500));
+  await writeRows("aiLogs", logs.slice(0, 500));
   return record;
 }
 
@@ -332,7 +461,7 @@ function serveStatic(req, res, pathname) {
 async function handleLogin(req, res) {
   const body = await readJson(req);
   if (body.username !== ADMIN_USER || body.password !== ADMIN_PASSWORD) {
-    appendAiLog(req, {
+    await appendAiLog(req, {
       category: "security",
       module: "auth",
       action: "login_failed",
@@ -351,7 +480,7 @@ async function handleLogin(req, res) {
     user: ADMIN_USER,
     expiresAt: Date.now() + 24 * 60 * 60 * 1000,
   });
-  appendAiLog(req, {
+  await appendAiLog(req, {
     category: "security",
     module: "auth",
     action: "login",
@@ -365,7 +494,7 @@ async function handleLogin(req, res) {
 
 async function handleCollection(req, res, type, id) {
   if (req.method === "GET") {
-    const rows = readRows(type);
+    const rows = await readRows(type);
     if (id) {
       const row = rows.find((item) => item.id === id || item.sku === id || item.code === id);
       sendJson(res, row ? 200 : 404, row || { error: "Not found" });
@@ -386,7 +515,7 @@ async function handleCollection(req, res, type, id) {
       sendJson(res, 400, { errors });
       return;
     }
-    const rows = readRows(type);
+    const rows = await readRows(type);
     const duplicate = rows.some((row) => {
       if (body.sku) {
         return row.sku === body.sku;
@@ -402,8 +531,8 @@ async function handleCollection(req, res, type, id) {
     }
     const record = normalizeRecord(type, body);
     rows.push(record);
-    writeRows(type, rows);
-    appendAiLog(req, {
+    await writeRows(type, rows);
+    await appendAiLog(req, {
       module: type,
       action: "create",
       target_type: type,
@@ -420,7 +549,7 @@ async function handleCollection(req, res, type, id) {
     return;
   }
 
-  const rows = readRows(type);
+  const rows = await readRows(type);
   const index = rows.findIndex((row) => row.id === id || row.sku === id || row.code === id);
   if (index === -1) {
     sendJson(res, 404, { error: "Not found" });
@@ -452,8 +581,8 @@ async function handleCollection(req, res, type, id) {
       return;
     }
     rows[index] = next;
-    writeRows(type, rows);
-    appendAiLog(req, {
+    await writeRows(type, rows);
+    await appendAiLog(req, {
       module: type,
       action: "update",
       target_type: type,
@@ -467,8 +596,8 @@ async function handleCollection(req, res, type, id) {
 
   if (req.method === "DELETE") {
     const [removed] = rows.splice(index, 1);
-    writeRows(type, rows);
-    appendAiLog(req, {
+    await writeRows(type, rows);
+    await appendAiLog(req, {
       module: type,
       action: "delete",
       target_type: type,
@@ -489,8 +618,8 @@ async function handleImport(req, res, type) {
   }
   const body = await readJson(req);
   const rows = Array.isArray(body.rows) ? body.rows : [];
-  const result = mergeBySku(type, rows);
-  appendAiLog(req, {
+  const result = await mergeBySku(type, rows);
+  await appendAiLog(req, {
     module: type,
     action: "import",
     target_type: type,
@@ -523,7 +652,7 @@ async function handleUpload(req, res) {
   const filename = `${Date.now().toString(36)}-${crypto.randomBytes(4).toString("hex")}${ext}`;
   const target = path.join(UPLOAD_DIR, filename);
   fs.writeFileSync(target, buffer);
-  appendAiLog(req, {
+  await appendAiLog(req, {
     module: "uploads",
     action: "upload_image",
     target_type: "upload",
@@ -558,10 +687,10 @@ async function handleInquiryPost(req, res) {
     sendJson(res, 400, { errors });
     return;
   }
-  const rows = readRows("inquiries");
+  const rows = await readRows("inquiries");
   rows.unshift(record);
-  writeRows("inquiries", rows);
-  appendAiLog(req, {
+  await writeRows("inquiries", rows);
+  await appendAiLog(req, {
     module: "inquiries",
     action: "create",
     source: "website",
@@ -578,7 +707,7 @@ async function handleInquiryUpdate(req, res, id) {
   if (!requireAuth(req, res)) {
     return;
   }
-  const rows = readRows("inquiries");
+  const rows = await readRows("inquiries");
   const index = rows.findIndex((row) => row.id === id);
   if (index === -1) {
     sendJson(res, 404, { error: "Not found" });
@@ -586,8 +715,8 @@ async function handleInquiryUpdate(req, res, id) {
   }
   const body = await readJson(req);
   rows[index] = normalizeRecord("inquiries", body, rows[index]);
-  writeRows("inquiries", rows);
-  appendAiLog(req, {
+  await writeRows("inquiries", rows);
+  await appendAiLog(req, {
     module: "inquiries",
     action: "update_status",
     target_type: "inquiries",
@@ -604,7 +733,7 @@ async function handleAiLogs(req, res) {
   }
 
   if (req.method === "GET") {
-    const rows = readRows("aiLogs").sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+    const rows = (await readRows("aiLogs")).sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
     sendJson(res, 200, { items: rows.slice(0, 500) });
     return;
   }
@@ -619,7 +748,7 @@ async function handleApi(req, res, pathname) {
   }
 
   if (pathname === "/api/health") {
-    sendJson(res, 200, { ok: true, service: "vehicle-export-platform", port: PORT });
+    sendJson(res, 200, { ok: true, service: "vehicle-export-platform", port: PORT, storage: mysqlPool ? "mysql" : "json" });
     return true;
   }
 
@@ -658,7 +787,7 @@ async function handleApi(req, res, pathname) {
 
   const dictionaryTypeMatch = pathname.match(/^\/api\/dictionaries\/type\/([^/]+)$/);
   if (dictionaryTypeMatch && req.method === "GET") {
-    const rows = readRows("dictionaries")
+    const rows = (await readRows("dictionaries"))
       .filter((row) => row.type === dictionaryTypeMatch[1])
       .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0));
     sendJson(res, 200, { items: rows });
@@ -670,7 +799,7 @@ async function handleApi(req, res, pathname) {
       if (!requireAuth(req, res)) {
         return true;
       }
-      sendJson(res, 200, { items: readRows("inquiries") });
+      sendJson(res, 200, { items: await readRows("inquiries") });
       return true;
     }
     if (req.method === "POST") {
@@ -711,9 +840,14 @@ async function route(req, res) {
   }
 }
 
-ensureStorage();
-
-http.createServer(route).listen(PORT, () => {
-  console.log(`Vehicle export platform running at http://localhost:${PORT}`);
-  console.log(`Admin login: ${ADMIN_USER} / ${ADMIN_PASSWORD}`);
-});
+ensureStorage()
+  .then(() => {
+    http.createServer(route).listen(PORT, () => {
+      console.log(`Vehicle export platform running at http://localhost:${PORT}`);
+      console.log(`Storage driver: ${mysqlPool ? "mysql" : "json"}`);
+    });
+  })
+  .catch((error) => {
+    console.error(error.message || error);
+    process.exit(1);
+  });

@@ -7,6 +7,14 @@ BRANCH="${BRANCH:-main}"
 PORT="${PORT:-3000}"
 ADMIN_USER="${ADMIN_USER:-admin}"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-change-this-password}"
+TOKEN_SECRET="${TOKEN_SECRET:-}"
+DB_DRIVER="${DB_DRIVER:-json}"
+MYSQL_HOST="${MYSQL_HOST:-127.0.0.1}"
+MYSQL_PORT="${MYSQL_PORT:-3306}"
+MYSQL_DATABASE="${MYSQL_DATABASE:-vehicle_export}"
+MYSQL_USER="${MYSQL_USER:-vehicle_export}"
+MYSQL_PASSWORD="${MYSQL_PASSWORD:-}"
+DATABASE_URL="${DATABASE_URL:-}"
 
 if ! command -v git >/dev/null 2>&1; then
   echo "git is required."
@@ -43,7 +51,8 @@ mkdir -p logs backend/uploads backend/data
 
 npm install --omit=dev
 
-export PORT ADMIN_USER ADMIN_PASSWORD
+export PORT ADMIN_USER ADMIN_PASSWORD TOKEN_SECRET
+export DB_DRIVER MYSQL_HOST MYSQL_PORT MYSQL_DATABASE MYSQL_USER MYSQL_PASSWORD DATABASE_URL
 pm2 startOrReload deploy/ecosystem.config.cjs --update-env
 pm2 save
 

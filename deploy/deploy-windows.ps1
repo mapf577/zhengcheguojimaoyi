@@ -4,7 +4,15 @@ param(
   [string]$Branch = "main",
   [string]$Port = "3000",
   [string]$AdminUser = "admin",
-  [string]$AdminPassword = "change-this-password"
+  [string]$AdminPassword = "change-this-password",
+  [string]$TokenSecret = "",
+  [string]$DbDriver = "json",
+  [string]$MysqlHost = "127.0.0.1",
+  [string]$MysqlPort = "3306",
+  [string]$MysqlDatabase = "vehicle_export",
+  [string]$MysqlUser = "vehicle_export",
+  [string]$MysqlPassword = "",
+  [string]$DatabaseUrl = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -41,6 +49,14 @@ npm install --omit=dev
 $env:PORT = $Port
 $env:ADMIN_USER = $AdminUser
 $env:ADMIN_PASSWORD = $AdminPassword
+$env:TOKEN_SECRET = $TokenSecret
+$env:DB_DRIVER = $DbDriver
+$env:MYSQL_HOST = $MysqlHost
+$env:MYSQL_PORT = $MysqlPort
+$env:MYSQL_DATABASE = $MysqlDatabase
+$env:MYSQL_USER = $MysqlUser
+$env:MYSQL_PASSWORD = $MysqlPassword
+$env:DATABASE_URL = $DatabaseUrl
 
 pm2 startOrReload deploy\ecosystem.config.cjs --update-env
 pm2 save

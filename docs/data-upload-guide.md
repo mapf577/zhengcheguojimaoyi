@@ -7,7 +7,7 @@
 - 真实后台管理系统：`http://localhost:3000/admin/`
 - 旧的静态上传原型：`prototype/admin.html`
 
-真实后台通过 Node 后端保存数据到 `backend/data/*.json`，上传图片保存到 `backend/uploads/`。
+真实后台通过 Node 后端保存数据。生产环境推荐启用 MySQL；开发环境未配置 MySQL 时，会回退保存到 `backend/data/*.json`。上传图片保存到 `backend/uploads/`。
 
 旧静态上传原型没有真实后端和数据库，只会把数据保存到浏览器 `localStorage`，保留它是为了离线演示。
 
@@ -25,10 +25,11 @@ npm start
 http://localhost:3000/admin/
 ```
 
-默认开发账号：
+后台账号通过环境变量配置：
 
 ```text
-admin / admin123
+ADMIN_USER
+ADMIN_PASSWORD
 ```
 
 真实后台支持：
@@ -165,9 +166,30 @@ prototype/data/parts-import-sample.csv
 - 价格、年份、座位数、续航等数字字段必须是数字。
 - 缺少必填表头时会标记错误。
 
+## 数据库存储
+
+生产环境建议启用 MySQL：
+
+```text
+DB_DRIVER=mysql
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_DATABASE=vehicle_export
+MYSQL_USER=vehicle_export
+MYSQL_PASSWORD=你的数据库密码
+```
+
+MySQL 表结构文件：
+
+```text
+database/mysql/schema.sql
+```
+
+第一次启用 MySQL 时，如果数据库表为空，后端会自动把现有 `backend/data/*.json` 导入 MySQL 一次。
+
 ## 正式系统建议
 
-正式开发时应升级为：
+正式运营时建议继续完善：
 
 - 后台单条录入。
 - Excel 批量导入。
@@ -175,7 +197,6 @@ prototype/data/parts-import-sample.csv
 - 导入预检查。
 - 错误行导出。
 - 草稿审核后发布。
-- 数据库存储。
 - 对象存储保存图片。
 
 图片批量上传建议按 SKU 命名：

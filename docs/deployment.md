@@ -23,6 +23,7 @@ backend/server.js
 - git
 - PM2
 - Nginx，推荐用于域名反向代理
+- MySQL 8.x，生产环境推荐使用
 
 PM2 如果没有安装，部署脚本会自动执行：
 
@@ -31,6 +32,36 @@ npm install -g pm2
 ```
 
 ## 二、Linux 部署
+
+先安装 MySQL：
+
+```bash
+sudo apt update
+sudo apt install mysql-server
+sudo systemctl enable --now mysql
+```
+
+创建数据库和账号：
+
+```bash
+sudo mysql
+```
+
+在 MySQL 控制台执行：
+
+```sql
+CREATE DATABASE IF NOT EXISTS vehicle_export CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS 'vehicle_export'@'localhost' IDENTIFIED BY '请改成强数据库密码';
+GRANT ALL PRIVILEGES ON vehicle_export.* TO 'vehicle_export'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+项目后端启动时会自动创建数据表。如果需要手动初始化，也可以执行：
+
+```bash
+mysql -u vehicle_export -p vehicle_export < database/mysql/schema.sql
+```
 
 上传或登录服务器后执行：
 
@@ -41,6 +72,13 @@ export BRANCH=main
 export PORT=3000
 export ADMIN_USER=admin
 export ADMIN_PASSWORD='请改成强密码'
+export TOKEN_SECRET='请改成一串随机长字符'
+export DB_DRIVER=mysql
+export MYSQL_HOST=127.0.0.1
+export MYSQL_PORT=3306
+export MYSQL_DATABASE=vehicle_export
+export MYSQL_USER=vehicle_export
+export MYSQL_PASSWORD='请改成强数据库密码'
 
 bash deploy/deploy-linux.sh
 ```
@@ -71,7 +109,14 @@ http://服务器IP:3000/admin/
   -Branch "main" `
   -Port "3000" `
   -AdminUser "admin" `
-  -AdminPassword "请改成强密码"
+  -AdminPassword "请改成强密码" `
+  -TokenSecret "请改成一串随机长字符" `
+  -DbDriver "mysql" `
+  -MysqlHost "127.0.0.1" `
+  -MysqlPort "3306" `
+  -MysqlDatabase "vehicle_export" `
+  -MysqlUser "vehicle_export" `
+  -MysqlPassword "请改成强数据库密码"
 ```
 
 ## 四、PM2 常用命令
@@ -162,9 +207,30 @@ sudo certbot --nginx -d example.com -d www.example.com
 
 把 `example.com` 换成你的域名。
 
-## 七、数据和图片目录
+## 七、数据库、数据和图片目录
 
-数据文件：
+生产环境推荐使用 MySQL：
+
+```text
+DB_DRIVER=mysql
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_DATABASE=vehicle_export
+MYSQL_USER=vehicle_export
+MYSQL_PASSWORD=你的数据库密码
+```
+
+MySQL 表结构文件：
+
+```text
+database/mysql/schema.sql
+```
+
+后端会使用 MySQL 表 `app_records` 保存整车、零配件、询盘、字典和 AI 日志。第一次启用 MySQL 时，如果 `app_records` 为空，系统会自动把现有 JSON 文件导入数据库一次。
+
+开发环境不配置 MySQL 时，会继续使用 JSON 文件：
+
+JSON 数据文件：
 
 ```text
 backend/data/vehicles.json
@@ -183,7 +249,8 @@ backend/uploads/
 生产环境务必定期备份：
 
 ```bash
-tar -czf backup-$(date +%F).tar.gz backend/data backend/uploads
+mysqldump -u vehicle_export -p vehicle_export > backup-db-$(date +%F).sql
+tar -czf backup-uploads-$(date +%F).tar.gz backend/uploads
 ```
 
 ## 八、更新部署
@@ -210,7 +277,10 @@ pm2 startOrReload deploy/ecosystem.config.cjs --update-env
 ```bash
 export ADMIN_USER=你的账号
 export ADMIN_PASSWORD='强密码'
+export TOKEN_SECRET='随机长字符串'
+export DB_DRIVER=mysql
+export MYSQL_PASSWORD='强数据库密码'
 ```
 
 - `.pem`、`.env` 等敏感文件已经被 `.gitignore` 忽略，不要手动提交。
-- 当前系统是轻量版 JSON 存储，正式商业上线前建议升级到 PostgreSQL/MySQL。
+- 正式商业上线建议使用 MySQL，并定期备份数据库和 `backend/uploads/`。

@@ -22,10 +22,11 @@ Real admin console:
 http://localhost:3000/admin/
 ```
 
-Default development login:
+Development login is controlled by environment variables:
 
 ```text
-admin / admin123
+ADMIN_USER
+ADMIN_PASSWORD
 ```
 
 Static prototype file:
@@ -53,7 +54,7 @@ prototype/admin.html
 - Product detail drawer with localized title, description, specs, image, and inquiry action.
 - Product filters.
 - Inquiry drawer.
-- Lightweight backend API with JSON persistence.
+- Backend API with MySQL storage for production and JSON fallback for local development.
 - Admin login.
 - Vehicle and auto parts CRUD.
 - List-first product management with drawer-based add/edit forms.
