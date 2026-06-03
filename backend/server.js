@@ -30,6 +30,11 @@ const stores = {
     required: ["name", "email", "message"],
     numeric: [],
   },
+  dictionaries: {
+    file: path.join(DATA_DIR, "dictionaries.json"),
+    required: ["type", "code", "name_en", "name_zh"],
+    numeric: ["sort_order"],
+  },
 };
 
 const mimeTypes = {
@@ -129,7 +134,7 @@ function normalizeRecord(type, input, existing = {}) {
   return {
     ...existing,
     ...input,
-    id: existing.id || input.id || createId(type === "vehicles" ? "veh" : type === "parts" ? "part" : "inq"),
+    id: existing.id || input.id || createId(type === "vehicles" ? "veh" : type === "parts" ? "part" : type === "dictionaries" ? "dict" : "inq"),
     created_at: existing.created_at || input.created_at || timestamp,
     updated_at: timestamp,
   };
@@ -300,7 +305,7 @@ async function handleCollection(req, res, type, id) {
   if (req.method === "GET") {
     const rows = readRows(type);
     if (id) {
-      const row = rows.find((item) => item.id === id || item.sku === id);
+      const row = rows.find((item) => item.id === id || item.sku === id || item.code === id);
       sendJson(res, row ? 200 : 404, row || { error: "Not found" });
       return;
     }
@@ -320,8 +325,17 @@ async function handleCollection(req, res, type, id) {
       return;
     }
     const rows = readRows(type);
-    if (body.sku && rows.some((row) => row.sku === body.sku)) {
-      sendJson(res, 409, { error: "SKU already exists. Use update or import to replace it." });
+    const duplicate = rows.some((row) => {
+      if (body.sku) {
+        return row.sku === body.sku;
+      }
+      if (type === "dictionaries") {
+        return row.type === body.type && row.code === body.code;
+      }
+      return false;
+    });
+    if (duplicate) {
+      sendJson(res, 409, { error: type === "dictionaries" ? "Dictionary code already exists for this type." : "SKU already exists. Use update or import to replace it." });
       return;
     }
     const record = normalizeRecord(type, body);
@@ -337,7 +351,7 @@ async function handleCollection(req, res, type, id) {
   }
 
   const rows = readRows(type);
-  const index = rows.findIndex((row) => row.id === id || row.sku === id);
+  const index = rows.findIndex((row) => row.id === id || row.sku === id || row.code === id);
   if (index === -1) {
     sendJson(res, 404, { error: "Not found" });
     return;
@@ -349,6 +363,22 @@ async function handleCollection(req, res, type, id) {
     const errors = validateRecord(type, next);
     if (errors.length) {
       sendJson(res, 400, { errors });
+      return;
+    }
+    const duplicate = rows.some((row, rowIndex) => {
+      if (rowIndex === index) {
+        return false;
+      }
+      if (type === "dictionaries") {
+        return row.type === next.type && row.code === next.code;
+      }
+      if (next.sku) {
+        return row.sku === next.sku;
+      }
+      return false;
+    });
+    if (duplicate) {
+      sendJson(res, 409, { error: type === "dictionaries" ? "Dictionary code already exists for this type." : "SKU already exists. Use update or import to replace it." });
       return;
     }
     rows[index] = next;
@@ -479,6 +509,21 @@ async function handleApi(req, res, pathname) {
   const collectionMatch = pathname.match(/^\/api\/(vehicles|parts)(?:\/([^/]+))?$/);
   if (collectionMatch) {
     await handleCollection(req, res, collectionMatch[1], collectionMatch[2]);
+    return true;
+  }
+
+  if (pathname === "/api/dictionaries" || pathname.match(/^\/api\/dictionaries\/[^/]+$/)) {
+    const dictionaryId = pathname === "/api/dictionaries" ? undefined : pathname.split("/").pop();
+    await handleCollection(req, res, "dictionaries", dictionaryId);
+    return true;
+  }
+
+  const dictionaryTypeMatch = pathname.match(/^\/api\/dictionaries\/type\/([^/]+)$/);
+  if (dictionaryTypeMatch && req.method === "GET") {
+    const rows = readRows("dictionaries")
+      .filter((row) => row.type === dictionaryTypeMatch[1])
+      .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0));
+    sendJson(res, 200, { items: rows });
     return true;
   }
 

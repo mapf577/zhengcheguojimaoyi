@@ -170,6 +170,7 @@ sudo certbot --nginx -d example.com -d www.example.com
 backend/data/vehicles.json
 backend/data/parts.json
 backend/data/inquiries.json
+backend/data/dictionaries.json
 ```
 
 上传图片：

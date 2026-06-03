@@ -44,6 +44,7 @@
           <button type="button" data-view="vehicles" data-i18n="nav.vehicles">Vehicles</button>
           <button type="button" data-view="parts" data-i18n="nav.parts">Auto Parts</button>
           <button type="button" data-view="inquiries" data-i18n="nav.inquiries">Inquiries</button>
+          <button type="button" data-view="settings" data-i18n="nav.settings">Settings</button>
         </nav>
         <button class="secondary-button" type="button" data-logout data-i18n="action.logout">Logout</button>
       </aside>
@@ -195,6 +196,36 @@
                   </tr>
                 </thead>
                 <tbody data-inquiries-body></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" data-view-panel="settings" hidden>
+          <section class="panel list-panel">
+            <div class="panel-header wrap">
+              <h2 data-i18n="settings.title">Dictionary Settings</h2>
+              <div class="toolbar">
+                <button class="primary-button" type="button" data-new-dictionary data-i18n="settings.add">Add Dictionary Item</button>
+              </div>
+            </div>
+            <div class="product-toolbar settings-toolbar">
+              <select data-dictionary-type>
+                <option value="brands" data-i18n="dict.brands">Brands</option>
+                <option value="models" data-i18n="dict.models">Models</option>
+                <option value="colors" data-i18n="dict.colors">Colors</option>
+                <option value="energy_types" data-i18n="dict.energyTypes">Energy Types</option>
+                <option value="vehicle_types" data-i18n="dict.vehicleTypes">Vehicle Types</option>
+                <option value="stock_statuses" data-i18n="dict.stockStatuses">Stock Statuses</option>
+                <option value="part_categories" data-i18n="dict.partCategories">Part Categories</option>
+                <option value="currencies" data-i18n="dict.currencies">Currencies</option>
+                <option value="export_ports" data-i18n="dict.exportPorts">Export Ports</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead data-dictionary-head></thead>
+                <tbody data-dictionary-body></tbody>
               </table>
             </div>
           </section>

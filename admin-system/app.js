@@ -1,3 +1,59 @@
+const dictionaryTypeOptions = [
+  ["brands", "Brands"],
+  ["models", "Models"],
+  ["colors", "Colors"],
+  ["energy_types", "Energy Types"],
+  ["vehicle_types", "Vehicle Types"],
+  ["stock_statuses", "Stock Statuses"],
+  ["part_categories", "Part Categories"],
+  ["currencies", "Currencies"],
+  ["export_ports", "Export Ports"],
+];
+
+const dictionaryTypeLabelKeys = {
+  brands: "dict.brands",
+  models: "dict.models",
+  colors: "dict.colors",
+  energy_types: "dict.energyTypes",
+  vehicle_types: "dict.vehicleTypes",
+  stock_statuses: "dict.stockStatuses",
+  part_categories: "dict.partCategories",
+  currencies: "dict.currencies",
+  export_ports: "dict.exportPorts",
+};
+
+const tableDictionaryFields = {
+  vehicles: {
+    brand: "brands",
+    model: "models",
+    vehicle_type: "vehicle_types",
+    energy_type: "energy_types",
+    stock_status: "stock_statuses",
+    color: "colors",
+    currency: "currencies",
+    export_port: "export_ports",
+  },
+  parts: {
+    category: "part_categories",
+    brand: "brands",
+    applicable_brand: "brands",
+    stock_status: "stock_statuses",
+    currency: "currencies",
+  },
+};
+
+const filterPlaceholderKeys = {
+  vehicles: {
+    energy_type: "filter.allEnergy",
+    vehicle_type: "filter.allVehicleTypes",
+    stock_status: "filter.allStock",
+  },
+  parts: {
+    category: "filter.allCategories",
+    stock_status: "filter.allStock",
+  },
+};
+
 const schemas = {
   vehicles: {
     title: "Vehicles",
@@ -6,15 +62,15 @@ const schemas = {
     columns: ["sku", "brand", "model", "year", "condition", "vehicle_type", "energy_type", "stock_status", "price_min", "price_max", "currency"],
     fields: [
       { name: "sku", label: "SKU", required: true },
-      { name: "brand", label: "Brand", required: true },
-      { name: "model", label: "Model", required: true },
+      { name: "brand", label: "Brand", required: true, dictionaryType: "brands" },
+      { name: "model", label: "Model", required: true, dictionaryType: "models", dependsOn: "brand" },
       { name: "title_en", label: "English Title" },
       { name: "title_zh", label: "Chinese Title" },
       { name: "year", label: "Year", required: true },
       { name: "trim", label: "Trim" },
       { name: "condition", label: "Condition", required: true },
-      { name: "vehicle_type", label: "Vehicle Type", required: true },
-      { name: "energy_type", label: "Energy Type", required: true },
+      { name: "vehicle_type", label: "Vehicle Type", required: true, dictionaryType: "vehicle_types" },
+      { name: "energy_type", label: "Energy Type", required: true, dictionaryType: "energy_types" },
       { name: "steering", label: "Steering" },
       { name: "seats", label: "Seats" },
       { name: "transmission", label: "Transmission" },
@@ -23,12 +79,12 @@ const schemas = {
       { name: "battery_kwh", label: "Battery KWH" },
       { name: "engine_displacement", label: "Engine Displacement" },
       { name: "mileage", label: "Mileage" },
-      { name: "color", label: "Color" },
-      { name: "stock_status", label: "Stock Status", required: true },
+      { name: "color", label: "Color", dictionaryType: "colors" },
+      { name: "stock_status", label: "Stock Status", required: true, dictionaryType: "stock_statuses" },
       { name: "price_min", label: "Price Min" },
       { name: "price_max", label: "Price Max" },
-      { name: "currency", label: "Currency", required: true },
-      { name: "export_port", label: "Export Port" },
+      { name: "currency", label: "Currency", required: true, dictionaryType: "currencies" },
+      { name: "export_port", label: "Export Port", dictionaryType: "export_ports" },
       { name: "images", label: "Images", type: "image" },
       { name: "description_en", label: "English Description", type: "textarea" },
       { name: "description_zh", label: "Chinese Description", type: "textarea" },
@@ -41,27 +97,43 @@ const schemas = {
     columns: ["sku", "category", "brand", "name", "oe_numbers", "applicable_brand", "applicable_model", "moq", "stock_status", "price_min", "price_max", "currency"],
     fields: [
       { name: "sku", label: "SKU", required: true },
-      { name: "category", label: "Category", required: true },
-      { name: "brand", label: "Brand" },
+      { name: "category", label: "Category", required: true, dictionaryType: "part_categories" },
+      { name: "brand", label: "Brand", dictionaryType: "brands" },
       { name: "name", label: "Product Name", required: true },
       { name: "title_en", label: "English Title" },
       { name: "title_zh", label: "Chinese Title" },
       { name: "oe_numbers", label: "OE/OEM Numbers", required: true },
       { name: "part_number", label: "Part Number" },
-      { name: "applicable_brand", label: "Applicable Brand" },
+      { name: "applicable_brand", label: "Applicable Brand", dictionaryType: "brands" },
       { name: "applicable_model", label: "Applicable Model" },
       { name: "applicable_year", label: "Applicable Year" },
       { name: "moq", label: "MOQ", required: true },
-      { name: "stock_status", label: "Stock Status", required: true },
+      { name: "stock_status", label: "Stock Status", required: true, dictionaryType: "stock_statuses" },
       { name: "lead_time_days", label: "Lead Time Days" },
       { name: "unit_weight", label: "Unit Weight" },
       { name: "package_size", label: "Package Size" },
       { name: "price_min", label: "Price Min" },
       { name: "price_max", label: "Price Max" },
-      { name: "currency", label: "Currency", required: true },
+      { name: "currency", label: "Currency", required: true, dictionaryType: "currencies" },
       { name: "images", label: "Images", type: "image" },
       { name: "description_en", label: "English Description", type: "textarea" },
       { name: "description_zh", label: "Chinese Description", type: "textarea" },
+    ],
+  },
+  dictionaries: {
+    title: "Dictionaries",
+    api: "/api/dictionaries",
+    columns: ["type", "code", "name_en", "name_zh", "status", "sort_order"],
+    fields: [
+      { name: "type", label: "Dictionary Type", required: true, options: dictionaryTypeOptions },
+      { name: "code", label: "Code", required: true },
+      { name: "brand_code", label: "Parent Brand Code", dictionaryType: "brands" },
+      { name: "name_en", label: "English Name", required: true },
+      { name: "name_zh", label: "Chinese Name", required: true },
+      { name: "vehicle_type", label: "Default Vehicle Type", dictionaryType: "vehicle_types" },
+      { name: "energy_type", label: "Default Energy Type", dictionaryType: "energy_types" },
+      { name: "status", label: "Status", required: true, options: [["active", "Active"], ["disabled", "Disabled"]] },
+      { name: "sort_order", label: "Sort Order" },
     ],
   },
 };
@@ -270,6 +342,198 @@ const columnTranslations = {
   },
 };
 
+Object.assign(adminTranslations.en, {
+  "nav.settings": "Settings",
+  "settings.title": "Dictionary Settings",
+  "settings.add": "Add Dictionary Item",
+  "action.saveDictionary": "Save Dictionary Item",
+  "empty.dictionaries": "No dictionary items yet.",
+  "singular.dictionary": "Dictionary Item",
+  "select.choose": "Select...",
+  "select.optional": "Optional",
+  "dict.brands": "Brands",
+  "dict.models": "Models",
+  "dict.colors": "Colors",
+  "dict.energyTypes": "Energy Types",
+  "dict.vehicleTypes": "Vehicle Types",
+  "dict.stockStatuses": "Stock Statuses",
+  "dict.partCategories": "Part Categories",
+  "dict.currencies": "Currencies",
+  "dict.exportPorts": "Export Ports",
+});
+
+Object.assign(adminTranslations.zh, {
+  "meta.title": "后台管理 | AutoGlobal Export",
+  "brand.admin": "后台",
+  "login.console": "管理控制台",
+  "login.title": "管理员登录",
+  "login.username": "用户名",
+  "login.password": "密码",
+  "login.submit": "登录",
+  "nav.dashboard": "仪表盘",
+  "nav.vehicles": "整车管理",
+  "nav.parts": "零配件管理",
+  "nav.inquiries": "询盘管理",
+  "nav.settings": "设置",
+  "workspace.eyebrow": "后台管理",
+  "action.logout": "退出登录",
+  "action.openWebsite": "打开官网",
+  "action.refresh": "刷新",
+  "action.new": "新增",
+  "action.addVehicle": "新增整车",
+  "action.addPart": "新增零配件",
+  "action.edit": "编辑",
+  "action.delete": "删除",
+  "action.email": "发邮件",
+  "action.cancel": "取消",
+  "action.importCsv": "导入 CSV",
+  "action.exportCsv": "导出 CSV",
+  "action.saveVehicle": "保存整车",
+  "action.savePart": "保存零配件",
+  "action.saveDictionary": "保存字典项",
+  "action.uploadImage": "上传图片",
+  "dashboard.next": "下一步",
+  "dashboard.task1": "新增或导入第一批可出口整车。",
+  "dashboard.task2": "在管理表单中上传产品图片。",
+  "dashboard.task3": "打开官网检查产品卡片和询盘表单。",
+  "vehicles.data": "整车数据",
+  "parts.data": "零配件数据",
+  "inquiries.title": "客户询盘",
+  "settings.title": "字典设置",
+  "settings.add": "新增字典项",
+  "table.status": "状态",
+  "table.name": "姓名",
+  "table.email": "邮箱",
+  "table.country": "国家",
+  "table.message": "留言",
+  "table.created": "创建时间",
+  "table.actions": "操作",
+  "empty.vehicles": "暂无整车数据。",
+  "empty.parts": "暂无零配件数据。",
+  "empty.dictionaries": "暂无字典项。",
+  "empty.noMatches": "没有找到匹配结果。",
+  "empty.adjustFilters": "请调整搜索关键词或筛选条件。",
+  "empty.inquiries": "暂无询盘。",
+  "filter.searchVehicles": "搜索 SKU、品牌、车型...",
+  "filter.searchParts": "搜索 SKU、名称、OE 编号...",
+  "filter.allEnergy": "全部能源",
+  "filter.allVehicleTypes": "全部类型",
+  "filter.allCategories": "全部分类",
+  "filter.allStock": "全部库存",
+  "singular.vehicle": "整车",
+  "singular.part": "零配件",
+  "singular.dictionary": "字典项",
+  "toast.chooseImage": "请先选择图片。",
+  "toast.imageUploaded": "图片已上传。",
+  "toast.loggedIn": "已登录。",
+  "toast.refreshed": "数据已刷新。",
+  "toast.loaded": "数据已载入编辑表单。",
+  "toast.deleted": "数据已删除。",
+  "toast.saved": "{item}已保存。",
+  "toast.imported": "已导入 {saved} 行，拒绝 {rejected} 行。",
+  "toast.inquiryUpdated": "询盘状态已更新。",
+  "confirm.delete": "确认删除 {name}？",
+  "placeholder.image": "/uploads/image.jpg 或外部图片 URL",
+  "select.choose": "请选择...",
+  "select.optional": "可选",
+  "dict.brands": "品牌",
+  "dict.models": "车型",
+  "dict.colors": "颜色",
+  "dict.energyTypes": "能源类型",
+  "dict.vehicleTypes": "车辆类型",
+  "dict.stockStatuses": "库存状态",
+  "dict.partCategories": "零配件分类",
+  "dict.currencies": "币种",
+  "dict.exportPorts": "出口港口",
+});
+
+Object.assign(fieldTranslations.zh, {
+  SKU: "SKU",
+  Brand: "品牌",
+  Model: "车型",
+  Year: "年份",
+  Trim: "配置",
+  Condition: "车况",
+  "Vehicle Type": "车辆类型",
+  "Energy Type": "能源类型",
+  Steering: "方向盘",
+  Seats: "座位数",
+  Transmission: "变速箱",
+  "Drive Type": "驱动方式",
+  "Range KM": "续航 KM",
+  "Battery KWH": "电池 KWH",
+  "Engine Displacement": "发动机排量",
+  Mileage: "里程",
+  Color: "颜色",
+  "Stock Status": "库存状态",
+  "Price Min": "最低价",
+  "Price Max": "最高价",
+  Currency: "币种",
+  "Export Port": "出口港口",
+  Images: "图片",
+  "English Description": "英文描述",
+  "English Title": "英文标题",
+  "Chinese Title": "中文标题",
+  "Chinese Description": "中文描述",
+  Category: "分类",
+  "Product Name": "产品名称",
+  "OE/OEM Numbers": "OE/OEM 编号",
+  "Part Number": "配件编号",
+  "Applicable Brand": "适配品牌",
+  "Applicable Model": "适配车型",
+  "Applicable Year": "适配年份",
+  MOQ: "最小起订量",
+  "Lead Time Days": "交期天数",
+  "Unit Weight": "单件重量",
+  "Package Size": "包装尺寸",
+  "Dictionary Type": "字典类型",
+  Code: "编码",
+  "Parent Brand Code": "所属品牌",
+  "English Name": "英文名称",
+  "Chinese Name": "中文名称",
+  "Default Vehicle Type": "默认车辆类型",
+  "Default Energy Type": "默认能源类型",
+  Status: "状态",
+  "Sort Order": "排序",
+  Brands: "品牌",
+  Models: "车型",
+  Colors: "颜色",
+  "Energy Types": "能源类型",
+  "Vehicle Types": "车辆类型",
+  "Stock Statuses": "库存状态",
+  "Part Categories": "零配件分类",
+  Currencies: "币种",
+  "Export Ports": "出口港口",
+  Active: "启用",
+  Disabled: "停用",
+});
+
+Object.assign(columnTranslations.zh, {
+  sku: "SKU",
+  brand: "品牌",
+  model: "车型",
+  year: "年份",
+  condition: "车况",
+  vehicle_type: "车辆类型",
+  energy_type: "能源类型",
+  stock_status: "库存状态",
+  price_min: "最低价",
+  price_max: "最高价",
+  currency: "币种",
+  category: "分类",
+  name: "名称",
+  oe_numbers: "OE 编号",
+  applicable_brand: "适配品牌",
+  applicable_model: "适配车型",
+  moq: "MOQ",
+  type: "类型",
+  code: "编码",
+  name_en: "英文名称",
+  name_zh: "中文名称",
+  status: "状态",
+  sort_order: "排序",
+});
+
 const state = {
   token: localStorage.getItem("admin_token") || "",
   lang: localStorage.getItem("admin_lang") === "zh" ? "zh" : "en",
@@ -277,8 +541,10 @@ const state = {
   editing: {
     vehicles: null,
     parts: null,
+    dictionaries: null,
   },
   drawerType: "",
+  dictionaryType: "brands",
   filters: {
     vehicles: {
       query: "",
@@ -296,6 +562,7 @@ const state = {
     vehicles: [],
     parts: [],
     inquiries: [],
+    dictionaries: [],
   },
 };
 
@@ -327,7 +594,13 @@ function columnLabel(column) {
 }
 
 function singularLabel(type) {
-  return type === "vehicles" ? t("singular.vehicle") : t("singular.part");
+  if (type === "vehicles") {
+    return t("singular.vehicle");
+  }
+  if (type === "parts") {
+    return t("singular.part");
+  }
+  return t("singular.dictionary");
 }
 
 function statusText(status) {
@@ -363,8 +636,10 @@ function applyLanguage() {
   if (state.drawerType && recordDrawer.getAttribute("aria-hidden") === "false") {
     renderFields(state.drawerType, state.editing[state.drawerType] ? findRecord(state.drawerType, state.editing[state.drawerType]) || {} : {});
   }
+  renderFilterOptions();
   renderTable("vehicles");
   renderTable("parts");
+  renderDictionaryTable();
   renderInquiries();
 }
 
@@ -442,7 +717,9 @@ function switchView(view) {
         ? t("nav.vehicles")
         : view === "parts"
           ? t("nav.parts")
-          : t("nav.inquiries");
+          : view === "settings"
+            ? t("nav.settings")
+            : t("nav.inquiries");
 }
 
 function renderMetrics() {
@@ -462,11 +739,11 @@ function getFilteredRows(type) {
   return state.data[type].filter((row) => {
     const matchesQuery =
       !query ||
-      queryFields.some((field) =>
-        String(row[field] || "")
-          .toLowerCase()
-          .includes(query),
-      );
+      queryFields.some((field) => {
+        const rawValue = String(row[field] || "").toLowerCase();
+        const displayValue = String(formatCell(type, field, row[field], row) || "").toLowerCase();
+        return rawValue.includes(query) || displayValue.includes(query);
+      });
 
     if (!matchesQuery) {
       return false;
@@ -481,6 +758,243 @@ function getFilteredRows(type) {
   });
 }
 
+function dictionaryTypeLabel(type) {
+  return t(dictionaryTypeLabelKeys[type] || type);
+}
+
+function localizedDictionaryName(row) {
+  if (!row) {
+    return "";
+  }
+  return state.lang === "zh" ? row.name_zh || row.name_en || row.code : row.name_en || row.name_zh || row.code;
+}
+
+function findDictionaryItem(type, value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized) {
+    return null;
+  }
+  return (state.data.dictionaries || []).find((row) => {
+    if (row.type !== type) {
+      return false;
+    }
+    return [row.code, row.name_en, row.name_zh].some((candidate) => String(candidate || "").trim().toLowerCase() === normalized);
+  });
+}
+
+function dictionaryCode(type, value) {
+  const row = findDictionaryItem(type, value);
+  return row ? row.code : String(value || "").trim();
+}
+
+function dictionaryLabel(type, value) {
+  const row = findDictionaryItem(type, value);
+  return row ? localizedDictionaryName(row) : value || "";
+}
+
+function sortedDictionaryRows(rows) {
+  return [...rows].sort((a, b) => {
+    const orderA = Number(a.sort_order || 0);
+    const orderB = Number(b.sort_order || 0);
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+    return String(a.name_en || a.code || "").localeCompare(String(b.name_en || b.code || ""));
+  });
+}
+
+function dictionaryItems(type) {
+  return sortedDictionaryRows((state.data.dictionaries || []).filter((row) => row.type === type && row.status !== "disabled"));
+}
+
+function renderFilterOptions() {
+  document.querySelectorAll("[data-filter-records]").forEach((select) => {
+    const type = select.dataset.filterRecords;
+    const field = select.dataset.filterField;
+    const dictionaryType = tableDictionaryFields[type]?.[field];
+    if (!dictionaryType) {
+      return;
+    }
+    const currentValue = state.filters[type]?.[field] || "";
+    const placeholderKey = filterPlaceholderKeys[type]?.[field] || "select.optional";
+    const options = dictionaryItems(dictionaryType);
+    select.innerHTML = `
+      <option value="">${t(placeholderKey)}</option>
+      ${options.map((row) => `<option value="${escapeHtml(row.code)}">${escapeHtml(localizedDictionaryName(row))}</option>`).join("")}
+    `;
+    select.value = [...select.options].some((option) => option.value === currentValue) ? currentValue : "";
+    if (state.filters[type]) {
+      state.filters[type][field] = select.value;
+    }
+  });
+}
+
+function optionLabel(option) {
+  if (option.labelKey) {
+    return t(option.labelKey);
+  }
+  return fieldLabel(option.label);
+}
+
+function normalizeOption(option) {
+  if (Array.isArray(option)) {
+    return { value: option[0], label: option[1] };
+  }
+  return option;
+}
+
+function getFieldOptions(field, record = {}) {
+  let options = [];
+  if (field.options) {
+    options = field.options.map(normalizeOption);
+  } else if (field.dictionaryType) {
+    let rows = dictionaryItems(field.dictionaryType);
+    if (field.dictionaryType === "models" && field.dependsOn) {
+      const parentValue = record[field.dependsOn] || recordForm.querySelector(`[name="${field.dependsOn}"]`)?.value || "";
+      const parentCode = dictionaryCode("brands", parentValue);
+      if (parentCode) {
+        rows = rows.filter((row) => !row.brand_code || dictionaryCode("brands", row.brand_code) === parentCode);
+      }
+    }
+    options = rows.map((row) => ({ value: row.code, label: localizedDictionaryName(row) }));
+  }
+
+  const currentValue = String(record[field.name] || "");
+  if (currentValue && !options.some((option) => String(option.value) === currentValue)) {
+    const fallbackLabel = field.dictionaryType ? dictionaryLabel(field.dictionaryType, currentValue) : currentValue;
+    options.unshift({ value: currentValue, label: fallbackLabel });
+  }
+  return options;
+}
+
+function renderSelectOptions(field, record = {}) {
+  const value = String(record[field.name] || "");
+  const options = getFieldOptions(field, record);
+  const placeholder = field.required ? t("select.choose") : t("select.optional");
+  return `
+    <option value="">${placeholder}</option>
+    ${options
+      .map(
+        (option) =>
+          `<option value="${escapeHtml(option.value)}" ${String(option.value) === value ? "selected" : ""}>${escapeHtml(optionLabel(option))}</option>`,
+      )
+      .join("")}
+  `;
+}
+
+function renderSelectField(field, record = {}) {
+  const required = field.required ? "required" : "";
+  return `
+    <label>
+      <span>${fieldLabel(field.label)}${field.required ? " *" : ""}</span>
+      <select name="${field.name}" ${required} ${field.dependsOn ? `data-depends-on="${field.dependsOn}"` : ""}>
+        ${renderSelectOptions(field, record)}
+      </select>
+    </label>
+  `;
+}
+
+function formatCell(type, column, value) {
+  if (type === "dictionaries") {
+    if (column === "type") {
+      return dictionaryTypeLabel(value);
+    }
+    if (column === "status") {
+      return fieldLabel(value === "disabled" ? "Disabled" : "Active");
+    }
+    if (column === "brand_code") {
+      return dictionaryLabel("brands", value);
+    }
+  }
+
+  const dictionaryType = tableDictionaryFields[type]?.[column];
+  if (dictionaryType) {
+    return dictionaryLabel(dictionaryType, value);
+  }
+  return value || "";
+}
+
+function renderDictionaryTable() {
+  const head = document.querySelector("[data-dictionary-head]");
+  const body = document.querySelector("[data-dictionary-body]");
+  if (!head || !body) {
+    return;
+  }
+
+  const schema = schemas.dictionaries;
+  const rows = sortedDictionaryRows((state.data.dictionaries || []).filter((row) => row.type === state.dictionaryType));
+  head.innerHTML = `
+    <tr>
+      ${schema.columns.map((column) => `<th>${columnLabel(column)}</th>`).join("")}
+      <th>${t("table.actions")}</th>
+    </tr>
+  `;
+
+  if (!rows.length) {
+    body.innerHTML = `
+      <tr>
+        <td colspan="${schema.columns.length + 1}">
+          <div class="empty-state">
+            <strong>${t("empty.dictionaries")}</strong>
+            <button class="primary-button" type="button" data-new-dictionary>${t("settings.add")}</button>
+          </div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  body.innerHTML = rows
+    .map(
+      (row) => `
+        <tr>
+          ${schema.columns.map((column) => `<td>${escapeHtml(formatCell("dictionaries", column, row[column], row))}</td>`).join("")}
+          <td>
+            <div class="row-actions">
+              <button class="secondary-button" type="button" data-edit="dictionaries" data-id="${row.id}">${t("action.edit")}</button>
+              <button class="danger-button" type="button" data-delete="dictionaries" data-id="${row.id}">${t("action.delete")}</button>
+            </div>
+          </td>
+        </tr>
+      `,
+    )
+    .join("");
+}
+
+function updateVehicleModelOptions(form) {
+  if (form.dataset.recordForm !== "vehicles") {
+    return;
+  }
+  const brand = form.querySelector('[name="brand"]')?.value || "";
+  const modelSelect = form.querySelector('[name="model"]');
+  if (!modelSelect) {
+    return;
+  }
+  const modelField = schemas.vehicles.fields.find((field) => field.name === "model");
+  modelSelect.innerHTML = renderSelectOptions(modelField, { brand, model: "" });
+  modelSelect.value = "";
+}
+
+function applyVehicleModelDefaults(form) {
+  if (form.dataset.recordForm !== "vehicles") {
+    return;
+  }
+  const modelValue = form.querySelector('[name="model"]')?.value || "";
+  const model = findDictionaryItem("models", modelValue);
+  if (!model) {
+    return;
+  }
+  [
+    ["vehicle_type", model.vehicle_type],
+    ["energy_type", model.energy_type],
+  ].forEach(([fieldName, value]) => {
+    const input = form.querySelector(`[name="${fieldName}"]`);
+    if (input && value) {
+      input.value = value;
+    }
+  });
+}
+
 function renderFields(type, record = {}) {
   const schema = schemas[type];
   recordForm.dataset.recordForm = type;
@@ -489,6 +1003,10 @@ function renderFields(type, record = {}) {
     .map((field) => {
       const required = field.required ? "required" : "";
       const value = escapeHtml(record[field.name] || "");
+
+      if (field.options || field.dictionaryType) {
+        return renderSelectField(field, record);
+      }
 
       if (field.type === "textarea") {
         return `
@@ -524,7 +1042,8 @@ function renderFields(type, record = {}) {
     .join("");
 
   editorTitle.textContent = record.id ? `${t("action.edit")} ${singularLabel(type)}` : `${t("action.new")} ${singularLabel(type)}`;
-  saveRecordButton.textContent = type === "vehicles" ? t("action.saveVehicle") : t("action.savePart");
+  saveRecordButton.textContent =
+    type === "vehicles" ? t("action.saveVehicle") : type === "parts" ? t("action.savePart") : t("action.saveDictionary");
 }
 
 function renderTable(type) {
@@ -572,7 +1091,7 @@ function renderTable(type) {
     .map(
       (row) => `
         <tr>
-          ${schema.columns.map((column) => `<td>${escapeHtml(row[column] || "")}</td>`).join("")}
+          ${schema.columns.map((column) => `<td>${escapeHtml(formatCell(type, column, row[column], row))}</td>`).join("")}
           <td>
             <div class="row-actions">
               <button class="secondary-button" type="button" data-edit="${type}" data-id="${row.id}">${t("action.edit")}</button>
@@ -618,17 +1137,21 @@ function renderInquiries() {
 }
 
 async function refreshData() {
-  const [vehicles, parts, inquiries] = await Promise.all([
+  const [vehicles, parts, inquiries, dictionaries] = await Promise.all([
     api("/api/vehicles"),
     api("/api/parts"),
     api("/api/inquiries"),
+    api("/api/dictionaries"),
   ]);
   state.data.vehicles = vehicles.items || [];
   state.data.parts = parts.items || [];
   state.data.inquiries = inquiries.items || [];
+  state.data.dictionaries = dictionaries.items || [];
   renderMetrics();
+  renderFilterOptions();
   renderTable("vehicles");
   renderTable("parts");
+  renderDictionaryTable();
   renderInquiries();
 }
 
@@ -830,6 +1353,17 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
+  if (target.closest("[data-new-dictionary]")) {
+    const sameTypeRows = (state.data.dictionaries || []).filter((row) => row.type === state.dictionaryType);
+    const nextOrder = sameTypeRows.length ? Math.max(...sameTypeRows.map((row) => Number(row.sort_order || 0))) + 10 : 10;
+    openRecordDrawer("dictionaries", {
+      type: state.dictionaryType,
+      status: "active",
+      sort_order: String(nextOrder),
+    });
+    return;
+  }
+
   const newRecordButton = target.closest("[data-new-record]");
   if (newRecordButton) {
     openRecordDrawer(newRecordButton.dataset.newRecord, {});
@@ -866,7 +1400,8 @@ document.addEventListener("click", async (event) => {
   if (deleteButton) {
     const type = deleteButton.dataset.delete;
     const record = findRecord(type, deleteButton.dataset.id);
-    if (!record || !confirm(t("confirm.delete", { name: record.sku || record.name || record.model }))) {
+    const recordName = record?.sku || record?.name || record?.name_en || record?.name_zh || record?.model || record?.code || record?.id;
+    if (!record || !confirm(t("confirm.delete", { name: recordName }))) {
       return;
     }
     try {
@@ -890,6 +1425,15 @@ document.addEventListener("click", async (event) => {
 });
 
 document.querySelectorAll("[data-record-form]").forEach((form) => {
+  form.addEventListener("change", (event) => {
+    if (event.target?.name === "brand") {
+      updateVehicleModelOptions(form);
+    }
+    if (event.target?.name === "model") {
+      applyVehicleModelDefaults(form);
+    }
+  });
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const type = form.dataset.recordForm;
@@ -908,6 +1452,11 @@ document.querySelectorAll("[data-record-form]").forEach((form) => {
       showToast(error.message);
     }
   });
+});
+
+document.querySelector("[data-dictionary-type]")?.addEventListener("change", (event) => {
+  state.dictionaryType = event.target.value;
+  renderDictionaryTable();
 });
 
 document.querySelectorAll("[data-search-records]").forEach((input) => {
