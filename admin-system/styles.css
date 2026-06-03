@@ -202,12 +202,6 @@ textarea:focus {
 }
 
 .sidebar [data-logout] {
-  margin-top: 8px;
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.32);
-}
-
-.sidebar .lang-switch {
   margin-top: auto;
   color: #fff;
   border-color: rgba(255, 255, 255, 0.32);
