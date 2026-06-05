@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Admin Console | AutoGlobal Export</title>
+    <title>Admin Console | GlobalThreads</title>
     <link rel="stylesheet" href="/admin-system/styles.css" />
   </head>
   <body>
@@ -20,11 +20,14 @@
       <div class="login-stage">
         <div class="login-visual" aria-hidden="true">
           <div class="brand-row login-brand">
-            <span class="brand-mark">AG</span>
-            <div>
-              <strong>AutoGlobal Export</strong>
-              <span data-i18n="login.console">Management Console</span>
-            </div>
+            <img
+              class="admin-brand-logo admin-brand-logo-light"
+              src="/assets/globalthreads-logo-light.png"
+              alt="GlobalThreads"
+              width="2363"
+              height="762"
+            />
+            <span class="admin-brand-subtitle" data-i18n="login.console">Management Console</span>
           </div>
 
           <div class="login-visual-copy">
@@ -54,11 +57,14 @@
 
         <form class="login-card" data-login-form autocomplete="on">
           <div class="brand-row login-card-brand">
-            <span class="brand-mark">AG</span>
-            <div>
-              <strong>AutoGlobal Export</strong>
-              <span data-i18n="login.console">Management Console</span>
-            </div>
+            <img
+              class="admin-brand-logo admin-brand-logo-color"
+              src="/assets/globalthreads-logo-color.png"
+              alt="GlobalThreads"
+              width="2364"
+              height="762"
+            />
+            <span class="admin-brand-subtitle" data-i18n="login.console">Management Console</span>
           </div>
 
           <div class="login-card-heading">
@@ -105,12 +111,22 @@
 
     <div class="admin-app" data-admin-app hidden>
       <aside class="sidebar">
-        <a class="brand-row compact sidebar-brand" href="/" target="_blank" rel="noreferrer">
-          <span class="brand-mark">AG</span>
-          <div>
-            <strong>AutoGlobal</strong>
-            <span data-i18n="brand.admin">Admin</span>
-          </div>
+        <a class="brand-row compact sidebar-brand" href="/" target="_blank" rel="noreferrer" aria-label="Open GlobalThreads website">
+          <img
+            class="admin-brand-logo sidebar-brand-full"
+            src="/assets/globalthreads-logo-light.png"
+            alt="GlobalThreads"
+            width="2363"
+            height="762"
+          />
+          <img
+            class="admin-brand-mark sidebar-brand-mark"
+            src="/assets/globalthreads-mark-light.png"
+            alt=""
+            width="820"
+            height="762"
+            aria-hidden="true"
+          />
         </a>
         <button class="sidebar-toggle" type="button" aria-expanded="true" aria-label="Collapse sidebar" data-sidebar-toggle></button>
         <p class="side-nav-label" data-i18n="nav.groupCommerce">Commerce</p>

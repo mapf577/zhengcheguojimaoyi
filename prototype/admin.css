@@ -17,6 +17,12 @@
   color: var(--ink);
 }
 
+.admin-header .admin-brand-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 .admin-nav {
   display: flex;
   align-items: center;

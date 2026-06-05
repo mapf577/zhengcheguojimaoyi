@@ -280,10 +280,6 @@ textarea:focus {
   z-index: 1;
 }
 
-.login-brand span:not(.brand-mark) {
-  color: rgba(244, 248, 255, 0.76);
-}
-
 .login-visual-copy {
   display: grid;
   gap: 18px;
@@ -571,23 +567,54 @@ textarea:focus {
   min-width: 0;
 }
 
+.login-brand,
+.login-card-brand {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+}
+
 .brand-row.compact {
   margin-bottom: 24px;
   padding-bottom: 18px;
   border-bottom: 1px solid rgba(238, 244, 248, 0.12);
 }
 
-.brand-mark {
+.admin-brand-logo {
+  display: block;
+  width: min(272px, 100%);
+  height: auto;
+}
+
+.login-brand .admin-brand-logo {
+  width: min(314px, 100%);
+}
+
+.login-card-brand .admin-brand-logo {
+  width: min(246px, 100%);
+}
+
+.admin-brand-subtitle {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.sidebar-brand {
   display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 auto;
-  border-radius: 8px;
-  color: #fff;
-  background: linear-gradient(135deg, var(--blue), var(--teal));
-  font-size: 13px;
-  font-weight: 900;
+  justify-items: start;
+}
+
+.sidebar-brand-full {
+  width: 166px;
+}
+
+.sidebar-brand-mark {
+  display: none;
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
 }
 
 .brand-row strong,
@@ -604,6 +631,10 @@ textarea:focus {
 .brand-row span:not(.brand-mark) {
   color: var(--muted);
   font-size: 12px;
+}
+
+.login-brand .admin-brand-subtitle {
+  color: rgba(244, 248, 255, 0.76);
 }
 
 .sidebar .brand-row span:not(.brand-mark) {
@@ -789,6 +820,14 @@ textarea:focus {
 
 .admin-app.sidebar-collapsed .sidebar .brand-row div {
   display: none;
+}
+
+.admin-app.sidebar-collapsed .sidebar-brand-full {
+  display: none;
+}
+
+.admin-app.sidebar-collapsed .sidebar-brand-mark {
+  display: block;
 }
 
 .admin-app.sidebar-collapsed .side-nav button,

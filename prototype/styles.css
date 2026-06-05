@@ -82,31 +82,30 @@ img {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  flex: 0 0 auto;
+  width: clamp(164px, 16vw, 206px);
   min-width: 0;
+  line-height: 0;
 }
 
-.brand-mark {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border: 1px solid currentColor;
-  border-radius: 8px;
-  font-weight: 800;
-  letter-spacing: 0;
-}
-
-.brand strong,
-.brand small {
+.brand-logo {
   display: block;
-  white-space: nowrap;
+  width: 100%;
+  height: auto;
 }
 
-.brand small {
-  color: currentColor;
-  font-size: 12px;
-  opacity: 0.76;
+.brand-logo-color {
+  display: none;
+}
+
+.site-header[data-elevated="true"] .brand-logo-light,
+.site-header.nav-active .brand-logo-light {
+  display: none;
+}
+
+.site-header[data-elevated="true"] .brand-logo-color,
+.site-header.nav-active .brand-logo-color {
+  display: block;
 }
 
 .main-nav {
@@ -1002,9 +1001,8 @@ h2 {
     padding: 0 16px;
   }
 
-  .brand-mark {
-    width: 38px;
-    height: 38px;
+  .brand {
+    width: min(178px, 54vw);
   }
 
   .hero {

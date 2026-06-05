@@ -216,7 +216,7 @@ const fieldGroups = {
 
 const adminTranslations = {
   en: {
-    "meta.title": "Admin Console | AutoGlobal Export",
+    "meta.title": "Admin Console | GlobalThreads",
     "brand.admin": "Admin",
     "login.console": "Management Console",
     "login.title": "Admin Login",
@@ -292,7 +292,7 @@ const adminTranslations = {
     "placeholder.image": "/uploads/image.jpg or external URL",
   },
   zh: {
-    "meta.title": "后台管理 | AutoGlobal Export",
+    "meta.title": "后台管理 | GlobalThreads",
     "brand.admin": "后台",
     "login.console": "管理控制台",
     "login.title": "管理员登录",
@@ -465,7 +465,7 @@ Object.assign(adminTranslations.en, {
 });
 
 Object.assign(adminTranslations.zh, {
-  "meta.title": "后台管理 | AutoGlobal Export",
+  "meta.title": "后台管理 | GlobalThreads",
   "brand.admin": "后台",
   "login.console": "管理控制台",
   "login.title": "管理员登录",

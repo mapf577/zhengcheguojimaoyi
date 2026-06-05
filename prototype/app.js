@@ -126,7 +126,7 @@ const defaultParts = [
 
 const siteTranslations = {
   en: {
-    "meta.title": "AutoGlobal Export | Vehicle & Auto Parts Supply",
+    "meta.title": "GlobalThreads | Vehicle & Auto Parts Supply",
     "nav.vehicles": "Vehicles",
     "nav.parts": "Auto Parts",
     "nav.export": "Export Service",
@@ -216,7 +216,7 @@ const siteTranslations = {
     "toast.drawerPrototype": "Inquiry submitted in the website prototype."
   },
   zh: {
-    "meta.title": "AutoGlobal Export | 整车出口与汽车零配件供应",
+    "meta.title": "GlobalThreads | 整车出口与汽车零配件供应",
     "nav.vehicles": "整车展示",
     "nav.parts": "汽车零配件",
     "nav.export": "出口服务",
