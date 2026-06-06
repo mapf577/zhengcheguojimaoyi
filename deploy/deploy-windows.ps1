@@ -24,6 +24,8 @@ param(
   [string]$OssEndpoint = "",
   [string]$OssPublicBaseUrl = "",
   [string]$OssUploadPrefix = "uploads/",
+  [string]$OssPublicRead = "false",
+  [string]$OssSignedUrlTtlSeconds = "3600",
   [string]$OssAccessKeyId = "",
   [string]$OssAccessKeySecret = ""
 )
@@ -81,6 +83,8 @@ $env:OSS_REGION = $OssRegion
 $env:OSS_ENDPOINT = $OssEndpoint
 $env:OSS_PUBLIC_BASE_URL = $OssPublicBaseUrl
 $env:OSS_UPLOAD_PREFIX = $OssUploadPrefix
+$env:OSS_PUBLIC_READ = $OssPublicRead
+$env:OSS_SIGNED_URL_TTL_SECONDS = $OssSignedUrlTtlSeconds
 $env:OSS_ACCESS_KEY_ID = $OssAccessKeyId
 $env:OSS_ACCESS_KEY_SECRET = $OssAccessKeySecret
 

@@ -1139,7 +1139,7 @@ textarea:focus {
   color: #f8fbff;
   background:
     linear-gradient(135deg, rgba(9, 18, 32, 0.9), rgba(18, 41, 66, 0.86)),
-    url("https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?auto=format&fit=crop&w=1800&q=80") center/cover;
+    url("/media/assets/hero-export-yard.png") center/cover;
   box-shadow: var(--shadow-card);
   overflow: hidden;
 }

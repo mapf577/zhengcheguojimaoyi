@@ -37,6 +37,8 @@ const OSS_ACCESS_KEY_ID = String(process.env.OSS_ACCESS_KEY_ID || "");
 const OSS_ACCESS_KEY_SECRET = String(process.env.OSS_ACCESS_KEY_SECRET || "");
 const OSS_PUBLIC_BASE_URL = String(process.env.OSS_PUBLIC_BASE_URL || "");
 const OSS_UPLOAD_PREFIX = String(process.env.OSS_UPLOAD_PREFIX || "uploads/");
+const OSS_PUBLIC_READ = String(process.env.OSS_PUBLIC_READ || "false").toLowerCase() === "true";
+const OSS_SIGNED_URL_TTL_SECONDS = Math.max(60, Math.min(86400, Number(process.env.OSS_SIGNED_URL_TTL_SECONDS || 3600)));
 
 const sessions = new Map();
 const loginAttempts = new Map();
@@ -1201,6 +1203,58 @@ function serveFile(res, filePath) {
   });
 }
 
+function serveMedia(req, res, pathname) {
+  if (!pathname.startsWith("/media/")) {
+    return false;
+  }
+
+  const objectName = normalizeOssObjectName(pathname.replace(/^\/media\//, ""));
+  if (!objectName || (!objectName.startsWith("assets/") && !objectName.startsWith("uploads/"))) {
+    sendText(res, 403, "Forbidden");
+    return true;
+  }
+
+  if (isOssConfigured()) {
+    try {
+      const signedUrl = getOssClient().signatureUrl(objectName, {
+        expires: OSS_SIGNED_URL_TTL_SECONDS,
+        method: "GET",
+      });
+      res.writeHead(302, {
+        Location: signedUrl,
+        "Cache-Control": "private, max-age=300",
+      });
+      res.end();
+    } catch (error) {
+      sendJson(res, 502, { error: "OSS media URL failed.", detail: String(error.message || "").slice(0, 300) });
+    }
+    return true;
+  }
+
+  if (objectName.startsWith("assets/")) {
+    const filePath = safeStaticPath(path.join(ROOT, "prototype"), objectName);
+    if (!filePath) {
+      sendText(res, 403, "Forbidden");
+      return true;
+    }
+    serveFile(res, filePath);
+    return true;
+  }
+
+  if (objectName.startsWith("uploads/")) {
+    const filePath = safeStaticPath(UPLOAD_DIR, objectName.replace(/^uploads\//, ""));
+    if (!filePath) {
+      sendText(res, 403, "Forbidden");
+      return true;
+    }
+    serveFile(res, filePath);
+    return true;
+  }
+
+  sendText(res, 404, "Not found");
+  return true;
+}
+
 function serveStatic(req, res, pathname) {
   if (pathname === "/") {
     serveFile(res, path.join(ROOT, "prototype", "index.html"));
@@ -1588,6 +1642,31 @@ function buildOssPublicUrl(objectName) {
   return `${baseUrl.replace(/\/+$/g, "")}/${encodedObjectName}`;
 }
 
+function buildMediaUrl(objectName) {
+  const normalized = normalizeOssObjectName(objectName);
+  if (!normalized) {
+    return "";
+  }
+  if (OSS_PUBLIC_READ) {
+    return buildOssPublicUrl(normalized);
+  }
+  return `/media/${normalized.split("/").map((part) => encodeURIComponent(part)).join("/")}`;
+}
+
+function normalizeOssObjectName(value) {
+  try {
+    return decodeURIComponent(String(value || ""))
+      .trim()
+      .replace(/\\/g, "/")
+      .replace(/^\/+/g, "")
+      .split("/")
+      .filter((part) => part && part !== "." && part !== "..")
+      .join("/");
+  } catch {
+    return "";
+  }
+}
+
 async function uploadImageToOss({ objectName, buffer, ext }) {
   const client = getOssClient();
   if (!client) {
@@ -1599,7 +1678,7 @@ async function uploadImageToOss({ objectName, buffer, ext }) {
       "Cache-Control": "public, max-age=31536000, immutable",
     },
   });
-  return buildOssPublicUrl(objectName);
+  return buildMediaUrl(objectName);
 }
 
 async function handleUpload(req, res) {
@@ -3170,6 +3249,10 @@ async function route(req, res) {
       return;
     }
 
+    if (serveMedia(req, res, pathname)) {
+      return;
+    }
+
     if (serveStatic(req, res, pathname)) {
       return;
     }
@@ -3204,6 +3287,7 @@ module.exports = {
   buildDeepSeekUserPrompt,
   buildAiMaintenanceSystemPrompt,
   buildAiMaintenanceUserPrompt,
+  buildMediaUrl,
   buildOssObjectName,
   buildOssPublicUrl,
   clearLoginAttempts,
@@ -3225,6 +3309,7 @@ module.exports = {
   mergeDictionaries,
   mysqlRecordIdsToDelete,
   mysqlRecordSnapshot,
+  normalizeOssObjectName,
   normalizeOssPrefix,
   normalizeDictionaryImportRow,
   parseAiMaintenanceJsonPlan,

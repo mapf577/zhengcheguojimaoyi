@@ -39,6 +39,8 @@ module.exports = {
         OSS_ENDPOINT: process.env.OSS_ENDPOINT || "",
         OSS_PUBLIC_BASE_URL: process.env.OSS_PUBLIC_BASE_URL || "",
         OSS_UPLOAD_PREFIX: process.env.OSS_UPLOAD_PREFIX || "uploads/",
+        OSS_PUBLIC_READ: process.env.OSS_PUBLIC_READ || "false",
+        OSS_SIGNED_URL_TTL_SECONDS: process.env.OSS_SIGNED_URL_TTL_SECONDS || "3600",
         OSS_ACCESS_KEY_ID: process.env.OSS_ACCESS_KEY_ID || "",
         OSS_ACCESS_KEY_SECRET: process.env.OSS_ACCESS_KEY_SECRET || "",
       },

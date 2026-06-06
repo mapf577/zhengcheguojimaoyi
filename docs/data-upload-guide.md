@@ -212,11 +212,15 @@ OSS_REGION=oss-ap-southeast-1
 OSS_ENDPOINT=oss-ap-southeast-1.aliyuncs.com
 OSS_PUBLIC_BASE_URL=https://qichechukou.oss-ap-southeast-1.aliyuncs.com
 OSS_UPLOAD_PREFIX=uploads/
+OSS_PUBLIC_READ=false
+OSS_SIGNED_URL_TTL_SECONDS=3600
 OSS_ACCESS_KEY_ID=你的 RAM AccessKey ID
 OSS_ACCESS_KEY_SECRET=你的 RAM AccessKey Secret
 ```
 
 建议使用 RAM 子账号，并仅授权当前 bucket 的上传、读取、删除和列表权限。AccessKey 不要提交到 GitHub，只放在服务器环境变量或 PM2 环境中。
+
+如果 bucket 禁止公共读，保持 `OSS_PUBLIC_READ=false`。系统会把图片字段保存为 `/media/...`，后端生成 OSS 签名 URL 并跳转，图片文件仍存储在 OSS。
 
 ## 正式系统建议
 

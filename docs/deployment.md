@@ -90,6 +90,8 @@ export OSS_REGION=oss-ap-southeast-1
 export OSS_ENDPOINT=oss-ap-southeast-1.aliyuncs.com
 export OSS_PUBLIC_BASE_URL=https://qichechukou.oss-ap-southeast-1.aliyuncs.com
 export OSS_UPLOAD_PREFIX=uploads/
+export OSS_PUBLIC_READ=false
+export OSS_SIGNED_URL_TTL_SECONDS=3600
 export OSS_ACCESS_KEY_ID='请填写 RAM AccessKey ID'
 export OSS_ACCESS_KEY_SECRET='请填写 RAM AccessKey Secret'
 

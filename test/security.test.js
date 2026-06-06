@@ -17,6 +17,7 @@ const {
   buildAiMaintenanceSystemPrompt,
   buildContentSecurityPolicy,
   buildDeepSeekUserPrompt,
+  buildMediaUrl,
   buildOssObjectName,
   buildOssPublicUrl,
   callDeepSeekMaintenancePlan,
@@ -35,6 +36,7 @@ const {
   mysqlRecordIdsToDelete,
   mysqlRecordSnapshot,
   normalizeDictionaryImportRow,
+  normalizeOssObjectName,
   normalizeOssPrefix,
   parseAiMaintenanceJsonPlan,
   parseDeepSeekJsonReply,
@@ -122,7 +124,9 @@ test("uploaded image validation checks file signatures", () => {
 test("oss upload helpers build safe object paths and public urls", () => {
   assert.equal(isOssConfigured(), false);
   assert.equal(normalizeOssPrefix("/uploads/../products//"), "uploads/products/");
+  assert.equal(normalizeOssObjectName("/assets/../products//demo.png"), "assets/products/demo.png");
   assert.equal(buildOssPublicUrl("uploads/2026/06/test image.png"), "https://qichechukou.oss-ap-southeast-1.aliyuncs.com/uploads/2026/06/test%20image.png");
+  assert.equal(buildMediaUrl("uploads/2026/06/test image.png"), "/media/uploads/2026/06/test%20image.png");
   assert.match(buildOssObjectName("测试 image.png", new Date("2026-06-06T00:00:00Z")), /^uploads\/2026\/06\/[a-z0-9]+-[a-f0-9]{8}-image\.png$/);
 });
 
