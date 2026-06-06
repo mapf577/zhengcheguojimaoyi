@@ -80,11 +80,11 @@
           <form class="quick-search" data-search-form>
             <label>
               <span data-primary-label data-i18n="search.brandModel">Brand or model</span>
-              <input name="keyword" type="search" placeholder="BYD, Toyota, pickup..." data-i18n-placeholder="search.keywordPlaceholder" autocomplete="off" />
+              <input name="keyword" type="search" placeholder="Brand, model, keyword..." data-i18n-placeholder="search.keywordPlaceholder" autocomplete="off" />
             </label>
             <label data-vehicle-field>
               <span data-i18n="search.energy">Energy</span>
-              <select name="energy">
+              <select name="energy" data-energy-select>
                 <option value="" data-i18n="search.any">Any</option>
                 <option>EV</option>
                 <option>PHEV</option>
@@ -111,12 +111,8 @@
             <p class="eyebrow" data-i18n="vehicles.eyebrow">Export-ready inventory</p>
             <h2 id="vehicles-title" data-i18n="vehicles.title">Featured Vehicles</h2>
           </div>
-          <div class="filter-row" aria-label="Vehicle filters">
+          <div class="filter-row" aria-label="Vehicle filters" data-vehicle-filters>
             <button class="filter-chip active" type="button" data-vehicle-filter="all">All</button>
-            <button class="filter-chip" type="button" data-vehicle-filter="EV">EV</button>
-            <button class="filter-chip" type="button" data-vehicle-filter="PHEV">PHEV</button>
-            <button class="filter-chip" type="button" data-vehicle-filter="Commercial">Commercial</button>
-            <button class="filter-chip" type="button" data-vehicle-filter="Used">Used</button>
           </div>
         </div>
         <div class="product-grid" data-vehicle-grid></div>
@@ -128,12 +124,8 @@
             <p class="eyebrow" data-i18n="parts.eyebrow">OE/OEM matching</p>
             <h2 id="parts-title" data-i18n="parts.title">Auto Parts Categories</h2>
           </div>
-          <div class="filter-row" aria-label="Parts filters">
+          <div class="filter-row" aria-label="Parts filters" data-part-filters>
             <button class="filter-chip active" type="button" data-part-filter="all">All</button>
-            <button class="filter-chip" type="button" data-part-filter="Brake">Brake</button>
-            <button class="filter-chip" type="button" data-part-filter="Engine">Engine</button>
-            <button class="filter-chip" type="button" data-part-filter="Electrical">Electrical</button>
-            <button class="filter-chip" type="button" data-part-filter="Body">Body</button>
           </div>
         </div>
         <div class="part-grid" data-part-grid></div>
@@ -182,19 +174,19 @@
         </div>
         <div class="metric-grid" aria-label="Supply metrics">
           <div>
-            <strong>40+</strong>
+            <strong data-metric-value="brands">0</strong>
             <span data-i18n="metrics.brands">Vehicle brands</span>
           </div>
           <div>
-            <strong>12k+</strong>
+            <strong data-metric-value="parts">0</strong>
             <span data-i18n="metrics.skus">Parts SKUs</span>
           </div>
           <div>
-            <strong>30+</strong>
-            <span data-i18n="metrics.markets">Export markets</span>
+            <strong data-metric-value="vehicles">0</strong>
+            <span data-i18n="metrics.vehicles">Published vehicles</span>
           </div>
           <div>
-            <strong>72h</strong>
+            <strong data-metric-value="quoteTarget">72h</strong>
             <span data-i18n="metrics.quoteTarget">Quote target</span>
           </div>
         </div>
@@ -275,6 +267,24 @@
         <div class="detail-content" data-detail-content></div>
       </div>
     </aside>
+
+    <section class="ai-reception" aria-label="AI sales assistant" data-ai-reception>
+      <button class="ai-reception-toggle" type="button" data-ai-toggle data-i18n="ai.open">AI Assistant</button>
+      <div class="ai-reception-panel" aria-hidden="true" data-ai-panel>
+        <header class="ai-reception-header">
+          <div>
+            <strong data-i18n="ai.title">AI Sales Assistant</strong>
+            <span data-i18n="ai.subtitle">Collect request and connect sales</span>
+          </div>
+          <button class="icon-button close-button" type="button" aria-label="Close AI assistant" data-ai-close></button>
+        </header>
+        <div class="ai-reception-messages" data-ai-messages></div>
+        <form class="ai-reception-form" data-ai-form>
+          <textarea name="message" rows="3" data-i18n-placeholder="ai.placeholder" placeholder="Tell me the part, OE number, quantity, destination, email or WhatsApp..." required></textarea>
+          <button class="solid-button" type="submit" data-i18n="ai.send">Send</button>
+        </form>
+      </div>
+    </section>
 
     <div class="toast" data-toast role="status" aria-live="polite"></div>
 

@@ -141,7 +141,8 @@
           <button type="button" data-view="users" data-short="U"><span class="nav-icon">05</span><span data-i18n="nav.users">Users</span></button>
           <button type="button" data-view="roles" data-short="R"><span class="nav-icon">06</span><span data-i18n="nav.roles">Roles</span></button>
           <button type="button" data-view="settings" data-short="S"><span class="nav-icon">07</span><span data-i18n="nav.settings">Settings</span></button>
-          <button type="button" data-view="aiLogs" data-short="A"><span class="nav-icon">08</span><span data-i18n="nav.aiLogs">AI Logs</span></button>
+          <button type="button" data-view="aiMaintenance" data-short="M"><span class="nav-icon">08</span><span data-i18n="nav.aiMaintenance">AI Maintenance</span></button>
+          <button type="button" data-view="aiLogs" data-short="A"><span class="nav-icon">09</span><span data-i18n="nav.aiLogs">AI Logs</span></button>
         </nav>
         <div class="sidebar-account">
           <span data-i18n="workspace.account">Current account</span>
@@ -176,8 +177,20 @@
         </header>
 
         <section class="view" data-view-panel="dashboard">
-          <div class="metric-grid">
-            <div class="metric-card">
+          <div class="dashboard-hero">
+            <div class="dashboard-hero-copy">
+              <p class="eyebrow" data-i18n="dashboard.heroEyebrow">Live operations</p>
+              <h2 data-i18n="dashboard.heroTitle">Export Command Center</h2>
+              <p data-i18n="dashboard.heroText">Track catalogue capacity, inquiry pressure and AI activity from one control surface.</p>
+            </div>
+            <div class="dashboard-hero-status">
+              <span data-i18n="dashboard.live">Live</span>
+              <strong data-dashboard-clock>--:--:--</strong>
+            </div>
+          </div>
+
+          <div class="metric-grid dashboard-metric-grid">
+            <div class="metric-card metric-card-accent">
               <span data-i18n="nav.vehicles">Vehicles</span>
               <strong data-metric-vehicles>0</strong>
               <small data-i18n="metric.vehiclesHint">Export catalogue records</small>
@@ -198,32 +211,71 @@
               <small data-i18n="metric.aiLogsHint">Traceable assistant actions</small>
             </div>
           </div>
-          <div class="dashboard-grid">
-            <div class="panel">
-              <div class="panel-header">
+
+          <div class="dashboard-insight-grid">
+            <div class="panel dashboard-panel">
+              <div class="panel-header wrap">
                 <div class="panel-title-stack">
-                  <p class="eyebrow" data-i18n="dashboard.opsEyebrow">Operations</p>
-                  <h2 data-i18n="dashboard.next">Next Steps</h2>
+                  <p class="eyebrow" data-i18n="dashboard.snapshotEyebrow">Snapshot</p>
+                  <h2 data-i18n="dashboard.catalogTitle">Catalogue Overview</h2>
                 </div>
               </div>
-              <ul class="task-list">
-                <li data-i18n="dashboard.task1">Add or import the first batch of export-ready vehicles.</li>
-                <li data-i18n="dashboard.task2">Upload product images from the management forms.</li>
-                <li data-i18n="dashboard.task3">Open the website to verify product cards and inquiry forms.</li>
-              </ul>
+              <div class="dashboard-table-wrap">
+                <table class="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th data-i18n="dashboard.tableSegment">Segment</th>
+                      <th data-i18n="dashboard.tableTotal">Total</th>
+                      <th data-i18n="dashboard.tableReady">Ready</th>
+                      <th data-i18n="dashboard.tableTop">Top Category</th>
+                    </tr>
+                  </thead>
+                  <tbody data-dashboard-catalog-body></tbody>
+                </table>
+              </div>
             </div>
-            <div class="panel operations-panel">
-              <div class="panel-header">
+
+            <div class="panel dashboard-panel">
+              <div class="panel-header wrap">
                 <div class="panel-title-stack">
-                  <p class="eyebrow" data-i18n="dashboard.controlEyebrow">Control center</p>
+                  <p class="eyebrow" data-i18n="dashboard.pipelineEyebrow">Pipeline</p>
+                  <h2 data-i18n="dashboard.inquiryTitle">Latest Inquiries</h2>
+                </div>
+              </div>
+              <div class="dashboard-table-wrap">
+                <table class="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th data-i18n="table.name">Name</th>
+                      <th data-i18n="table.source">Source</th>
+                      <th data-i18n="table.status">Status</th>
+                      <th data-i18n="table.created">Created</th>
+                    </tr>
+                  </thead>
+                  <tbody data-dashboard-inquiry-body></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-grid dashboard-bottom-grid">
+            <div class="panel dashboard-panel">
+              <div class="panel-header wrap">
+                <div class="panel-title-stack">
+                  <p class="eyebrow" data-i18n="dashboard.opsEyebrow">Operations</p>
                   <h2 data-i18n="dashboard.opsTitle">Management Focus</h2>
                 </div>
               </div>
-              <div class="ops-list">
-                <span data-i18n="dashboard.ops1">Keep vehicle and part dictionaries synchronized before product entry.</span>
-                <span data-i18n="dashboard.ops2">Review inquiries after each catalogue update.</span>
-                <span data-i18n="dashboard.ops3">Check AI logs when automated content or import actions are used.</span>
+              <div class="ops-list dashboard-focus-list" data-dashboard-focus></div>
+            </div>
+            <div class="panel operations-panel dashboard-panel">
+              <div class="panel-header wrap">
+                <div class="panel-title-stack">
+                  <p class="eyebrow" data-i18n="dashboard.activityEyebrow">Realtime</p>
+                  <h2 data-i18n="dashboard.activityTitle">Live Activity</h2>
+                </div>
               </div>
+              <div class="dashboard-activity" data-dashboard-activity></div>
             </div>
           </div>
         </section>
@@ -341,6 +393,7 @@
                     <th data-i18n="table.name">Name</th>
                     <th data-i18n="table.email">Email</th>
                     <th data-i18n="table.country">Country</th>
+                    <th data-i18n="table.source">Source</th>
                     <th data-i18n="table.message">Message</th>
                     <th data-i18n="table.created">Created</th>
                     <th data-i18n="table.actions">Actions</th>
@@ -361,6 +414,10 @@
                 <p class="panel-hint" data-i18n="settings.hint">Manage bilingual brands, models, colors and business dictionaries.</p>
               </div>
               <div class="toolbar">
+                <label class="secondary-button file-button">
+                  <span data-i18n="action.importBrands">Import Brands</span>
+                  <input type="file" accept=".csv,text/csv" data-import-dictionary="brands" />
+                </label>
                 <button class="primary-button" type="button" data-new-dictionary data-i18n="settings.add">Add Dictionary Item</button>
               </div>
             </div>
@@ -444,6 +501,59 @@
                 </thead>
                 <tbody data-roles-body></tbody>
               </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" data-view-panel="aiMaintenance" hidden>
+          <section class="panel list-panel ai-maintenance-shell">
+            <div class="panel-header wrap">
+              <div class="panel-title-stack">
+                <p class="eyebrow" data-i18n="nav.aiMaintenance">AI Maintenance</p>
+                <h2 data-i18n="aiMaintenance.title">AI Database Maintenance</h2>
+                <p class="panel-hint" data-i18n="aiMaintenance.hint">Use DeepSeek to generate safe batch updates, review them, then apply only valid changes.</p>
+              </div>
+            </div>
+            <form class="ai-maintenance-form" data-ai-maintenance-form>
+              <fieldset class="ai-maintenance-targets">
+                <legend data-i18n="aiMaintenance.targets">Targets</legend>
+                <label><input type="checkbox" name="target_types" value="dictionaries" checked /> <span data-i18n="aiMaintenance.targetDictionaries">Dictionaries</span></label>
+                <label><input type="checkbox" name="target_types" value="vehicles" /> <span data-i18n="aiMaintenance.targetVehicles">Vehicles</span></label>
+                <label><input type="checkbox" name="target_types" value="parts" /> <span data-i18n="aiMaintenance.targetParts">Auto Parts</span></label>
+              </fieldset>
+              <label>
+                <span data-i18n="aiMaintenance.instruction">Instruction</span>
+                <textarea name="instruction" rows="4" data-i18n-placeholder="aiMaintenance.instructionPlaceholder" placeholder="Example: Add the following gearbox and brake categories, or update these SKUs with new prices."></textarea>
+              </label>
+              <label>
+                <span data-i18n="aiMaintenance.sourceText">Source Text</span>
+                <textarea name="source_text" rows="8" data-i18n-placeholder="aiMaintenance.sourcePlaceholder" placeholder="Paste CSV, spreadsheet rows, product notes, or dictionary terms here."></textarea>
+              </label>
+              <div class="ai-maintenance-actions">
+                <button class="primary-button" type="submit" data-ai-maintenance-preview data-i18n="aiMaintenance.preview">Generate Preview</button>
+                <button class="secondary-button" type="button" data-ai-maintenance-apply disabled data-i18n="aiMaintenance.apply">Apply Valid Changes</button>
+              </div>
+            </form>
+            <div class="ai-maintenance-result" data-ai-maintenance-result hidden>
+              <div class="ai-maintenance-summary">
+                <strong data-ai-maintenance-summary></strong>
+                <span data-ai-maintenance-meta></span>
+              </div>
+              <div class="ai-maintenance-warnings" data-ai-maintenance-warnings></div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th data-i18n="table.status">Status</th>
+                      <th data-i18n="table.action">Action</th>
+                      <th data-i18n="table.target">Target</th>
+                      <th data-i18n="table.code">Code</th>
+                      <th data-i18n="table.details">Details</th>
+                    </tr>
+                  </thead>
+                  <tbody data-ai-maintenance-body></tbody>
+                </table>
+              </div>
             </div>
           </section>
         </section>

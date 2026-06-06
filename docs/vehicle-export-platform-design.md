@@ -839,7 +839,7 @@ URL 示例：
 
 ```text
 +-------------------------------------------------------------+
-| Breadcrumb: Home / Vehicles / BYD Song Plus EV               |
+| Breadcrumb: Home / Vehicles / Vehicle Detail                 |
 +-------------------------------+-----------------------------+
 | Image Gallery                  | Brand / Model / Year        |
 |                               | Key Specs                   |

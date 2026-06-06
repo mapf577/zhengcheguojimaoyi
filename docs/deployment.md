@@ -73,6 +73,11 @@ export PORT=3000
 export ADMIN_USER=admin
 export ADMIN_PASSWORD='请改成强密码'
 export TOKEN_SECRET='请改成一串随机长字符'
+export CORS_ALLOWED_ORIGINS='https://你的域名,https://www.你的域名'
+export SESSION_TTL_MS=86400000
+export LOGIN_RATE_LIMIT_WINDOW_MS=900000
+export LOGIN_RATE_LIMIT_MAX_ATTEMPTS=5
+export LOGIN_RATE_LIMIT_LOCK_MS=900000
 export DB_DRIVER=mysql
 export MYSQL_HOST=127.0.0.1
 export MYSQL_PORT=3306
@@ -111,6 +116,11 @@ http://服务器IP:3000/admin/
   -AdminUser "admin" `
   -AdminPassword "请改成强密码" `
   -TokenSecret "请改成一串随机长字符" `
+  -CorsAllowedOrigins "https://你的域名,https://www.你的域名" `
+  -SessionTtlMs "86400000" `
+  -LoginRateLimitWindowMs "900000" `
+  -LoginRateLimitMaxAttempts "5" `
+  -LoginRateLimitLockMs "900000" `
   -DbDriver "mysql" `
   -MysqlHost "127.0.0.1" `
   -MysqlPort "3306" `
@@ -219,6 +229,8 @@ MYSQL_DATABASE=vehicle_export
 MYSQL_USER=vehicle_export
 MYSQL_PASSWORD=你的数据库密码
 ```
+
+生产环境建议设置 `CORS_ALLOWED_ORIGINS` 为实际域名，多个域名用英文逗号分隔。后台登录默认按 IP 和用户名限制失败尝试，连续失败达到 `LOGIN_RATE_LIMIT_MAX_ATTEMPTS` 后会在 `LOGIN_RATE_LIMIT_LOCK_MS` 时间内拒绝继续登录。
 
 MySQL 表结构文件：
 

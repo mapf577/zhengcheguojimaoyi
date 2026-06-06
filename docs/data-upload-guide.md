@@ -135,6 +135,20 @@ prototype/data/parts-import-template.csv
 prototype/data/parts-import-sample.csv
 ```
 
+品牌字典模板：
+
+```text
+prototype/data/brand-import-template.csv
+```
+
+品牌字典字段：
+
+```text
+code,name_en,name_zh,status,sort_order
+```
+
+在后台 `Settings / Dictionary Settings` 中点击 `Import Brands` 导入。导入时系统会固定写入 `brands` 字典类型，并按 `code` 覆盖更新已有品牌；`status` 不填时默认为 `active`。
+
 ## 校验规则
 
 整车必填字段：
@@ -202,16 +216,16 @@ database/mysql/schema.sql
 图片批量上传建议按 SKU 命名：
 
 ```text
-VEH-BYD-SONG-001-1.jpg
-VEH-BYD-SONG-001-2.jpg
-PART-BRAKE-001-1.jpg
-PART-BRAKE-001-2.jpg
+VEH-SKU-001-1.jpg
+VEH-SKU-001-2.jpg
+PART-SKU-001-1.jpg
+PART-SKU-001-2.jpg
 ```
 
 CSV/Excel 的 `images` 字段填写：
 
 ```text
-VEH-BYD-SONG-001-1.jpg;VEH-BYD-SONG-001-2.jpg
+VEH-SKU-001-1.jpg;VEH-SKU-001-2.jpg
 ```
 
 系统导入时根据 SKU 和图片文件名自动匹配。
@@ -254,5 +268,5 @@ https://example.com/images/vehicle-001.jpg
 多个图片用英文分号分隔，当前原型会优先展示第一张：
 
 ```text
-VEH-BYD-SONG-001-1.jpg;VEH-BYD-SONG-001-2.jpg
+VEH-SKU-001-1.jpg;VEH-SKU-001-2.jpg
 ```

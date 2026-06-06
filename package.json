@@ -4,7 +4,8 @@
   "private": true,
   "description": "Vehicle export and auto parts platform prototype with a lightweight backend admin system.",
   "scripts": {
-    "start": "node backend/server.js"
+    "start": "node backend/server.js",
+    "test": "node --test"
   },
   "dependencies": {
     "mysql2": "^3.11.5"

@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS app_records (
   sku VARCHAR(120) NULL,
   code VARCHAR(120) NULL,
   dictionary_type VARCHAR(80) NULL,
+  row_order INT UNSIGNED NULL,
   payload JSON NOT NULL,
   created_at VARCHAR(40) NULL,
   updated_at VARCHAR(40) NULL,
@@ -18,5 +19,6 @@ CREATE TABLE IF NOT EXISTS app_records (
   UNIQUE KEY uniq_store_record (store_type, record_id),
   KEY idx_store_type (store_type),
   KEY idx_store_sku (store_type, sku),
-  KEY idx_dictionary (store_type, dictionary_type, code)
+  KEY idx_dictionary (store_type, dictionary_type, code),
+  KEY idx_store_order (store_type, row_order)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

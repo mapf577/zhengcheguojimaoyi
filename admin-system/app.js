@@ -228,6 +228,7 @@ const adminTranslations = {
     "nav.parts": "Auto Parts",
     "nav.inquiries": "Inquiries",
     "nav.aiLogs": "AI Logs",
+    "nav.aiMaintenance": "AI Maintenance",
     "workspace.eyebrow": "Backend management",
     "action.logout": "Logout",
     "action.openWebsite": "Open Website",
@@ -240,6 +241,7 @@ const adminTranslations = {
     "action.email": "Email",
     "action.cancel": "Cancel",
     "action.importCsv": "Import CSV",
+    "action.importBrands": "Import Brands",
     "action.exportCsv": "Export CSV",
     "action.saveVehicle": "Save Vehicle",
     "action.savePart": "Save Auto Part",
@@ -252,6 +254,24 @@ const adminTranslations = {
     "parts.data": "Auto Parts Data",
     "inquiries.title": "Customer Inquiries",
     "aiLogs.title": "AI Logs",
+    "aiMaintenance.title": "AI Database Maintenance",
+    "aiMaintenance.hint": "Use DeepSeek to generate safe batch updates, review them, then apply only valid changes.",
+    "aiMaintenance.targets": "Targets",
+    "aiMaintenance.targetDictionaries": "Dictionaries",
+    "aiMaintenance.targetVehicles": "Vehicles",
+    "aiMaintenance.targetParts": "Auto Parts",
+    "aiMaintenance.instruction": "Instruction",
+    "aiMaintenance.instructionPlaceholder": "Example: Add the following gearbox and brake categories, or update these SKUs with new prices.",
+    "aiMaintenance.sourceText": "Source Text",
+    "aiMaintenance.sourcePlaceholder": "Paste CSV, spreadsheet rows, product notes, or dictionary terms here.",
+    "aiMaintenance.preview": "Generate Preview",
+    "aiMaintenance.apply": "Apply Valid Changes",
+    "aiMaintenance.empty": "No operations generated.",
+    "aiMaintenance.valid": "Valid",
+    "aiMaintenance.invalid": "Invalid",
+    "aiMaintenance.create": "Create",
+    "aiMaintenance.update": "Update",
+    "aiMaintenance.applied": "{applied} applied. {rejected} rejected.",
     "table.status": "Status",
     "table.module": "Module",
     "table.action": "Action",
@@ -288,7 +308,10 @@ const adminTranslations = {
     "toast.saved": "{item} saved.",
     "toast.imported": "{saved} row(s) imported. {rejected} rejected.",
     "toast.inquiryUpdated": "Inquiry status updated.",
+    "toast.aiMaintenancePreview": "{valid} valid operation(s), {invalid} invalid.",
+    "toast.aiMaintenanceApplied": "{applied} applied. {rejected} rejected.",
     "confirm.delete": "Delete {name}?",
+    "confirm.aiMaintenanceApply": "Apply {count} valid AI maintenance operation(s)?",
     "placeholder.image": "/uploads/image.jpg or external URL",
   },
   zh: {
@@ -304,6 +327,7 @@ const adminTranslations = {
     "nav.parts": "零配件管理",
     "nav.inquiries": "询盘管理",
     "nav.aiLogs": "AI日志",
+    "nav.aiMaintenance": "AI维护",
     "workspace.eyebrow": "后台管理",
     "action.logout": "退出登录",
     "action.openWebsite": "打开官网",
@@ -316,6 +340,7 @@ const adminTranslations = {
     "action.email": "发邮件",
     "action.cancel": "取消",
     "action.importCsv": "导入 CSV",
+    "action.importBrands": "导入品牌",
     "action.exportCsv": "导出 CSV",
     "action.saveVehicle": "保存整车",
     "action.savePart": "保存零配件",
@@ -328,6 +353,24 @@ const adminTranslations = {
     "parts.data": "零配件数据",
     "inquiries.title": "客户询盘",
     "aiLogs.title": "AI日志",
+    "aiMaintenance.title": "AI 数据维护",
+    "aiMaintenance.hint": "使用 DeepSeek 生成批量维护方案，先审核预览，再只执行有效变更。",
+    "aiMaintenance.targets": "维护对象",
+    "aiMaintenance.targetDictionaries": "字典",
+    "aiMaintenance.targetVehicles": "整车",
+    "aiMaintenance.targetParts": "零配件",
+    "aiMaintenance.instruction": "维护要求",
+    "aiMaintenance.instructionPlaceholder": "示例：新增以下变速箱和制动分类，或更新这些 SKU 的价格。",
+    "aiMaintenance.sourceText": "原始数据",
+    "aiMaintenance.sourcePlaceholder": "粘贴 CSV、表格行、商品说明或字典词条。",
+    "aiMaintenance.preview": "生成预览",
+    "aiMaintenance.apply": "执行有效变更",
+    "aiMaintenance.empty": "未生成操作。",
+    "aiMaintenance.valid": "有效",
+    "aiMaintenance.invalid": "无效",
+    "aiMaintenance.create": "新增",
+    "aiMaintenance.update": "更新",
+    "aiMaintenance.applied": "已执行 {applied} 条，拒绝 {rejected} 条。",
     "table.status": "状态",
     "table.module": "模块",
     "table.action": "操作",
@@ -364,7 +407,10 @@ const adminTranslations = {
     "toast.saved": "{item}已保存。",
     "toast.imported": "已导入 {saved} 行，拒绝 {rejected} 行。",
     "toast.inquiryUpdated": "询盘状态已更新。",
+    "toast.aiMaintenancePreview": "{valid} 条有效，{invalid} 条无效。",
+    "toast.aiMaintenanceApplied": "已执行 {applied} 条，拒绝 {rejected} 条。",
     "confirm.delete": "确认删除 {name}？",
+    "confirm.aiMaintenanceApply": "确认执行 {count} 条有效 AI 维护操作？",
     "placeholder.image": "/uploads/image.jpg 或外部图片 URL",
   },
 };
@@ -490,6 +536,7 @@ Object.assign(adminTranslations.zh, {
   "action.email": "发邮件",
   "action.cancel": "取消",
   "action.importCsv": "导入 CSV",
+  "action.importBrands": "导入品牌",
   "action.exportCsv": "导出 CSV",
   "action.saveVehicle": "保存整车",
   "action.savePart": "保存零配件",
@@ -682,6 +729,32 @@ Object.assign(adminTranslations.en, {
   "metric.partsHint": "Parts inventory records",
   "metric.inquiriesHint": "Customer request pipeline",
   "metric.aiLogsHint": "Traceable assistant actions",
+  "dashboard.heroEyebrow": "Live operations",
+  "dashboard.heroTitle": "Export Command Center",
+  "dashboard.heroText": "Track catalogue capacity, inquiry pressure and AI activity from one control surface.",
+  "dashboard.live": "Live",
+  "dashboard.snapshotEyebrow": "Snapshot",
+  "dashboard.catalogTitle": "Catalogue Overview",
+  "dashboard.pipelineEyebrow": "Pipeline",
+  "dashboard.inquiryTitle": "Latest Inquiries",
+  "dashboard.activityEyebrow": "Realtime",
+  "dashboard.activityTitle": "Live Activity",
+  "dashboard.tableSegment": "Segment",
+  "dashboard.tableTotal": "Total",
+  "dashboard.tableReady": "Ready",
+  "dashboard.tableTop": "Top Category",
+  "dashboard.segmentVehicles": "Vehicles",
+  "dashboard.segmentParts": "Auto Parts",
+  "dashboard.segmentInquiries": "Inquiries",
+  "dashboard.segmentAiLogs": "AI Logs",
+  "dashboard.readyVehicles": "ready / in stock",
+  "dashboard.readyParts": "ready / in stock",
+  "dashboard.openInquiries": "open",
+  "dashboard.todayLogs": "today",
+  "dashboard.noData": "No data yet.",
+  "dashboard.focusCatalog": "{count} catalogue items are available for export presentation.",
+  "dashboard.focusInquiry": "{count} open inquiry item(s) need follow-up.",
+  "dashboard.focusAi": "{count} AI action(s) are traceable in logs.",
   "dashboard.opsEyebrow": "Operations",
   "dashboard.controlEyebrow": "Control center",
   "dashboard.opsTitle": "Management Focus",
@@ -750,6 +823,32 @@ Object.assign(adminTranslations.zh, {
   "metric.partsHint": "零配件库存记录",
   "metric.inquiriesHint": "客户询盘流程",
   "metric.aiLogsHint": "可追踪的 AI 操作",
+  "dashboard.heroEyebrow": "实时运营",
+  "dashboard.heroTitle": "出口业务指挥中心",
+  "dashboard.heroText": "集中查看商品容量、询盘压力和 AI 动作，快速判断今天该处理什么。",
+  "dashboard.live": "实时",
+  "dashboard.snapshotEyebrow": "总览",
+  "dashboard.catalogTitle": "商品数据概览",
+  "dashboard.pipelineEyebrow": "管线",
+  "dashboard.inquiryTitle": "最新询盘",
+  "dashboard.activityEyebrow": "实时",
+  "dashboard.activityTitle": "实时动态",
+  "dashboard.tableSegment": "模块",
+  "dashboard.tableTotal": "总数",
+  "dashboard.tableReady": "可用",
+  "dashboard.tableTop": "主要类别",
+  "dashboard.segmentVehicles": "整车",
+  "dashboard.segmentParts": "零配件",
+  "dashboard.segmentInquiries": "询盘",
+  "dashboard.segmentAiLogs": "AI 日志",
+  "dashboard.readyVehicles": "现货/可出口",
+  "dashboard.readyParts": "现货/可出口",
+  "dashboard.openInquiries": "待跟进",
+  "dashboard.todayLogs": "今日",
+  "dashboard.noData": "暂无数据。",
+  "dashboard.focusCatalog": "当前有 {count} 条商品可用于出口展示。",
+  "dashboard.focusInquiry": "有 {count} 条开放询盘需要跟进。",
+  "dashboard.focusAi": "已记录 {count} 条可追踪 AI 动作。",
   "dashboard.opsEyebrow": "运营",
   "dashboard.controlEyebrow": "控制中心",
   "dashboard.opsTitle": "管理重点",
@@ -903,6 +1002,10 @@ const state = {
     adminUsers: [],
     adminRoles: [],
   },
+  aiMaintenance: {
+    operations: [],
+    lastPreview: null,
+  },
   permissions: [],
   session: {
     username: "admin",
@@ -924,6 +1027,13 @@ const recordForm = document.querySelector("[data-record-form]");
 const recordFields = document.querySelector("[data-fields]");
 const editorTitle = document.querySelector("[data-editor-title]");
 const saveRecordButton = document.querySelector("[data-save-record]");
+const aiMaintenanceForm = document.querySelector("[data-ai-maintenance-form]");
+const aiMaintenanceResult = document.querySelector("[data-ai-maintenance-result]");
+const aiMaintenanceSummary = document.querySelector("[data-ai-maintenance-summary]");
+const aiMaintenanceMeta = document.querySelector("[data-ai-maintenance-meta]");
+const aiMaintenanceWarnings = document.querySelector("[data-ai-maintenance-warnings]");
+const aiMaintenanceBody = document.querySelector("[data-ai-maintenance-body]");
+const aiMaintenanceApplyButton = document.querySelector("[data-ai-maintenance-apply]");
 
 function t(key, values = {}) {
   let text = adminTranslations[state.lang][key] || adminTranslations.en[key] || key;
@@ -974,6 +1084,220 @@ function statusText(status) {
   );
 }
 
+function parseTime(value) {
+  const time = Date.parse(value || "");
+  return Number.isFinite(time) ? time : 0;
+}
+
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function countBy(rows, field) {
+  const counts = new Map();
+  rows.forEach((row) => {
+    const value = String(row[field] || "").trim();
+    if (value) {
+      counts.set(value, (counts.get(value) || 0) + 1);
+    }
+  });
+  return counts;
+}
+
+function topValueLabel(rows, field, dictionaryType = "") {
+  const [value, count] = [...countBy(rows, field).entries()].sort((a, b) => b[1] - a[1])[0] || [];
+  if (!value) {
+    return "--";
+  }
+  const label = dictionaryType ? dictionaryLabel(dictionaryType, value) : value;
+  return `${label} · ${count}`;
+}
+
+function isReadyStock(row) {
+  return ["ready-export", "in-stock", "limited-stock"].includes(String(row.stock_status || ""));
+}
+
+function openInquiryCount() {
+  return (state.data.inquiries || []).filter((row) => !["Won", "Lost", "Invalid"].includes(String(row.status || ""))).length;
+}
+
+function setDashboardClock() {
+  const node = document.querySelector("[data-dashboard-clock]");
+  if (node) {
+    node.textContent = new Date().toLocaleTimeString(state.lang === "zh" ? "zh-CN" : "en-US", { hour12: false });
+  }
+}
+
+function renderDashboardCatalog() {
+  const body = document.querySelector("[data-dashboard-catalog-body]");
+  if (!body) {
+    return;
+  }
+
+  const vehicles = state.data.vehicles || [];
+  const parts = state.data.parts || [];
+  const inquiries = state.data.inquiries || [];
+  const aiLogs = state.data.aiLogs || [];
+  const today = todayKey();
+  const rows = [
+    {
+      segment: t("dashboard.segmentVehicles"),
+      total: vehicles.length,
+      ready: `${vehicles.filter(isReadyStock).length} ${t("dashboard.readyVehicles")}`,
+      top: topValueLabel(vehicles, "vehicle_type", "vehicle_types"),
+    },
+    {
+      segment: t("dashboard.segmentParts"),
+      total: parts.length,
+      ready: `${parts.filter(isReadyStock).length} ${t("dashboard.readyParts")}`,
+      top: topValueLabel(parts, "category", "part_categories"),
+    },
+    {
+      segment: t("dashboard.segmentInquiries"),
+      total: inquiries.length,
+      ready: `${openInquiryCount()} ${t("dashboard.openInquiries")}`,
+      top: topValueLabel(inquiries, "source"),
+    },
+    {
+      segment: t("dashboard.segmentAiLogs"),
+      total: aiLogs.length,
+      ready: `${aiLogs.filter((row) => String(row.created_at || "").slice(0, 10) === today).length} ${t("dashboard.todayLogs")}`,
+      top: topValueLabel(aiLogs, "module"),
+    },
+  ];
+
+  body.innerHTML = rows
+    .map(
+      (row) => `
+        <tr>
+          <td><strong>${escapeHtml(row.segment)}</strong></td>
+          <td class="number-cell">${escapeHtml(row.total)}</td>
+          <td>${escapeHtml(row.ready)}</td>
+          <td>${escapeHtml(row.top)}</td>
+        </tr>
+      `,
+    )
+    .join("");
+}
+
+function renderDashboardInquiries() {
+  const body = document.querySelector("[data-dashboard-inquiry-body]");
+  if (!body) {
+    return;
+  }
+
+  const rows = [...(state.data.inquiries || [])].sort((a, b) => parseTime(b.created_at) - parseTime(a.created_at)).slice(0, 5);
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="4">${escapeHtml(t("dashboard.noData"))}</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = rows
+    .map(
+      (row) => `
+        <tr>
+          <td><strong>${escapeHtml(row.name || "--")}</strong></td>
+          <td>${escapeHtml(row.source || "Website Form")}</td>
+          <td><span class="status-pill status-${statusClass(row.status)}">${escapeHtml(statusText(row.status || "New"))}</span></td>
+          <td>${escapeHtml(formatDateTime(row.created_at) || "--")}</td>
+        </tr>
+      `,
+    )
+    .join("");
+}
+
+function renderDashboardFocus() {
+  const body = document.querySelector("[data-dashboard-focus]");
+  if (!body) {
+    return;
+  }
+
+  const catalogueCount = (state.data.vehicles || []).length + (state.data.parts || []).length;
+  const items = [
+    t("dashboard.focusCatalog", { count: catalogueCount }),
+    t("dashboard.focusInquiry", { count: openInquiryCount() }),
+    t("dashboard.focusAi", { count: (state.data.aiLogs || []).length }),
+  ];
+  body.innerHTML = items.map((item) => `<span>${escapeHtml(item)}</span>`).join("");
+}
+
+function activityLabel(item) {
+  if (item.kind === "inquiry") {
+    return `${t("dashboard.segmentInquiries")} · ${item.title}`;
+  }
+  if (item.kind === "vehicle") {
+    return `${t("dashboard.segmentVehicles")} · ${item.title}`;
+  }
+  if (item.kind === "part") {
+    return `${t("dashboard.segmentParts")} · ${item.title}`;
+  }
+  return `${t("dashboard.segmentAiLogs")} · ${item.title}`;
+}
+
+function renderDashboardActivity() {
+  const body = document.querySelector("[data-dashboard-activity]");
+  if (!body) {
+    return;
+  }
+
+  const activities = [
+    ...(state.data.inquiries || []).map((row) => ({
+      kind: "inquiry",
+      title: row.name || row.email || row.country || "Inquiry",
+      detail: row.message || row.source || "",
+      time: row.created_at,
+    })),
+    ...(state.data.aiLogs || []).map((row) => ({
+      kind: "ai",
+      title: `${row.module || "AI"} / ${row.action || ""}`,
+      detail: row.detail || row.target_label || "",
+      time: row.created_at,
+    })),
+    ...(state.data.vehicles || []).map((row) => ({
+      kind: "vehicle",
+      title: row.title_zh || row.title_en || row.sku || "Vehicle",
+      detail: row.sku || "",
+      time: row.updated_at || row.created_at,
+    })),
+    ...(state.data.parts || []).map((row) => ({
+      kind: "part",
+      title: row.title_zh || row.title_en || row.name || row.sku || "Part",
+      detail: row.sku || row.oe_numbers || "",
+      time: row.updated_at || row.created_at,
+    })),
+  ]
+    .filter((item) => parseTime(item.time))
+    .sort((a, b) => parseTime(b.time) - parseTime(a.time))
+    .slice(0, 8);
+
+  if (!activities.length) {
+    body.innerHTML = `<div class="dashboard-activity-empty">${escapeHtml(t("dashboard.noData"))}</div>`;
+    return;
+  }
+
+  body.innerHTML = activities
+    .map(
+      (item) => `
+        <div class="dashboard-activity-item">
+          <span class="dashboard-activity-dot"></span>
+          <div>
+            <strong>${escapeHtml(activityLabel(item))}</strong>
+            <small>${escapeHtml(formatDateTime(item.time))}${item.detail ? ` · ${escapeHtml(String(item.detail).slice(0, 90))}` : ""}</small>
+          </div>
+        </div>
+      `,
+    )
+    .join("");
+}
+
+function renderDashboard() {
+  setDashboardClock();
+  renderDashboardCatalog();
+  renderDashboardInquiries();
+  renderDashboardFocus();
+  renderDashboardActivity();
+}
+
 function applyLanguage() {
   document.documentElement.lang = state.lang === "zh" ? "zh-CN" : "en";
   document.title = t("meta.title");
@@ -997,6 +1321,8 @@ function applyLanguage() {
   renderDictionaryTable();
   renderInquiries();
   renderAiLogs();
+  renderDashboard();
+  renderAiMaintenanceResult();
   renderUsers();
   renderRoles();
 }
@@ -1119,7 +1445,8 @@ function escapeHtml(value) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function setAuthenticated(token, session = {}) {
@@ -1163,6 +1490,7 @@ function renderMetrics() {
   if (aiLogsMetric) {
     aiLogsMetric.textContent = String(state.data.aiLogs.length);
   }
+  renderDashboard();
 }
 
 function getFilteredRows(type) {
@@ -1418,8 +1746,8 @@ function renderDictionaryTable() {
           ${schema.columns.map((column) => renderTableCell("dictionaries", column, row)).join("")}
           <td>
             <div class="row-actions">
-              <button class="secondary-button" type="button" data-edit="dictionaries" data-id="${row.id}">${t("action.edit")}</button>
-              <button class="danger-button" type="button" data-delete="dictionaries" data-id="${row.id}">${t("action.delete")}</button>
+              <button class="secondary-button" type="button" data-edit="dictionaries" data-id="${escapeHtml(row.id)}">${t("action.edit")}</button>
+              <button class="danger-button" type="button" data-delete="dictionaries" data-id="${escapeHtml(row.id)}">${t("action.delete")}</button>
             </div>
           </td>
         </tr>
@@ -1706,8 +2034,8 @@ function renderTable(type) {
           ${schema.columns.map((column) => renderTableCell(type, column, row)).join("")}
           <td>
             <div class="row-actions">
-              <button class="secondary-button" type="button" data-edit="${type}" data-id="${row.id}">${t("action.edit")}</button>
-              <button class="danger-button" type="button" data-delete="${type}" data-id="${row.id}">${t("action.delete")}</button>
+              <button class="secondary-button" type="button" data-edit="${escapeHtml(type)}" data-id="${escapeHtml(row.id)}">${t("action.edit")}</button>
+              <button class="danger-button" type="button" data-delete="${escapeHtml(type)}" data-id="${escapeHtml(row.id)}">${t("action.delete")}</button>
             </div>
           </td>
         </tr>
@@ -1719,7 +2047,7 @@ function renderTable(type) {
 function renderInquiries() {
   const body = document.querySelector("[data-inquiries-body]");
   if (!state.data.inquiries.length) {
-    body.innerHTML = `<tr><td colspan="7">${t("empty.inquiries")}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="8">${t("empty.inquiries")}</td></tr>`;
     return;
   }
 
@@ -1728,7 +2056,7 @@ function renderInquiries() {
       (row) => `
         <tr>
           <td>
-            <select class="status-select" data-inquiry-status="${row.id}">
+            <select class="status-select" data-inquiry-status="${escapeHtml(row.id)}">
               ${["New", "Contacted", "Quoted", "Negotiating", "Won", "Lost", "Invalid"]
                 .map((status) => `<option value="${status}" ${row.status === status ? "selected" : ""}>${statusText(status)}</option>`)
                 .join("")}
@@ -1737,6 +2065,7 @@ function renderInquiries() {
           <td>${escapeHtml(row.name || "")}</td>
           <td>${escapeHtml(row.email || "")}</td>
           <td>${escapeHtml(row.country || "")}</td>
+          <td>${escapeHtml(row.source || "Website Form")}</td>
           <td>${escapeHtml(row.message || "")}</td>
           <td>${escapeHtml((row.created_at || "").slice(0, 19).replace("T", " "))}</td>
           <td>
@@ -1785,6 +2114,68 @@ function renderAiLogs() {
     .join("");
 }
 
+function aiMaintenanceStatusLabel(operation) {
+  return operation.valid ? t("aiMaintenance.valid") : t("aiMaintenance.invalid");
+}
+
+function aiMaintenanceModeLabel(operation) {
+  return operation.mode === "update" ? t("aiMaintenance.update") : t("aiMaintenance.create");
+}
+
+function renderAiMaintenanceResult(payload = null) {
+  if (!aiMaintenanceResult || !aiMaintenanceBody) {
+    return;
+  }
+
+  const current = payload || state.aiMaintenance.lastPreview;
+  aiMaintenanceResult.hidden = !current;
+  if (aiMaintenanceApplyButton) {
+    aiMaintenanceApplyButton.disabled = !state.aiMaintenance.operations.length;
+  }
+  if (!current) {
+    return;
+  }
+
+  const operations = current.operations || [];
+  if (aiMaintenanceSummary) {
+    aiMaintenanceSummary.textContent = current.summary || t("aiMaintenance.empty");
+  }
+  if (aiMaintenanceMeta) {
+    const validCount = operations.filter((operation) => operation.valid).length;
+    const invalidCount = operations.length - validCount;
+    aiMaintenanceMeta.textContent = `${current.provider || "deepseek"} / ${current.model || ""} | ${t("toast.aiMaintenancePreview", { valid: validCount, invalid: invalidCount })}`;
+  }
+  if (aiMaintenanceWarnings) {
+    const warnings = current.warnings || [];
+    aiMaintenanceWarnings.innerHTML = warnings.length ? warnings.map((warning) => `<span>${escapeHtml(warning)}</span>`).join("") : "";
+  }
+
+  if (!operations.length) {
+    aiMaintenanceBody.innerHTML = `<tr><td colspan="5">${escapeHtml(t("aiMaintenance.empty"))}</td></tr>`;
+    return;
+  }
+
+  aiMaintenanceBody.innerHTML = operations
+    .map((operation) => {
+      const details = operation.valid
+        ? JSON.stringify(operation.after || operation.data || {})
+        : `${(operation.errors || []).join("; ")} ${JSON.stringify(operation.data || {})}`;
+      return `
+        <tr>
+          <td><span class="status-pill status-${operation.valid ? "active" : "invalid"}">${escapeHtml(aiMaintenanceStatusLabel(operation))}</span></td>
+          <td>${escapeHtml(aiMaintenanceModeLabel(operation))}</td>
+          <td>${escapeHtml(operation.type || "")}</td>
+          <td>${escapeHtml(operation.key || "")}</td>
+          <td>
+            <strong>${escapeHtml(operation.reason || "")}</strong>
+            <pre class="ai-maintenance-json">${escapeHtml(details)}</pre>
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
 function formatDateTime(value) {
   return String(value || "").slice(0, 19).replace("T", " ");
 }
@@ -1815,15 +2206,15 @@ function renderUsers() {
           <td>${escapeHtml(formatDateTime(row.last_login_at) || "--")}</td>
           <td>
             <div class="row-actions">
-              ${can("users:update") ? `<button class="secondary-button" type="button" data-edit="adminUsers" data-id="${row.id}">${t("action.edit")}</button>` : ""}
+              ${can("users:update") ? `<button class="secondary-button" type="button" data-edit="adminUsers" data-id="${escapeHtml(row.id)}">${t("action.edit")}</button>` : ""}
               ${
                 can("users:disable")
-                  ? `<button class="secondary-button" type="button" data-user-status="${status === "disabled" ? "enable" : "disable"}" data-id="${row.id}">${
+                  ? `<button class="secondary-button" type="button" data-user-status="${status === "disabled" ? "enable" : "disable"}" data-id="${escapeHtml(row.id)}">${
                       status === "disabled" ? t("action.enable") : t("action.disable")
                     }</button>`
                   : ""
               }
-              ${can("users:reset_password") ? `<button class="secondary-button" type="button" data-reset-password="${row.id}">${t("action.resetPassword")}</button>` : ""}
+              ${can("users:reset_password") ? `<button class="secondary-button" type="button" data-reset-password="${escapeHtml(row.id)}">${t("action.resetPassword")}</button>` : ""}
             </div>
           </td>
         </tr>
@@ -1857,8 +2248,8 @@ function renderRoles() {
           <td><span class="status-pill status-${statusClass(status)}">${escapeHtml(fieldLabel(status === "disabled" ? "Disabled" : "Active"))}</span></td>
           <td>
             <div class="row-actions">
-              ${can("roles:update") ? `<button class="secondary-button" type="button" data-edit="adminRoles" data-id="${row.id}">${t("action.edit")}</button>` : ""}
-              ${can("roles:delete") && !row.system ? `<button class="danger-button" type="button" data-delete="adminRoles" data-id="${row.id}">${t("action.delete")}</button>` : ""}
+              ${can("roles:update") ? `<button class="secondary-button" type="button" data-edit="adminRoles" data-id="${escapeHtml(row.id)}">${t("action.edit")}</button>` : ""}
+              ${can("roles:delete") && !row.system ? `<button class="danger-button" type="button" data-delete="adminRoles" data-id="${escapeHtml(row.id)}">${t("action.delete")}</button>` : ""}
             </div>
           </td>
         </tr>
@@ -2077,6 +2468,44 @@ loginForm.addEventListener("submit", async (event) => {
   }
 });
 
+if (aiMaintenanceForm) {
+  aiMaintenanceForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    const targetTypes = data.getAll("target_types").map((value) => String(value || "").trim()).filter(Boolean);
+    const instruction = String(data.get("instruction") || "").trim();
+    const sourceText = String(data.get("source_text") || "").trim();
+
+    if (!instruction && !sourceText) {
+      showToast(t("aiMaintenance.instructionPlaceholder"));
+      return;
+    }
+
+    state.aiMaintenance.operations = [];
+    if (aiMaintenanceApplyButton) {
+      aiMaintenanceApplyButton.disabled = true;
+    }
+
+    try {
+      const result = await api("/api/ai-maintenance/preview", {
+        method: "POST",
+        body: JSON.stringify({
+          target_types: targetTypes,
+          instruction,
+          source_text: sourceText,
+        }),
+      });
+      state.aiMaintenance.lastPreview = result;
+      state.aiMaintenance.operations = (result.operations || []).filter((operation) => operation.valid).map((operation) => operation.operation);
+      renderAiMaintenanceResult(result);
+      showToast(t("toast.aiMaintenancePreview", { valid: result.valid_count || 0, invalid: result.invalid_count || 0 }));
+    } catch (error) {
+      showToast(error.message);
+    }
+  });
+}
+
 document.querySelectorAll("[data-password-toggle]").forEach((button) => {
   button.addEventListener("click", () => {
     const input = button.parentElement && button.parentElement.querySelector("input");
@@ -2126,6 +2555,31 @@ document.addEventListener("click", async (event) => {
   if (target.closest("[data-refresh]")) {
     await refreshData();
     showToast(t("toast.refreshed"));
+    return;
+  }
+
+  if (target.closest("[data-ai-maintenance-apply]")) {
+    const operations = state.aiMaintenance.operations || [];
+    if (!operations.length) {
+      return;
+    }
+    if (!confirm(t("confirm.aiMaintenanceApply", { count: operations.length }))) {
+      return;
+    }
+    try {
+      const result = await api("/api/ai-maintenance/apply", {
+        method: "POST",
+        body: JSON.stringify({ operations }),
+      });
+      state.aiMaintenance.operations = [];
+      if (aiMaintenanceApplyButton) {
+        aiMaintenanceApplyButton.disabled = true;
+      }
+      await refreshData();
+      showToast(t("toast.aiMaintenanceApplied", { applied: result.applied?.length || 0, rejected: result.rejected?.length || 0 }));
+    } catch (error) {
+      showToast(error.message);
+    }
     return;
   }
 
@@ -2307,6 +2761,34 @@ document.querySelectorAll("[data-import-file]").forEach((input) => {
   });
 });
 
+document.querySelectorAll("[data-import-dictionary]").forEach((input) => {
+  input.addEventListener("change", async () => {
+    const dictionaryType = input.dataset.importDictionary;
+    const file = input.files[0];
+    if (!file) {
+      return;
+    }
+    try {
+      const rows = parseCsv(await file.text());
+      const result = await api(`/api/import/dictionaries/${dictionaryType}`, {
+        method: "POST",
+        body: JSON.stringify({ rows }),
+      });
+      state.dictionaryType = dictionaryType;
+      const select = document.querySelector("[data-dictionary-type]");
+      if (select) {
+        select.value = dictionaryType;
+      }
+      await refreshData();
+      input.value = "";
+      showToast(t("toast.imported", { saved: result.saved.length, rejected: result.rejected.length }));
+    } catch (error) {
+      input.value = "";
+      showToast(error.message);
+    }
+  });
+});
+
 document.querySelector("[data-inquiries-body]").addEventListener("change", async (event) => {
   const select = event.target.closest("[data-inquiry-status]");
   if (!select) {
@@ -2328,6 +2810,7 @@ document.querySelector("[data-inquiries-body]").addEventListener("change", async
 function boot() {
   applyLanguage();
   switchView("dashboard");
+  window.setInterval(setDashboardClock, 1000);
 
   if (state.token) {
     setAuthenticated(state.token);
