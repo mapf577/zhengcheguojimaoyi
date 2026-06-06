@@ -3,6 +3,11 @@ process.env.CORS_ALLOWED_ORIGINS = "https://allowed.example,https://www.allowed.
 process.env.LOGIN_RATE_LIMIT_MAX_ATTEMPTS = "2";
 process.env.LOGIN_RATE_LIMIT_WINDOW_MS = "60000";
 process.env.LOGIN_RATE_LIMIT_LOCK_MS = "30000";
+process.env.OSS_BUCKET = "qichechukou";
+process.env.OSS_REGION = "oss-ap-southeast-1";
+process.env.OSS_ENDPOINT = "oss-ap-southeast-1.aliyuncs.com";
+process.env.OSS_PUBLIC_BASE_URL = "https://qichechukou.oss-ap-southeast-1.aliyuncs.com";
+process.env.OSS_UPLOAD_PREFIX = "uploads/";
 
 const assert = require("node:assert/strict");
 const test = require("node:test");
@@ -12,6 +17,8 @@ const {
   buildAiMaintenanceSystemPrompt,
   buildContentSecurityPolicy,
   buildDeepSeekUserPrompt,
+  buildOssObjectName,
+  buildOssPublicUrl,
   callDeepSeekMaintenancePlan,
   callDeepSeekReception,
   clearLoginAttempts,
@@ -22,11 +29,13 @@ const {
   getLoginRateLimit,
   hashPassword,
   isOriginAllowed,
+  isOssConfigured,
   isRequestOriginAllowed,
   isAllowedUploadedImage,
   mysqlRecordIdsToDelete,
   mysqlRecordSnapshot,
   normalizeDictionaryImportRow,
+  normalizeOssPrefix,
   parseAiMaintenanceJsonPlan,
   parseDeepSeekJsonReply,
   parseSignedToken,
@@ -108,6 +117,13 @@ test("uploaded image validation checks file signatures", () => {
   assert.equal(isAllowedUploadedImage(".jpeg", jpg), true);
   assert.equal(isAllowedUploadedImage(".jpg", png), false);
   assert.equal(isAllowedUploadedImage(".png", fake), false);
+});
+
+test("oss upload helpers build safe object paths and public urls", () => {
+  assert.equal(isOssConfigured(), false);
+  assert.equal(normalizeOssPrefix("/uploads/../products//"), "uploads/products/");
+  assert.equal(buildOssPublicUrl("uploads/2026/06/test image.png"), "https://qichechukou.oss-ap-southeast-1.aliyuncs.com/uploads/2026/06/test%20image.png");
+  assert.match(buildOssObjectName("测试 image.png", new Date("2026-06-06T00:00:00Z")), /^uploads\/2026\/06\/[a-z0-9]+-[a-f0-9]{8}-image\.png$/);
 });
 
 test("failed login attempts are rate limited by ip and username", () => {

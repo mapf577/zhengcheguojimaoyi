@@ -17,7 +17,15 @@ param(
   [string]$MysqlDatabase = "vehicle_export",
   [string]$MysqlUser = "vehicle_export",
   [string]$MysqlPassword = "",
-  [string]$DatabaseUrl = ""
+  [string]$DatabaseUrl = "",
+  [string]$OssEnabled = "false",
+  [string]$OssBucket = "",
+  [string]$OssRegion = "",
+  [string]$OssEndpoint = "",
+  [string]$OssPublicBaseUrl = "",
+  [string]$OssUploadPrefix = "uploads/",
+  [string]$OssAccessKeyId = "",
+  [string]$OssAccessKeySecret = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -67,6 +75,14 @@ $env:MYSQL_DATABASE = $MysqlDatabase
 $env:MYSQL_USER = $MysqlUser
 $env:MYSQL_PASSWORD = $MysqlPassword
 $env:DATABASE_URL = $DatabaseUrl
+$env:OSS_ENABLED = $OssEnabled
+$env:OSS_BUCKET = $OssBucket
+$env:OSS_REGION = $OssRegion
+$env:OSS_ENDPOINT = $OssEndpoint
+$env:OSS_PUBLIC_BASE_URL = $OssPublicBaseUrl
+$env:OSS_UPLOAD_PREFIX = $OssUploadPrefix
+$env:OSS_ACCESS_KEY_ID = $OssAccessKeyId
+$env:OSS_ACCESS_KEY_SECRET = $OssAccessKeySecret
 
 pm2 startOrReload deploy\ecosystem.config.cjs --update-env
 pm2 save

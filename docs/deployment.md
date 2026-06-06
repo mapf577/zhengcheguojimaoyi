@@ -84,6 +84,14 @@ export MYSQL_PORT=3306
 export MYSQL_DATABASE=vehicle_export
 export MYSQL_USER=vehicle_export
 export MYSQL_PASSWORD='请改成强数据库密码'
+export OSS_ENABLED=true
+export OSS_BUCKET=qichechukou
+export OSS_REGION=oss-ap-southeast-1
+export OSS_ENDPOINT=oss-ap-southeast-1.aliyuncs.com
+export OSS_PUBLIC_BASE_URL=https://qichechukou.oss-ap-southeast-1.aliyuncs.com
+export OSS_UPLOAD_PREFIX=uploads/
+export OSS_ACCESS_KEY_ID='请填写 RAM AccessKey ID'
+export OSS_ACCESS_KEY_SECRET='请填写 RAM AccessKey Secret'
 
 bash deploy/deploy-linux.sh
 ```

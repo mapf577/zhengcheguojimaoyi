@@ -29,11 +29,21 @@ const DEEPSEEK_MODEL = String(process.env.DEEPSEEK_MODEL || "deepseek-v4-flash")
 const DEEPSEEK_THINKING = String(process.env.DEEPSEEK_THINKING || "disabled").toLowerCase() === "enabled" ? "enabled" : "disabled";
 const DEEPSEEK_TIMEOUT_MS = Number(process.env.DEEPSEEK_TIMEOUT_MS || 8000);
 const DEEPSEEK_MAX_TOKENS = Number(process.env.DEEPSEEK_MAX_TOKENS || 800);
+const OSS_ENABLED = String(process.env.OSS_ENABLED || "auto").toLowerCase();
+const OSS_BUCKET = String(process.env.OSS_BUCKET || "");
+const OSS_REGION = String(process.env.OSS_REGION || "");
+const OSS_ENDPOINT = String(process.env.OSS_ENDPOINT || "");
+const OSS_ACCESS_KEY_ID = String(process.env.OSS_ACCESS_KEY_ID || "");
+const OSS_ACCESS_KEY_SECRET = String(process.env.OSS_ACCESS_KEY_SECRET || "");
+const OSS_PUBLIC_BASE_URL = String(process.env.OSS_PUBLIC_BASE_URL || "");
+const OSS_UPLOAD_PREFIX = String(process.env.OSS_UPLOAD_PREFIX || "uploads/");
 
 const sessions = new Map();
 const loginAttempts = new Map();
 const aiChatAttempts = new Map();
 let mysqlPool = null;
+let ossClient = null;
+let OssSdk = null;
 
 const dictionaryTypes = new Set([
   "brands",
@@ -1499,6 +1509,99 @@ function isAllowedUploadedImage(ext, buffer) {
   return ext === detected;
 }
 
+function stripUrlProtocol(value) {
+  return String(value || "").trim().replace(/^https?:\/\//i, "").replace(/\/+$/g, "");
+}
+
+function normalizeOssPrefix(value) {
+  const cleaned = String(value || "")
+    .trim()
+    .replace(/\\/g, "/")
+    .replace(/^\/+/g, "")
+    .split("/")
+    .filter((part) => part && part !== "." && part !== "..")
+    .join("/");
+  return cleaned ? `${cleaned.replace(/\/+$/g, "")}/` : "";
+}
+
+function isOssConfigured() {
+  const hasConfig = Boolean(OSS_BUCKET && OSS_REGION && OSS_ENDPOINT && OSS_ACCESS_KEY_ID && OSS_ACCESS_KEY_SECRET);
+  if (OSS_ENABLED === "true" || OSS_ENABLED === "1" || OSS_ENABLED === "enabled") {
+    return hasConfig;
+  }
+  if (OSS_ENABLED === "false" || OSS_ENABLED === "0" || OSS_ENABLED === "disabled") {
+    return false;
+  }
+  return hasConfig;
+}
+
+function getOssClient() {
+  if (!isOssConfigured()) {
+    return null;
+  }
+  if (!ossClient) {
+    OssSdk = OssSdk || require("ali-oss");
+    ossClient = new OssSdk({
+      region: OSS_REGION,
+      endpoint: stripUrlProtocol(OSS_ENDPOINT),
+      accessKeyId: OSS_ACCESS_KEY_ID,
+      accessKeySecret: OSS_ACCESS_KEY_SECRET,
+      bucket: OSS_BUCKET,
+      secure: true,
+    });
+  }
+  return ossClient;
+}
+
+function imageContentType(ext) {
+  const contentTypes = {
+    ".gif": "image/gif",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+  };
+  return contentTypes[ext] || "application/octet-stream";
+}
+
+function buildOssObjectName(filename, date = new Date()) {
+  const safeName = String(filename || "upload")
+    .replace(/[^\w.\-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 120) || "upload";
+  const year = String(date.getUTCFullYear());
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const prefix = normalizeOssPrefix(OSS_UPLOAD_PREFIX);
+  return `${prefix}${year}/${month}/${Date.now().toString(36)}-${crypto.randomBytes(4).toString("hex")}-${safeName}`;
+}
+
+function buildOssPublicUrl(objectName) {
+  const baseUrl = OSS_PUBLIC_BASE_URL.trim()
+    || (OSS_BUCKET && OSS_ENDPOINT ? `https://${OSS_BUCKET}.${stripUrlProtocol(OSS_ENDPOINT)}` : "");
+  if (!baseUrl) {
+    return "";
+  }
+  const encodedObjectName = String(objectName || "")
+    .split("/")
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+  return `${baseUrl.replace(/\/+$/g, "")}/${encodedObjectName}`;
+}
+
+async function uploadImageToOss({ objectName, buffer, ext }) {
+  const client = getOssClient();
+  if (!client) {
+    throw new Error("OSS upload is not configured.");
+  }
+  await client.put(objectName, buffer, {
+    headers: {
+      "Content-Type": imageContentType(ext),
+      "Cache-Control": "public, max-age=31536000, immutable",
+    },
+  });
+  return buildOssPublicUrl(objectName);
+}
+
 async function handleUpload(req, res) {
   if (!requireAuth(req, res)) {
     return;
@@ -1524,6 +1627,33 @@ async function handleUpload(req, res) {
   }
 
   const filename = `${Date.now().toString(36)}-${crypto.randomBytes(4).toString("hex")}${ext}`;
+  if (isOssConfigured()) {
+    const objectName = buildOssObjectName(originalName.replace(/\.[^.]+$/, ext));
+    try {
+      const url = await uploadImageToOss({ objectName, buffer, ext });
+      await appendAiLog(req, {
+        module: "uploads",
+        action: "upload_image",
+        target_type: "oss",
+        target_id: objectName,
+        target_label: originalName,
+        detail: `Uploaded image ${originalName} to OSS bucket ${OSS_BUCKET}.`,
+      });
+      sendJson(res, 201, {
+        filename: path.basename(objectName),
+        objectName,
+        url,
+        originalName,
+        size: buffer.length,
+        storage: "oss",
+      });
+      return;
+    } catch (error) {
+      sendJson(res, 502, { error: "OSS upload failed.", detail: String(error.message || "").slice(0, 300) });
+      return;
+    }
+  }
+
   const target = path.join(UPLOAD_DIR, filename);
   fs.writeFileSync(target, buffer);
   await appendAiLog(req, {
@@ -1539,6 +1669,7 @@ async function handleUpload(req, res) {
     url: `/uploads/${filename}`,
     originalName,
     size: buffer.length,
+    storage: "local",
   });
 }
 
@@ -3073,6 +3204,8 @@ module.exports = {
   buildDeepSeekUserPrompt,
   buildAiMaintenanceSystemPrompt,
   buildAiMaintenanceUserPrompt,
+  buildOssObjectName,
+  buildOssPublicUrl,
   clearLoginAttempts,
   callDeepSeekReception,
   callDeepSeekMaintenancePlan,
@@ -3083,6 +3216,7 @@ module.exports = {
   getRequestOrigin,
   hashPassword,
   isOriginAllowed,
+  isOssConfigured,
   isRequestOriginAllowed,
   isSameRequestOrigin,
   detectImageExtension,
@@ -3091,6 +3225,7 @@ module.exports = {
   mergeDictionaries,
   mysqlRecordIdsToDelete,
   mysqlRecordSnapshot,
+  normalizeOssPrefix,
   normalizeDictionaryImportRow,
   parseAiMaintenanceJsonPlan,
   parseDeepSeekJsonReply,

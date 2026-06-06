@@ -201,6 +201,23 @@ database/mysql/schema.sql
 
 第一次启用 MySQL 时，如果数据库表为空，后端会自动把现有 `backend/data/*.json` 导入 MySQL 一次。
 
+## 图片对象存储
+
+后台图片上传接口支持阿里云 OSS。启用后，车辆和配件表单上传的图片会写入 OSS，数据库保存公网图片 URL；未配置 AccessKey 时仍回退到本机 `/uploads`。
+
+```text
+OSS_ENABLED=true
+OSS_BUCKET=qichechukou
+OSS_REGION=oss-ap-southeast-1
+OSS_ENDPOINT=oss-ap-southeast-1.aliyuncs.com
+OSS_PUBLIC_BASE_URL=https://qichechukou.oss-ap-southeast-1.aliyuncs.com
+OSS_UPLOAD_PREFIX=uploads/
+OSS_ACCESS_KEY_ID=你的 RAM AccessKey ID
+OSS_ACCESS_KEY_SECRET=你的 RAM AccessKey Secret
+```
+
+建议使用 RAM 子账号，并仅授权当前 bucket 的上传、读取、删除和列表权限。AccessKey 不要提交到 GitHub，只放在服务器环境变量或 PM2 环境中。
+
 ## 正式系统建议
 
 正式运营时建议继续完善：
