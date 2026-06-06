@@ -2,6 +2,7 @@ const siteTranslations = {
   en: {
     "meta.title": "GlobalThreads | Vehicle & Auto Parts Supply",
     "nav.vehicles": "Vehicles",
+    "nav.usedVehicles": "Used Cars",
     "nav.parts": "Auto Parts",
     "nav.export": "Export Service",
     "nav.cases": "Cases",
@@ -37,6 +38,9 @@ const siteTranslations = {
     "vehicles.eyebrow": "Export-ready inventory",
     "vehicles.title": "Featured Vehicles",
     "vehicles.empty": "No vehicles have been published yet.",
+    "usedVehicles.eyebrow": "Inspected export stock",
+    "usedVehicles.title": "Used Cars",
+    "usedVehicles.empty": "No used cars have been published yet.",
     "parts.eyebrow": "OE/OEM matching",
     "parts.title": "Auto Parts Categories",
     "parts.empty": "No auto parts have been published yet.",
@@ -88,6 +92,12 @@ const siteTranslations = {
     "detail.vehicleType": "Vehicle Type",
     "detail.energyType": "Energy Type",
     "detail.year": "Year",
+    "detail.mileage": "Mileage",
+    "detail.registrationDate": "Registration Date",
+    "detail.currentLocation": "Current Location",
+    "detail.emissionStandard": "Emission Standard",
+    "detail.inspectionReport": "Inspection Report",
+    "detail.accidentNote": "Accident Note",
     "detail.steering": "Steering",
     "detail.stockStatus": "Stock Status",
     "detail.price": "Price",
@@ -109,6 +119,7 @@ const siteTranslations = {
   zh: {
     "meta.title": "GlobalThreads | 整车出口与汽车零配件供应",
     "nav.vehicles": "整车展示",
+    "nav.usedVehicles": "二手车",
     "nav.parts": "汽车零配件",
     "nav.export": "出口服务",
     "nav.cases": "案例能力",
@@ -144,6 +155,9 @@ const siteTranslations = {
     "vehicles.eyebrow": "可出口库存",
     "vehicles.title": "推荐整车",
     "vehicles.empty": "暂未发布整车数据。",
+    "usedVehicles.eyebrow": "已检车源",
+    "usedVehicles.title": "二手车",
+    "usedVehicles.empty": "暂未发布二手车数据。",
     "parts.eyebrow": "OE/OEM 精准匹配",
     "parts.title": "汽车零配件分类",
     "parts.empty": "暂未发布零配件数据。",
@@ -195,6 +209,12 @@ const siteTranslations = {
     "detail.vehicleType": "车辆类型",
     "detail.energyType": "能源类型",
     "detail.year": "年份",
+    "detail.mileage": "里程",
+    "detail.registrationDate": "上牌日期",
+    "detail.currentLocation": "当前所在地",
+    "detail.emissionStandard": "排放标准",
+    "detail.inspectionReport": "检测报告",
+    "detail.accidentNote": "事故说明",
     "detail.steering": "方向盘",
     "detail.stockStatus": "库存状态",
     "detail.price": "价格",
@@ -315,6 +335,23 @@ function localizedCondition(value) {
     return t("condition.used");
   }
   return value || "";
+}
+
+function isUsedCondition(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  return normalized === "used" || normalized === "二手" || normalized === "二手车";
+}
+
+function isUsedVehicle(vehicle) {
+  return isUsedCondition(vehicle?.record?.condition);
+}
+
+function primaryVehicleItems() {
+  return vehicles.filter((vehicle) => !isUsedVehicle(vehicle));
+}
+
+function usedVehicleItems() {
+  return vehicles.filter(isUsedVehicle);
 }
 
 function formatNumber(value) {
@@ -447,6 +484,7 @@ function vehicleDisplay(vehicle) {
   const energy = dictionaryLabel("energy_types", record.energy_type);
   const stock = dictionaryLabel("stock_statuses", record.stock_status) || t("stock.askSales");
   const condition = localizedCondition(record.condition);
+  const isUsed = isUsedVehicle(vehicle);
 
   return {
     badge: compact([condition, vehicleType || energy]).join(" / "),
@@ -455,7 +493,8 @@ function vehicleDisplay(vehicle) {
       vehicleType,
       energy,
       record.steering,
-      record.range_km ? `${formatNumber(record.range_km)} km` : "",
+      isUsed && record.mileage ? `${formatNumber(record.mileage)} km` : "",
+      !isUsed && record.range_km ? `${formatNumber(record.range_km)} km` : "",
       stock,
     ]).slice(0, 4),
     price: buildPrice(record),
@@ -494,6 +533,10 @@ function activeVehicleFilter() {
   return document.querySelector("[data-vehicle-filter].active")?.dataset.vehicleFilter || "all";
 }
 
+function activeUsedVehicleFilter() {
+  return document.querySelector("[data-used-vehicle-filter].active")?.dataset.usedVehicleFilter || "all";
+}
+
 function activePartFilter() {
   return document.querySelector("[data-part-filter].active")?.dataset.partFilter || "all";
 }
@@ -509,24 +552,37 @@ function countItems(rows, field) {
 }
 
 function filterButtonHtml(kind, value, label, count, active) {
-  const attr = kind === "vehicles" ? "data-vehicle-filter" : "data-part-filter";
+  const attr =
+    {
+      vehicles: "data-vehicle-filter",
+      usedVehicles: "data-used-vehicle-filter",
+      parts: "data-part-filter",
+    }[kind] || "data-vehicle-filter";
   return `<button class="filter-chip${active ? " active" : ""}" type="button" ${attr}="${escapeHtml(value)}">${escapeHtml(label)} <span>${escapeHtml(formatNumber(count))}</span></button>`;
 }
 
-function renderVehicleFilterControls() {
-  const row = document.querySelector("[data-vehicle-filters]");
+function renderVehicleFilterControlsFor(rowSelector, kind, items, currentFilter) {
+  const row = document.querySelector(rowSelector);
   if (!row) {
     return;
   }
-  const counts = countItems(vehicles, "filterValue");
-  const current = counts.has(activeVehicleFilter()) ? activeVehicleFilter() : "all";
-  const buttons = [filterButtonHtml("vehicles", "all", t("filter.all"), vehicles.length, current === "all")];
+  const counts = countItems(items, "filterValue");
+  const current = counts.has(currentFilter) ? currentFilter : "all";
+  const buttons = [filterButtonHtml(kind, "all", t("filter.all"), items.length, current === "all")];
   [...counts.entries()]
     .sort((a, b) => b[1] - a[1] || dictionaryLabel("vehicle_types", a[0]).localeCompare(dictionaryLabel("vehicle_types", b[0])))
     .forEach(([value, count]) => {
-      buttons.push(filterButtonHtml("vehicles", value, dictionaryLabel("vehicle_types", value), count, current === value));
+      buttons.push(filterButtonHtml(kind, value, dictionaryLabel("vehicle_types", value), count, current === value));
     });
   row.innerHTML = buttons.join("");
+}
+
+function renderVehicleFilterControls() {
+  renderVehicleFilterControlsFor("[data-vehicle-filters]", "vehicles", primaryVehicleItems(), activeVehicleFilter());
+}
+
+function renderUsedVehicleFilterControls() {
+  renderVehicleFilterControlsFor("[data-used-vehicle-filters]", "usedVehicles", usedVehicleItems(), activeUsedVehicleFilter());
 }
 
 function renderPartFilterControls() {
@@ -563,6 +619,7 @@ function renderEnergyOptions() {
 
 function renderFilterControls() {
   renderVehicleFilterControls();
+  renderUsedVehicleFilterControls();
   renderPartFilterControls();
   renderEnergyOptions();
 }
@@ -602,6 +659,7 @@ async function loadApiData() {
     renderMetrics();
     renderFilterControls();
     renderVehicles(activeVehicleFilter());
+    renderUsedVehicles(activeUsedVehicleFilter());
     renderParts(activePartFilter());
   } catch {
     // Keep the page empty when the backend is not running.
@@ -622,6 +680,7 @@ const header = document.querySelector(".site-header");
 const hero = document.querySelector(".hero");
 const menuToggle = document.querySelector(".menu-toggle");
 const vehicleGrid = document.querySelector("[data-vehicle-grid]");
+const usedVehicleGrid = document.querySelector("[data-used-vehicle-grid]");
 const partGrid = document.querySelector("[data-part-grid]");
 const inquiryDrawer = document.querySelector("[data-inquiry-drawer]");
 const detailDrawer = document.querySelector("[data-detail-drawer]");
@@ -914,16 +973,27 @@ function partMatchesSearch(part) {
   return matchesQuery && matchesOe;
 }
 
-function renderVehicles(filter = "all") {
-  const filtered = (filter === "all" ? vehicles : vehicles.filter((vehicle) => vehicle.filterValue === filter)).filter(vehicleMatchesSearch);
+function renderVehicleList(grid, items, filter, emptyKey) {
+  if (!grid) {
+    return;
+  }
+  const filtered = (filter === "all" ? items : items.filter((vehicle) => vehicle.filterValue === filter)).filter(vehicleMatchesSearch);
   if (!filtered.length) {
     const empty = document.createElement("div");
     empty.className = "drawer-empty";
-    empty.textContent = t("vehicles.empty");
-    vehicleGrid.replaceChildren(empty);
+    empty.textContent = t(emptyKey);
+    grid.replaceChildren(empty);
     return;
   }
-  vehicleGrid.replaceChildren(...filtered.map(makeVehicleCard));
+  grid.replaceChildren(...filtered.map(makeVehicleCard));
+}
+
+function renderVehicles(filter = "all") {
+  renderVehicleList(vehicleGrid, primaryVehicleItems(), filter, "vehicles.empty");
+}
+
+function renderUsedVehicles(filter = "all") {
+  renderVehicleList(usedVehicleGrid, usedVehicleItems(), filter, "usedVehicles.empty");
 }
 
 function renderParts(filter = "all") {
@@ -1027,10 +1097,16 @@ function renderDetail(product) {
         [t("detail.vehicleType"), vehicleInfo.typeLabel],
         [t("detail.energyType"), vehicleInfo.energyLabel],
         [t("detail.year"), record.year || item.specs?.[0]],
+        [t("detail.mileage"), record.mileage ? `${formatNumber(record.mileage)} km` : ""],
+        [t("detail.registrationDate"), record.registration_date],
+        [t("detail.currentLocation"), record.location],
+        [t("detail.emissionStandard"), record.emission_standard],
         [t("detail.steering"), record.steering || ""],
         [t("detail.stockStatus"), vehicleInfo.stock],
         [t("detail.price"), vehicleInfo.price],
         [t("detail.exportPort"), vehicleInfo.exportPortLabel],
+        [t("detail.inspectionReport"), record.inspection_report],
+        [t("detail.accidentNote"), record.accident_note],
       ]
     : [
         [t("parts.title"), partInfo.category],
@@ -1136,6 +1212,13 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  const usedVehicleFilter = target.closest("[data-used-vehicle-filter]");
+  if (usedVehicleFilter) {
+    setActiveChip(usedVehicleFilter, "[data-used-vehicle-filter]");
+    renderUsedVehicles(usedVehicleFilter.dataset.usedVehicleFilter);
+    return;
+  }
+
   const partFilter = target.closest("[data-part-filter]");
   if (partFilter) {
     setActiveChip(partFilter, "[data-part-filter]");
@@ -1222,6 +1305,7 @@ searchForm.addEventListener("submit", (event) => {
     searchState.vehicles.query = keyword;
     searchState.vehicles.energy = String(data.get("energy") || "").trim();
     renderVehicles(activeVehicleFilter());
+    renderUsedVehicles(activeUsedVehicleFilter());
   } else {
     searchState.parts.query = keyword;
     searchState.parts.oe = String(data.get("oe") || "").trim();
@@ -1293,7 +1377,9 @@ document.querySelector("[data-lang-toggle]").addEventListener("click", () => {
   currentLang = currentLang === "zh" ? "en" : "zh";
   localStorage.setItem("site_lang", currentLang);
   applyLanguage();
+  renderFilterControls();
   renderVehicles(document.querySelector("[data-vehicle-filter].active")?.dataset.vehicleFilter || "all");
+  renderUsedVehicles(document.querySelector("[data-used-vehicle-filter].active")?.dataset.usedVehicleFilter || "all");
   renderParts(document.querySelector("[data-part-filter].active")?.dataset.partFilter || "all");
   renderInquiryItems();
   if (detailDrawer.getAttribute("aria-hidden") === "false" && detailDrawer.dataset.currentProductId) {
@@ -1307,7 +1393,9 @@ window.addEventListener("hashchange", () => window.requestAnimationFrame(elevate
 window.addEventListener("load", () => window.requestAnimationFrame(elevateHeader));
 
 applyLanguage();
+renderFilterControls();
 renderVehicles();
+renderUsedVehicles();
 renderParts();
 renderInquiryItems();
 elevateHeader();

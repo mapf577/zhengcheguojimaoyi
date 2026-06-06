@@ -68,7 +68,7 @@ const schemas = {
       { name: "title_zh", label: "Chinese Title" },
       { name: "year", label: "Year", required: true },
       { name: "trim", label: "Trim" },
-      { name: "condition", label: "Condition", required: true },
+      { name: "condition", label: "Condition", required: true, options: [["new", "New"], ["used", "Used"]] },
       { name: "vehicle_type", label: "Vehicle Type", required: true, dictionaryType: "vehicle_types" },
       { name: "energy_type", label: "Energy Type", required: true, dictionaryType: "energy_types" },
       { name: "steering", label: "Steering" },
@@ -79,6 +79,12 @@ const schemas = {
       { name: "battery_kwh", label: "Battery KWH" },
       { name: "engine_displacement", label: "Engine Displacement" },
       { name: "mileage", label: "Mileage" },
+      { name: "registration_date", label: "Registration Date" },
+      { name: "ownership_status", label: "Ownership Status" },
+      { name: "location", label: "Current Location" },
+      { name: "emission_standard", label: "Emission Standard" },
+      { name: "inspection_report", label: "Inspection Report", type: "textarea" },
+      { name: "accident_note", label: "Accident Note", type: "textarea" },
       { name: "color", label: "Color", dictionaryType: "colors" },
       { name: "stock_status", label: "Stock Status", required: true, dictionaryType: "stock_statuses" },
       { name: "price_min", label: "Price Min" },
@@ -181,9 +187,12 @@ const fieldGroups = {
         "range_km",
         "battery_kwh",
         "engine_displacement",
-        "mileage",
         "color",
       ],
+    },
+    {
+      titleKey: "form.usedVehicle",
+      fields: ["mileage", "registration_date", "ownership_status", "location", "emission_standard", "inspection_report", "accident_note"],
     },
     { titleKey: "form.commercial", fields: ["stock_status", "price_min", "price_max", "currency", "export_port"] },
     { titleKey: "form.media", fields: ["images", "description_en", "description_zh"] },
@@ -213,6 +222,33 @@ const fieldGroups = {
     { titleKey: "form.permissions", fields: ["permissions"] },
   ],
 };
+
+schemas.usedVehicles = {
+  ...schemas.vehicles,
+  title: "Used Cars",
+  sourceType: "vehicles",
+  conditionFilter: "used",
+  fixedValues: { condition: "used" },
+  columns: ["sku", "brand", "model", "year", "mileage", "registration_date", "vehicle_type", "energy_type", "stock_status", "price_min", "price_max", "currency"],
+  fields: schemas.vehicles.fields.filter((field) => field.name !== "condition"),
+};
+
+fieldGroups.usedVehicles = [
+  { titleKey: "form.basic", fields: ["sku", "brand", "model", "title_en", "title_zh", "year", "trim"] },
+  {
+    titleKey: "form.specs",
+    fields: ["vehicle_type", "energy_type", "steering", "seats", "transmission", "drive_type", "range_km", "battery_kwh", "engine_displacement", "color"],
+  },
+  {
+    titleKey: "form.usedVehicle",
+    fields: ["mileage", "registration_date", "ownership_status", "location", "emission_standard", "inspection_report", "accident_note"],
+  },
+  { titleKey: "form.commercial", fields: ["stock_status", "price_min", "price_max", "currency", "export_port"] },
+  { titleKey: "form.media", fields: ["images", "description_en", "description_zh"] },
+];
+
+tableDictionaryFields.usedVehicles = tableDictionaryFields.vehicles;
+filterPlaceholderKeys.usedVehicles = filterPlaceholderKeys.vehicles;
 
 const adminTranslations = {
   en: {
@@ -896,6 +932,49 @@ Object.assign(adminTranslations.zh, {
   "form.permissions": "权限范围",
 });
 
+Object.assign(adminTranslations.en, {
+  "nav.usedVehicles": "Used Cars",
+  "usedVehicles.data": "Used Car Data",
+  "usedVehicles.hint": "Maintain inspected used car stock, mileage, condition notes and export pricing.",
+  "action.addUsedVehicle": "Add Used Car",
+  "action.saveUsedVehicle": "Save Used Car",
+  "empty.usedVehicles": "No used cars yet.",
+  "filter.searchUsedVehicles": "Search SKU, brand, model...",
+  "singular.usedVehicle": "Used Car",
+  "form.usedVehicle": "Used Car Details",
+});
+
+Object.assign(adminTranslations.zh, {
+  "nav.usedVehicles": "二手车管理",
+  "usedVehicles.data": "二手车数据",
+  "usedVehicles.hint": "维护已检二手车车源、里程、车况说明和出口价格。",
+  "action.addUsedVehicle": "新增二手车",
+  "action.saveUsedVehicle": "保存二手车",
+  "empty.usedVehicles": "暂无二手车数据。",
+  "filter.searchUsedVehicles": "搜索 SKU、品牌、车型...",
+  "singular.usedVehicle": "二手车",
+  "form.usedVehicle": "二手车信息",
+});
+
+Object.assign(fieldTranslations.zh, {
+  New: "新车",
+  Used: "二手车",
+  "Registration Date": "上牌日期",
+  "Ownership Status": "产权/手续状态",
+  "Current Location": "当前所在地",
+  "Emission Standard": "排放标准",
+  "Inspection Report": "检测报告",
+  "Accident Note": "事故说明",
+});
+
+Object.assign(columnTranslations.zh, {
+  mileage: "里程",
+  registration_date: "上牌日期",
+  ownership_status: "产权/手续",
+  location: "所在地",
+  emission_standard: "排放标准",
+});
+
 const logValueTranslations = {
   en: {
     modules: {
@@ -973,6 +1052,7 @@ const state = {
   view: "dashboard",
   editing: {
     vehicles: null,
+    usedVehicles: null,
     parts: null,
     dictionaries: null,
     adminUsers: null,
@@ -982,6 +1062,12 @@ const state = {
   dictionaryType: "brands",
   filters: {
     vehicles: {
+      query: "",
+      energy_type: "",
+      vehicle_type: "",
+      stock_status: "",
+    },
+    usedVehicles: {
       query: "",
       energy_type: "",
       vehicle_type: "",
@@ -1055,6 +1141,9 @@ function singularLabel(type) {
   if (type === "vehicles") {
     return t("singular.vehicle");
   }
+  if (type === "usedVehicles") {
+    return t("singular.usedVehicle");
+  }
   if (type === "parts") {
     return t("singular.part");
   }
@@ -1065,6 +1154,64 @@ function singularLabel(type) {
     return t("singular.role");
   }
   return t("singular.dictionary");
+}
+
+function sourceType(type) {
+  return schemas[type]?.sourceType || type;
+}
+
+function isUsedVehicleRow(row) {
+  const condition = String(row?.condition || "").trim().toLowerCase();
+  return condition === "used" || condition === "二手" || condition === "二手车";
+}
+
+function rowsForType(type) {
+  const schema = schemas[type] || {};
+  let rows = state.data[sourceType(type)] || [];
+  if (schema.conditionFilter === "used") {
+    rows = rows.filter(isUsedVehicleRow);
+  }
+  return rows;
+}
+
+function fixedValuesForType(type) {
+  return schemas[type]?.fixedValues || {};
+}
+
+function addActionLabel(type) {
+  if (type === "usedVehicles") {
+    return t("action.addUsedVehicle");
+  }
+  if (type === "vehicles") {
+    return t("action.addVehicle");
+  }
+  return t("action.addPart");
+}
+
+function saveActionLabel(type) {
+  if (type === "usedVehicles") {
+    return t("action.saveUsedVehicle");
+  }
+  if (type === "vehicles") {
+    return t("action.saveVehicle");
+  }
+  if (type === "parts") {
+    return t("action.savePart");
+  }
+  if (type === "adminUsers") {
+    return t("action.saveUser");
+  }
+  if (type === "adminRoles") {
+    return t("action.saveRole");
+  }
+  return t("action.saveDictionary");
+}
+
+function emptyKeyForType(type) {
+  if (type === "usedVehicles") {
+    return "empty.usedVehicles";
+  }
+  return type === "vehicles" ? "empty.vehicles" : "empty.parts";
 }
 
 function statusText(status) {
@@ -1317,6 +1464,7 @@ function applyLanguage() {
   }
   renderFilterOptions();
   renderTable("vehicles");
+  renderTable("usedVehicles");
   renderTable("parts");
   renderDictionaryTable();
   renderInquiries();
@@ -1496,12 +1644,13 @@ function renderMetrics() {
 function getFilteredRows(type) {
   const filters = state.filters[type];
   const query = String(filters.query || "").trim().toLowerCase();
+  const baseType = sourceType(type);
   const queryFields =
-    type === "vehicles"
+    baseType === "vehicles"
       ? ["sku", "brand", "model", "title_en", "title_zh", "vehicle_type", "energy_type"]
       : ["sku", "name", "title_en", "title_zh", "oe_numbers", "applicable_brand", "applicable_model", "category"];
 
-  return state.data[type].filter((row) => {
+  return rowsForType(type).filter((row) => {
     const matchesQuery =
       !query ||
       queryFields.some((field) => {
@@ -1692,7 +1841,7 @@ function shouldRenderPill(type, column) {
     column === "stock_status" ||
     column === "status" ||
     column === "energy_type" ||
-    (type === "vehicles" && column === "vehicle_type")
+    (sourceType(type) === "vehicles" && column === "vehicle_type")
   );
 }
 
@@ -1757,7 +1906,7 @@ function renderDictionaryTable() {
 }
 
 function updateVehicleModelOptions(form) {
-  if (form.dataset.recordForm !== "vehicles") {
+  if (sourceType(form.dataset.recordForm) !== "vehicles") {
     return;
   }
   const brand = form.querySelector('[name="brand"]')?.value || "";
@@ -1771,7 +1920,7 @@ function updateVehicleModelOptions(form) {
 }
 
 function applyVehicleModelDefaults(form) {
-  if (form.dataset.recordForm !== "vehicles") {
+  if (sourceType(form.dataset.recordForm) !== "vehicles") {
     return;
   }
   const modelValue = form.querySelector('[name="model"]')?.value || "";
@@ -1974,22 +2123,17 @@ function renderFields(type, record = {}) {
     .join("");
 
   editorTitle.textContent = record.id ? `${t("action.edit")} ${singularLabel(type)}` : `${t("action.new")} ${singularLabel(type)}`;
-  saveRecordButton.textContent =
-    type === "vehicles"
-      ? t("action.saveVehicle")
-      : type === "parts"
-        ? t("action.savePart")
-        : type === "adminUsers"
-          ? t("action.saveUser")
-          : type === "adminRoles"
-            ? t("action.saveRole")
-            : t("action.saveDictionary");
+  saveRecordButton.textContent = saveActionLabel(type);
 }
 
 function renderTable(type) {
   const schema = schemas[type];
   const head = document.querySelector(`[data-table-head="${type}"]`);
   const body = document.querySelector(`[data-table-body="${type}"]`);
+  if (!schema || !head || !body) {
+    return;
+  }
+  const allRows = rowsForType(type);
   const rows = getFilteredRows(type);
 
   head.innerHTML = `
@@ -1999,13 +2143,13 @@ function renderTable(type) {
     </tr>
   `;
 
-  if (!state.data[type].length) {
+  if (!allRows.length) {
     body.innerHTML = `
       <tr>
         <td colspan="${schema.columns.length + 1}">
           <div class="empty-state">
-            <strong>${t(type === "vehicles" ? "empty.vehicles" : "empty.parts")}</strong>
-            <button class="primary-button" type="button" data-new-record="${type}">${type === "vehicles" ? t("action.addVehicle") : t("action.addPart")}</button>
+            <strong>${t(emptyKeyForType(type))}</strong>
+            <button class="primary-button" type="button" data-new-record="${type}">${addActionLabel(type)}</button>
           </div>
         </td>
       </tr>
@@ -2280,6 +2424,7 @@ async function refreshData() {
   renderMetrics();
   renderFilterOptions();
   renderTable("vehicles");
+  renderTable("usedVehicles");
   renderTable("parts");
   renderDictionaryTable();
   renderInquiries();
@@ -2302,7 +2447,7 @@ function collectForm(type, form) {
     }
     record[field.name] = value;
   });
-  return record;
+  return { ...record, ...fixedValuesForType(type) };
 }
 
 function resetForm(type) {
@@ -2313,13 +2458,13 @@ function resetForm(type) {
 }
 
 function findRecord(type, id) {
-  return state.data[type].find((row) => row.id === id);
+  return rowsForType(type).find((row) => row.id === id) || (state.data[sourceType(type)] || []).find((row) => row.id === id);
 }
 
 function openRecordDrawer(type, record = {}) {
   state.drawerType = type;
   state.editing[type] = record.id || null;
-  renderFields(type, record);
+  renderFields(type, { ...fixedValuesForType(type), ...record });
   recordDrawer.setAttribute("aria-hidden", "false");
 }
 
@@ -2597,7 +2742,10 @@ document.addEventListener("click", async (event) => {
   const newRecordButton = target.closest("[data-new-record]");
   if (newRecordButton) {
     const type = newRecordButton.dataset.newRecord;
-    const defaults = type === "adminUsers" || type === "adminRoles" ? { status: "active" } : {};
+    const defaults = {
+      ...fixedValuesForType(type),
+      ...(type === "adminUsers" || type === "adminRoles" ? { status: "active" } : {}),
+    };
     openRecordDrawer(type, defaults);
     return;
   }
@@ -2747,7 +2895,7 @@ document.querySelectorAll("[data-import-file]").forEach((input) => {
       return;
     }
     try {
-      const rows = parseCsv(await file.text());
+      const rows = parseCsv(await file.text()).map((row) => ({ ...row, ...fixedValuesForType(type) }));
       const result = await api(schemas[type].importApi, {
         method: "POST",
         body: JSON.stringify({ rows }),

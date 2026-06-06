@@ -133,16 +133,17 @@
         <nav class="side-nav" aria-label="Admin sections">
           <button class="active" type="button" data-view="dashboard" data-short="D"><span class="nav-icon">01</span><span data-i18n="nav.dashboard">Dashboard</span></button>
           <button type="button" data-view="vehicles" data-short="V"><span class="nav-icon">02</span><span data-i18n="nav.vehicles">Vehicles</span></button>
-          <button type="button" data-view="parts" data-short="P"><span class="nav-icon">03</span><span data-i18n="nav.parts">Auto Parts</span></button>
-          <button type="button" data-view="inquiries" data-short="I"><span class="nav-icon">04</span><span data-i18n="nav.inquiries">Inquiries</span></button>
+          <button type="button" data-view="usedVehicles" data-short="UC"><span class="nav-icon">03</span><span data-i18n="nav.usedVehicles">Used Cars</span></button>
+          <button type="button" data-view="parts" data-short="P"><span class="nav-icon">04</span><span data-i18n="nav.parts">Auto Parts</span></button>
+          <button type="button" data-view="inquiries" data-short="I"><span class="nav-icon">05</span><span data-i18n="nav.inquiries">Inquiries</span></button>
         </nav>
         <p class="side-nav-label side-nav-label-secondary" data-i18n="nav.groupSystem">System</p>
         <nav class="side-nav" aria-label="System sections">
-          <button type="button" data-view="users" data-short="U"><span class="nav-icon">05</span><span data-i18n="nav.users">Users</span></button>
-          <button type="button" data-view="roles" data-short="R"><span class="nav-icon">06</span><span data-i18n="nav.roles">Roles</span></button>
-          <button type="button" data-view="settings" data-short="S"><span class="nav-icon">07</span><span data-i18n="nav.settings">Settings</span></button>
-          <button type="button" data-view="aiMaintenance" data-short="M"><span class="nav-icon">08</span><span data-i18n="nav.aiMaintenance">AI Maintenance</span></button>
-          <button type="button" data-view="aiLogs" data-short="A"><span class="nav-icon">09</span><span data-i18n="nav.aiLogs">AI Logs</span></button>
+          <button type="button" data-view="users" data-short="U"><span class="nav-icon">06</span><span data-i18n="nav.users">Users</span></button>
+          <button type="button" data-view="roles" data-short="R"><span class="nav-icon">07</span><span data-i18n="nav.roles">Roles</span></button>
+          <button type="button" data-view="settings" data-short="S"><span class="nav-icon">08</span><span data-i18n="nav.settings">Settings</span></button>
+          <button type="button" data-view="aiMaintenance" data-short="M"><span class="nav-icon">09</span><span data-i18n="nav.aiMaintenance">AI Maintenance</span></button>
+          <button type="button" data-view="aiLogs" data-short="A"><span class="nav-icon">10</span><span data-i18n="nav.aiLogs">AI Logs</span></button>
         </nav>
         <div class="sidebar-account">
           <span data-i18n="workspace.account">Current account</span>
@@ -326,6 +327,57 @@
               <table>
                 <thead data-table-head="vehicles"></thead>
                 <tbody data-table-body="vehicles"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" data-view-panel="usedVehicles" hidden>
+          <section class="panel list-panel table-shell">
+            <div class="panel-header wrap">
+              <div class="panel-title-stack">
+                <p class="eyebrow" data-i18n="nav.usedVehicles">Used Cars</p>
+                <h2 data-i18n="usedVehicles.data">Used Car Data</h2>
+                <p class="panel-hint" data-i18n="usedVehicles.hint">Maintain inspected used car stock, mileage, condition notes and export pricing.</p>
+              </div>
+              <div class="toolbar">
+                <button class="primary-button" type="button" data-new-record="usedVehicles" data-i18n="action.addUsedVehicle">Add Used Car</button>
+                <label class="file-button">
+                  <span data-i18n="action.importCsv">Import CSV</span>
+                  <input type="file" accept=".csv,text/csv" data-import-file="usedVehicles" />
+                </label>
+                <button class="secondary-button" type="button" data-export="usedVehicles" data-i18n="action.exportCsv">Export CSV</button>
+              </div>
+            </div>
+            <div class="product-toolbar">
+              <input type="search" data-search-records="usedVehicles" data-i18n-placeholder="filter.searchUsedVehicles" placeholder="Search SKU, brand, model..." />
+              <select data-filter-records="usedVehicles" data-filter-field="energy_type">
+                <option value="" data-i18n="filter.allEnergy">All energy</option>
+                <option>EV</option>
+                <option>PHEV</option>
+                <option>Gasoline</option>
+                <option>Diesel</option>
+              </select>
+              <select data-filter-records="usedVehicles" data-filter-field="vehicle_type">
+                <option value="" data-i18n="filter.allVehicleTypes">All types</option>
+                <option>SUV</option>
+                <option>Sedan</option>
+                <option>Commercial</option>
+                <option>Truck</option>
+                <option>Van</option>
+              </select>
+              <select data-filter-records="usedVehicles" data-filter-field="stock_status">
+                <option value="" data-i18n="filter.allStock">All stock</option>
+                <option>In Stock</option>
+                <option>Factory Order</option>
+                <option>Sold</option>
+                <option>Draft</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead data-table-head="usedVehicles"></thead>
+                <tbody data-table-body="usedVehicles"></tbody>
               </table>
             </div>
           </section>

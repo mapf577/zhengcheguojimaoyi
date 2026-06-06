@@ -38,6 +38,7 @@
 
       <nav class="main-nav" aria-label="Primary navigation">
         <a href="#vehicles" data-i18n="nav.vehicles">Vehicles</a>
+        <a href="#used-vehicles" data-i18n="nav.usedVehicles">Used Cars</a>
         <a href="#parts" data-i18n="nav.parts">Auto Parts</a>
         <a href="#export" data-i18n="nav.export">Export Service</a>
         <a href="#cases" data-i18n="nav.cases">Cases</a>
@@ -116,6 +117,19 @@
           </div>
         </div>
         <div class="product-grid" data-vehicle-grid></div>
+      </section>
+
+      <section class="section section-muted" id="used-vehicles" aria-labelledby="used-vehicles-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow" data-i18n="usedVehicles.eyebrow">Inspected export stock</p>
+            <h2 id="used-vehicles-title" data-i18n="usedVehicles.title">Used Cars</h2>
+          </div>
+          <div class="filter-row" aria-label="Used car filters" data-used-vehicle-filters>
+            <button class="filter-chip active" type="button" data-used-vehicle-filter="all">All</button>
+          </div>
+        </div>
+        <div class="product-grid" data-used-vehicle-grid></div>
       </section>
 
       <section class="section section-muted" id="parts" aria-labelledby="parts-title">
