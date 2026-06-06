@@ -619,6 +619,7 @@ const searchState = {
 };
 
 const header = document.querySelector(".site-header");
+const hero = document.querySelector(".hero");
 const menuToggle = document.querySelector(".menu-toggle");
 const vehicleGrid = document.querySelector("[data-vehicle-grid]");
 const partGrid = document.querySelector("[data-part-grid]");
@@ -641,7 +642,11 @@ let aiSessionId = localStorage.getItem("ai_session_id") || "";
 let aiBusy = false;
 
 function elevateHeader() {
-  header.dataset.elevated = window.scrollY > 24 ? "true" : "false";
+  const headerHeight = header?.offsetHeight || 76;
+  const heroBottom = hero ? hero.offsetTop + hero.offsetHeight : 0;
+  const onHero = hero ? window.scrollY + headerHeight < heroBottom - 8 : false;
+  header.dataset.onHero = onHero ? "true" : "false";
+  header.dataset.elevated = onHero && window.scrollY <= 24 ? "false" : "true";
 }
 
 function showToast(message) {
@@ -1297,6 +1302,9 @@ document.querySelector("[data-lang-toggle]").addEventListener("click", () => {
 });
 
 window.addEventListener("scroll", elevateHeader, { passive: true });
+window.addEventListener("resize", elevateHeader, { passive: true });
+window.addEventListener("hashchange", () => window.requestAnimationFrame(elevateHeader));
+window.addEventListener("load", () => window.requestAnimationFrame(elevateHeader));
 
 applyLanguage();
 renderVehicles();

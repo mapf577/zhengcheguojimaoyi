@@ -64,19 +64,21 @@ img {
   gap: 24px;
   height: 76px;
   padding: 0 clamp(18px, 4vw, 42px);
-  color: #fff;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 8px 24px rgba(18, 27, 38, 0.08);
+  backdrop-filter: blur(14px);
   transition:
     background 180ms ease,
     box-shadow 180ms ease,
     color 180ms ease;
 }
 
-.site-header[data-elevated="true"],
-.site-header.nav-active {
-  color: var(--ink);
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 8px 24px rgba(18, 27, 38, 0.08);
-  backdrop-filter: blur(14px);
+.site-header[data-on-hero="true"][data-elevated="false"]:not(.nav-active) {
+  color: #fff;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .brand {
@@ -95,17 +97,19 @@ img {
 }
 
 .brand-logo-color {
-  display: none;
-}
-
-.site-header[data-elevated="true"] .brand-logo-light,
-.site-header.nav-active .brand-logo-light {
-  display: none;
-}
-
-.site-header[data-elevated="true"] .brand-logo-color,
-.site-header.nav-active .brand-logo-color {
   display: block;
+}
+
+.brand-logo-light {
+  display: none;
+}
+
+.site-header[data-on-hero="true"][data-elevated="false"]:not(.nav-active) .brand-logo-light {
+  display: block;
+}
+
+.site-header[data-on-hero="true"][data-elevated="false"]:not(.nav-active) .brand-logo-color {
+  display: none;
 }
 
 .main-nav {
