@@ -428,6 +428,12 @@ async function ensureLeadDiscoveryTables() {
       keywords TEXT NOT NULL,
       countries JSON NULL,
       industries JSON NULL,
+      target_vehicles JSON NULL,
+      customer_types JSON NULL,
+      purchase_scenarios JSON NULL,
+      search_depth VARCHAR(32) NULL,
+      manual_keywords TEXT NULL,
+      keywords_template TEXT NULL,
       status VARCHAR(32) NOT NULL DEFAULT 'active',
       notes TEXT NULL,
       created_at VARCHAR(40) NULL,
@@ -442,7 +448,11 @@ async function ensureLeadDiscoveryTables() {
       company_name VARCHAR(255) NOT NULL,
       country VARCHAR(120) NULL,
       industry VARCHAR(160) NULL,
+      customer_type VARCHAR(160) NULL,
+      matched_vehicles JSON NULL,
       score INT NULL,
+      lead_score_level VARCHAR(40) NULL,
+      contact_quality VARCHAR(80) NULL,
       contact_email VARCHAR(255) NULL,
       contact_phone VARCHAR(120) NULL,
       contact_website VARCHAR(500) NULL,
@@ -468,6 +478,12 @@ async function ensureLeadDiscoveryTables() {
       pain_points JSON NULL,
       recommended_products TEXT NULL,
       score INT NULL,
+      scoring_breakdown JSON NULL,
+      purchase_reasons JSON NULL,
+      key_evidence JSON NULL,
+      outreach_message TEXT NULL,
+      risk_flags JSON NULL,
+      next_steps JSON NULL,
       raw_json JSON NULL,
       created_at VARCHAR(40) NULL,
       updated_at VARCHAR(40) NULL,
@@ -508,6 +524,36 @@ async function ensureLeadDiscoveryTables() {
       KEY idx_contact_logs_next (next_follow_up_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   `);
+  await ensureLeadDiscoveryColumns();
+}
+
+async function ensureTableColumn(table, column, definition) {
+  const [columns] = await mysqlPool.execute(
+    "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?",
+    [table, column],
+  );
+  if (!columns.length) {
+    await mysqlPool.execute(`ALTER TABLE \`${table}\` ADD COLUMN \`${column}\` ${definition}`);
+  }
+}
+
+async function ensureLeadDiscoveryColumns() {
+  await ensureTableColumn("search_tasks", "target_vehicles", "JSON NULL");
+  await ensureTableColumn("search_tasks", "customer_types", "JSON NULL");
+  await ensureTableColumn("search_tasks", "purchase_scenarios", "JSON NULL");
+  await ensureTableColumn("search_tasks", "search_depth", "VARCHAR(32) NULL");
+  await ensureTableColumn("search_tasks", "manual_keywords", "TEXT NULL");
+  await ensureTableColumn("search_tasks", "keywords_template", "TEXT NULL");
+  await ensureTableColumn("leads", "customer_type", "VARCHAR(160) NULL");
+  await ensureTableColumn("leads", "matched_vehicles", "JSON NULL");
+  await ensureTableColumn("leads", "lead_score_level", "VARCHAR(40) NULL");
+  await ensureTableColumn("leads", "contact_quality", "VARCHAR(80) NULL");
+  await ensureTableColumn("lead_profiles", "scoring_breakdown", "JSON NULL");
+  await ensureTableColumn("lead_profiles", "purchase_reasons", "JSON NULL");
+  await ensureTableColumn("lead_profiles", "key_evidence", "JSON NULL");
+  await ensureTableColumn("lead_profiles", "outreach_message", "TEXT NULL");
+  await ensureTableColumn("lead_profiles", "risk_flags", "JSON NULL");
+  await ensureTableColumn("lead_profiles", "next_steps", "JSON NULL");
 }
 
 async function seedMysqlFromJson() {
@@ -581,17 +627,18 @@ function mysqlRecordIdsToDelete(existingIds, nextRows) {
 const leadDiscoveryTableSchemas = {
   searchTasks: {
     table: "search_tasks",
-    json: ["countries", "industries"],
-    fields: ["id", "keywords", "countries", "industries", "status", "notes", "created_at", "updated_at"],
+    json: ["countries", "industries", "target_vehicles", "customer_types", "purchase_scenarios"],
+    fields: ["id", "keywords", "countries", "industries", "target_vehicles", "customer_types", "purchase_scenarios", "search_depth", "manual_keywords", "keywords_template", "status", "notes", "created_at", "updated_at"],
   },
   leads: {
     table: "leads",
-    fields: ["id", "company_name", "country", "industry", "score", "contact_email", "contact_phone", "contact_website", "source_url", "follow_status", "search_task_id", "created_at", "updated_at"],
+    json: ["matched_vehicles"],
+    fields: ["id", "company_name", "country", "industry", "customer_type", "matched_vehicles", "score", "lead_score_level", "contact_quality", "contact_email", "contact_phone", "contact_website", "source_url", "follow_status", "search_task_id", "created_at", "updated_at"],
   },
   leadProfiles: {
     table: "lead_profiles",
-    json: ["pain_points", "raw_json"],
-    fields: ["id", "lead_id", "ai_summary", "business_type", "export_fit", "pain_points", "recommended_products", "score", "raw_json", "created_at", "updated_at"],
+    json: ["pain_points", "scoring_breakdown", "purchase_reasons", "key_evidence", "risk_flags", "next_steps", "raw_json"],
+    fields: ["id", "lead_id", "ai_summary", "business_type", "export_fit", "pain_points", "recommended_products", "score", "scoring_breakdown", "purchase_reasons", "key_evidence", "outreach_message", "risk_flags", "next_steps", "raw_json", "created_at", "updated_at"],
   },
   crawlResults: {
     table: "crawl_results",
@@ -749,6 +796,55 @@ function normalizeStringList(value) {
     return normalizeStringList(value.split(","));
   }
   return [];
+}
+
+function buildLeadKeywordTemplate(input = {}) {
+  const countries = normalizeStringList(input.countries);
+  const vehicles = normalizeStringList(input.target_vehicles ?? input.matched_vehicles);
+  const customerTypes = normalizeStringList(input.customer_types);
+  const scenarios = normalizeStringList(input.purchase_scenarios ?? input.industries);
+  const manual = String(input.manual_keywords || "").trim();
+  return [
+    countries.join(" OR "),
+    vehicles.join(" OR ") || "commercial truck OR bus OR fleet vehicle",
+    customerTypes.join(" OR ") || "importer OR dealer OR fleet operator",
+    scenarios.join(" OR "),
+    manual,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function contactSignalCount(lead = {}, sourceText = "") {
+  return [lead.contact_email, lead.contact_phone, lead.contact_website, /whatsapp/i.test(sourceText) ? "whatsapp" : ""].filter(Boolean).length;
+}
+
+function contactQualityLabel(lead = {}, sourceText = "") {
+  const count = contactSignalCount(lead, sourceText);
+  if (count >= 3) return "STRONG";
+  if (count >= 2) return "GOOD";
+  if (count === 1) return "BASIC";
+  return "MISSING";
+}
+
+function scoreLevel(score, lead = {}, sourceText = "") {
+  const cappedScore = contactSignalCount(lead, sourceText) ? score : Math.min(score, 74);
+  if (cappedScore >= 85) return "VERY_HIGH";
+  if (cappedScore >= 70) return "HIGH";
+  if (cappedScore >= 45) return "MEDIUM";
+  return "LOW";
+}
+
+function purchasePotentialLevel(score, lead = {}, sourceText = "") {
+  if (!contactSignalCount(lead, sourceText) && score >= 70) {
+    return "MEDIUM_HIGH";
+  }
+  if (score >= 85) return "VERY_HIGH";
+  if (score >= 70) return "HIGH";
+  if (score >= 50) return "MEDIUM";
+  return "LOW";
 }
 
 function normalizePermissions(value) {
@@ -1234,22 +1330,40 @@ function normalizeRecord(type, input, existing = {}) {
     updated_at: timestamp,
   };
   if (type === "searchTasks") {
-    return {
-      ...base,
-      keywords: String(input.keywords ?? existing.keywords ?? "").trim(),
+    const taskInput = {
       countries: normalizeStringList(input.countries ?? existing.countries),
       industries: normalizeStringList(input.industries ?? existing.industries),
+      target_vehicles: normalizeStringList(input.target_vehicles ?? existing.target_vehicles),
+      customer_types: normalizeStringList(input.customer_types ?? existing.customer_types),
+      purchase_scenarios: normalizeStringList(input.purchase_scenarios ?? existing.purchase_scenarios),
+      manual_keywords: String(input.manual_keywords ?? existing.manual_keywords ?? "").trim(),
+    };
+    const keywordsTemplate = String(input.keywords_template ?? existing.keywords_template ?? buildLeadKeywordTemplate(taskInput)).trim();
+    const keywords = String(input.keywords ?? existing.keywords ?? keywordsTemplate).trim();
+    return {
+      ...base,
+      keywords,
+      countries: taskInput.countries,
+      industries: taskInput.industries,
+      target_vehicles: taskInput.target_vehicles,
+      customer_types: taskInput.customer_types,
+      purchase_scenarios: taskInput.purchase_scenarios,
+      search_depth: ["quick", "standard", "deep"].includes(input.search_depth) ? input.search_depth : existing.search_depth || "standard",
+      manual_keywords: taskInput.manual_keywords,
+      keywords_template: keywordsTemplate,
       status: ["active", "paused", "disabled"].includes(input.status) ? input.status : existing.status || "active",
       notes: String(input.notes ?? existing.notes ?? "").trim(),
     };
   }
   if (type === "leads") {
     const score = Number(input.score ?? existing.score ?? 0);
-    return {
+    const nextLead = {
       ...base,
       company_name: String(input.company_name ?? existing.company_name ?? "").trim(),
       country: String(input.country ?? existing.country ?? "").trim(),
       industry: String(input.industry ?? existing.industry ?? "commercial vehicles").trim(),
+      customer_type: String(input.customer_type ?? existing.customer_type ?? "").trim(),
+      matched_vehicles: normalizeStringList(input.matched_vehicles ?? existing.matched_vehicles),
       score: Number.isFinite(score) ? Math.max(0, Math.min(100, Math.round(score))) : 0,
       contact_email: String(input.contact_email ?? existing.contact_email ?? "").trim(),
       contact_phone: String(input.contact_phone ?? existing.contact_phone ?? "").trim(),
@@ -1257,6 +1371,12 @@ function normalizeRecord(type, input, existing = {}) {
       source_url: String(input.source_url ?? existing.source_url ?? "").trim(),
       follow_status: ["new", "contacted", "qualified", "quoted", "won", "lost", "invalid"].includes(input.follow_status) ? input.follow_status : existing.follow_status || "new",
       search_task_id: String(input.search_task_id ?? existing.search_task_id ?? "").trim(),
+    };
+    const sourceText = [nextLead.source_url, nextLead.contact_website].filter(Boolean).join(" ");
+    return {
+      ...nextLead,
+      contact_quality: String(input.contact_quality ?? existing.contact_quality ?? contactQualityLabel(nextLead, sourceText)).trim(),
+      lead_score_level: String(input.lead_score_level ?? existing.lead_score_level ?? scoreLevel(nextLead.score, nextLead, sourceText)).trim(),
     };
   }
   if (type === "leadProfiles") {
@@ -1270,6 +1390,12 @@ function normalizeRecord(type, input, existing = {}) {
       pain_points: normalizeStringList(input.pain_points ?? existing.pain_points),
       recommended_products: String(input.recommended_products ?? existing.recommended_products ?? "").trim(),
       score: Number.isFinite(score) ? Math.max(0, Math.min(100, Math.round(score))) : 0,
+      scoring_breakdown: input.scoring_breakdown && typeof input.scoring_breakdown === "object" ? input.scoring_breakdown : existing.scoring_breakdown || {},
+      purchase_reasons: normalizeStringList(input.purchase_reasons ?? existing.purchase_reasons),
+      key_evidence: normalizeStringList(input.key_evidence ?? existing.key_evidence),
+      outreach_message: String(input.outreach_message ?? existing.outreach_message ?? "").trim(),
+      risk_flags: normalizeStringList(input.risk_flags ?? existing.risk_flags),
+      next_steps: normalizeStringList(input.next_steps ?? existing.next_steps),
       raw_json: input.raw_json && typeof input.raw_json === "object" ? input.raw_json : existing.raw_json || {},
     };
   }
@@ -2913,15 +3039,23 @@ async function callDeepSeekReception(input, options = {}) {
 }
 
 function buildLeadProfileRules({ lead = {}, crawlResult = {} } = {}) {
-  const sourceText = [lead.company_name, lead.country, lead.industry, lead.contact_website, lead.source_url, crawlResult.title, crawlResult.content].filter(Boolean).join(" ").toLowerCase();
-  const commercialSignals = ["truck", "bus", "fleet", "logistics", "transport", "construction", "mining", "municipal", "commercial vehicle", "heavy duty", "light truck", "van"];
-  const importSignals = ["import", "dealer", "distributor", "fleet", "procurement", "wholesale", "trading", "government", "tender"];
+  const sourceText = [lead.company_name, lead.country, lead.industry, lead.customer_type, normalizeStringList(lead.matched_vehicles).join(" "), lead.contact_website, lead.source_url, crawlResult.title, crawlResult.content].filter(Boolean).join(" ").toLowerCase();
+  const commercialSignals = ["tractor", "dump truck", "cargo truck", "truck", "bus", "fleet", "logistics", "transport", "construction", "mining", "municipal", "commercial vehicle", "heavy duty", "light truck", "pickup", "mixer", "refrigerated"];
+  const importSignals = ["import", "dealer", "distributor", "fleet", "procurement", "wholesale", "trading", "government", "tender", "contractor", "operator"];
+  const weakSourceSignals = ["news", "blog", "magazine", "article", "catalog", "directory", "product page", "parts catalog"];
   const contactSignals = [lead.contact_email, lead.contact_phone, lead.contact_website].filter(Boolean).length;
   const commercialHits = commercialSignals.filter((token) => sourceText.includes(token)).length;
   const importHits = importSignals.filter((token) => sourceText.includes(token)).length;
-  const score = Math.max(25, Math.min(95, 35 + commercialHits * 8 + importHits * 7 + contactSignals * 8));
+  const weakHits = weakSourceSignals.filter((token) => sourceText.includes(token)).length;
+  const productFit = Math.min(100, 35 + commercialHits * 12);
+  const countryFit = lead.country ? 78 : 45;
+  const buyerIdentityConfidence = Math.max(20, Math.min(100, 35 + importHits * 14 - weakHits * 12));
+  const contactCompleteness = Math.min(100, contactSignals * 28 + (/whatsapp/.test(sourceText) ? 16 : 0));
+  const purchaseBase = Math.round(productFit * 0.26 + countryFit * 0.16 + buyerIdentityConfidence * 0.28 + contactCompleteness * 0.18 + importHits * 4);
+  const score = Math.max(25, Math.min(95, purchaseBase - weakHits * 7));
   const businessType = commercialHits >= 2 ? "Commercial vehicle buyer or fleet operator" : "Potential vehicle trade prospect";
   const exportFit = score >= 75 ? "high" : score >= 55 ? "medium" : "early-stage";
+  const purchasePotential = purchasePotentialLevel(score, lead, sourceText);
   const painPoints = [];
   if (/logistics|transport|fleet/.test(sourceText)) {
     painPoints.push("fleet renewal");
@@ -2932,6 +3066,18 @@ function buildLeadProfileRules({ lead = {}, crawlResult = {} } = {}) {
   if (!contactSignals) {
     painPoints.push("contact details need verification");
   }
+  const riskFlags = [];
+  if (weakHits) {
+    riskFlags.push("Source may be informational, directory, or product content rather than a direct buyer website.");
+  }
+  if (!contactSignals) {
+    riskFlags.push("No direct WhatsApp, phone, email, or website contact was confirmed.");
+  }
+  const evidence = [
+    commercialHits ? `${commercialHits} commercial vehicle signal(s) found in source text.` : "",
+    importHits ? `${importHits} importer/dealer/fleet/procurement signal(s) found.` : "",
+    contactSignals ? `${contactSignals} contact channel(s) available.` : "",
+  ].filter(Boolean);
   return {
     ai_summary: `${lead.company_name || "This company"} appears to be a ${businessType.toLowerCase()} for commercial vehicle export outreach. Review source content before sales contact.`,
     business_type: businessType,
@@ -2939,7 +3085,19 @@ function buildLeadProfileRules({ lead = {}, crawlResult = {} } = {}) {
     pain_points: painPoints.length ? painPoints : ["commercial vehicle sourcing validation"],
     recommended_products: "Light trucks, cargo vans, buses, dump trucks, tractors, and related commercial vehicle solutions.",
     score,
-    raw_json: { provider: "rules", commercial_hits: commercialHits, import_hits: importHits, contact_signals: contactSignals },
+    scoring_breakdown: {
+      product_fit: productFit,
+      country_fit: countryFit,
+      buyer_identity_confidence: buyerIdentityConfidence,
+      contact_completeness: contactCompleteness,
+      purchase_potential: purchasePotential,
+    },
+    purchase_reasons: painPoints.length ? painPoints : ["Potential commercial vehicle demand should be validated by outreach."],
+    key_evidence: evidence.length ? evidence : ["Insufficient source evidence. Verify manually before outreach."],
+    outreach_message: `Hello, we supply commercial vehicles for export including trucks, buses, pickups and fleet solutions. May I know if ${lead.company_name || "your company"} is currently sourcing vehicles for upcoming projects or fleet renewal?`,
+    risk_flags: riskFlags.length ? riskFlags : ["Validate buyer identity and purchase authority before quoting."],
+    next_steps: ["Verify contact channel", "Confirm target vehicle type and quantity", "Check import requirements and delivery timeline"],
+    raw_json: { provider: "rules", commercial_hits: commercialHits, import_hits: importHits, weak_source_hits: weakHits, contact_signals: contactSignals },
   };
 }
 
@@ -2947,11 +3105,16 @@ function buildLeadProfilePrompt({ lead = {}, crawlResult = {} } = {}) {
   return [
     "Create a commercial vehicle export lead profile as strict JSON only.",
     "Score from 0 to 100 based on fit for China commercial vehicle export sales.",
-    'JSON shape: {"ai_summary":"...","business_type":"...","export_fit":"high|medium|early-stage|low","pain_points":["..."],"recommended_products":"...","score":72}',
+    "Do not treat ordinary news, blog, product pages, generic directories, or marketplace category pages as confirmed buyers unless source evidence shows a real company buyer/importer/dealer/fleet/project owner.",
+    "Break down scoring into product_fit, country_fit, buyer_identity_confidence, contact_completeness, and purchase_potential.",
+    "If there is no WhatsApp, phone, email, or website contact, purchase_potential must be at most MEDIUM_HIGH and the final score should not imply VERY_HIGH.",
+    'JSON shape: {"ai_summary":"...","business_type":"...","export_fit":"high|medium|early-stage|low","pain_points":["..."],"recommended_products":"...","score":72,"scoring_breakdown":{"product_fit":80,"country_fit":75,"buyer_identity_confidence":70,"contact_completeness":50,"purchase_potential":"MEDIUM_HIGH"},"purchase_reasons":["..."],"key_evidence":["..."],"outreach_message":"...","risk_flags":["..."],"next_steps":["..."]}',
     `lead_json: ${JSON.stringify({
       company_name: lead.company_name,
       country: lead.country,
       industry: lead.industry,
+      customer_type: lead.customer_type,
+      matched_vehicles: lead.matched_vehicles,
       contact_email: lead.contact_email,
       contact_phone: lead.contact_phone,
       contact_website: lead.contact_website,
@@ -2976,6 +3139,7 @@ function parseLeadProfileJson(content) {
     return null;
   }
   const score = Number(parsed.score);
+  const scoringBreakdown = parsed.scoring_breakdown && typeof parsed.scoring_breakdown === "object" ? parsed.scoring_breakdown : {};
   return {
     ai_summary: String(parsed.ai_summary || "").trim().slice(0, 2000),
     business_type: String(parsed.business_type || "").trim().slice(0, 200),
@@ -2983,6 +3147,12 @@ function parseLeadProfileJson(content) {
     pain_points: normalizeStringList(parsed.pain_points).slice(0, 8),
     recommended_products: String(parsed.recommended_products || "").trim().slice(0, 1000),
     score: Number.isFinite(score) ? Math.max(0, Math.min(100, Math.round(score))) : 50,
+    scoring_breakdown: scoringBreakdown,
+    purchase_reasons: normalizeStringList(parsed.purchase_reasons).slice(0, 8),
+    key_evidence: normalizeStringList(parsed.key_evidence).slice(0, 8),
+    outreach_message: String(parsed.outreach_message || "").trim().slice(0, 1600),
+    risk_flags: normalizeStringList(parsed.risk_flags).slice(0, 8),
+    next_steps: normalizeStringList(parsed.next_steps).slice(0, 8),
     raw_json: parsed,
   };
 }
@@ -3135,10 +3305,14 @@ function extractContactFromText(text) {
 
 function buildCrawlerQuery(task = {}) {
   return [
-    task.keywords || "commercial truck importer",
+    task.keywords_template || task.keywords || buildLeadKeywordTemplate(task) || "commercial truck importer",
     normalizeStringList(task.countries).join(" "),
+    normalizeStringList(task.target_vehicles).join(" "),
+    normalizeStringList(task.customer_types).join(" "),
+    normalizeStringList(task.purchase_scenarios).join(" "),
     normalizeStringList(task.industries).join(" "),
-    "commercial vehicles importer distributor fleet",
+    task.manual_keywords || "",
+    "commercial vehicles importer dealer fleet operator project buyer",
   ]
     .filter(Boolean)
     .join(" ")
@@ -3177,7 +3351,8 @@ async function searchCrawlerUrls(task = {}) {
   const query = buildCrawlerQuery(task);
   const searchUrl = `https://duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
   const html = await fetchCrawlerText(searchUrl, { maxBytes: 500000 });
-  return parseSearchResultLinks(html);
+  const depthLimit = task.search_depth === "quick" ? 4 : task.search_depth === "deep" ? 14 : 8;
+  return parseSearchResultLinks(html).slice(0, Math.min(CRAWLER_MAX_RESULTS, depthLimit));
 }
 
 async function crawlLeadUrl(url, task = {}) {
@@ -4027,28 +4202,34 @@ async function handleLeadCrawlResults(req, res, id = "") {
     }
     const leads = await readRows("leads");
     const existingLead = leads.find((lead) => lead.source_url === record.url);
-    let fallbackCompany = record.title || record.url;
+    let fallbackCompany = body.company_name || record.title || record.url;
     try {
-      fallbackCompany = record.title || new URL(record.url).hostname.replace(/^www\./, "");
+      fallbackCompany = body.company_name || record.title || new URL(record.url).hostname.replace(/^www\./, "");
     } catch {
-      fallbackCompany = record.title || record.url;
+      fallbackCompany = body.company_name || record.title || record.url;
     }
-    const lead = existingLead || normalizeRecord("leads", {
+    const leadPayload = {
       company_name: fallbackCompany,
-      country: "",
-      industry: "commercial vehicles",
+      country: body.country || existingLead?.country || "",
+      industry: body.industry || existingLead?.industry || "commercial vehicles",
+      customer_type: body.customer_type || existingLead?.customer_type || "",
+      matched_vehicles: body.matched_vehicles || existingLead?.matched_vehicles || [],
       source_url: record.url,
       search_task_id: record.search_task_id,
-      follow_status: "new",
-    });
-    if (!existingLead) {
+      follow_status: existingLead?.follow_status || "new",
+    };
+    const lead = normalizeRecord("leads", leadPayload, existingLead || {});
+    if (existingLead) {
+      leads[leads.findIndex((row) => row.id === existingLead.id)] = lead;
+    } else {
       leads.unshift(lead);
-      await writeRows("leads", leads);
     }
+    await writeRows("leads", leads);
     record.processed_lead_id = lead.id;
     rows.unshift(record);
     await writeRows("crawlResults", rows);
-    sendJson(res, 201, { ...record, lead });
+    const profileResult = await upsertLeadProfile(lead, record);
+    sendJson(res, 201, { ...record, lead, profile: profileResult.profile });
     return;
   }
   if (req.method === "PUT" && id) {
@@ -4069,7 +4250,20 @@ async function upsertLeadProfile(lead, crawlResult = {}) {
   const profileResult = await generateLeadProfile({ lead, crawlResult });
   const profiles = await readRows("leadProfiles");
   const existing = profiles.find((row) => row.lead_id === lead.id);
-  const record = normalizeRecord("leadProfiles", { ...profileResult.profile, lead_id: lead.id }, existing || {});
+  const sourceText = [crawlResult.content, crawlResult.title, lead.source_url, lead.contact_website].filter(Boolean).join(" ");
+  const contactQuality = contactQualityLabel(lead, sourceText);
+  const score = Number(profileResult.profile.score || 0);
+  const purchasePotential = purchasePotentialLevel(score, lead, sourceText);
+  const safeProfile = {
+    ...profileResult.profile,
+    score: !contactSignalCount(lead, sourceText) && score >= 85 ? 74 : score,
+    scoring_breakdown: {
+      ...(profileResult.profile.scoring_breakdown || {}),
+      purchase_potential: purchasePotential,
+      contact_completeness: profileResult.profile.scoring_breakdown?.contact_completeness ?? (contactQuality === "MISSING" ? 0 : contactQuality === "BASIC" ? 35 : contactQuality === "GOOD" ? 70 : 90),
+    },
+  };
+  const record = normalizeRecord("leadProfiles", { ...safeProfile, lead_id: lead.id }, existing || {});
   if (existing) {
     profiles[profiles.findIndex((row) => row.id === existing.id)] = record;
   } else {
@@ -4080,7 +4274,7 @@ async function upsertLeadProfile(lead, crawlResult = {}) {
   const leads = await readRows("leads");
   const leadIndex = leads.findIndex((row) => row.id === lead.id);
   if (leadIndex >= 0) {
-    leads[leadIndex] = normalizeRecord("leads", { score: record.score }, leads[leadIndex]);
+    leads[leadIndex] = normalizeRecord("leads", { score: record.score, contact_quality: contactQuality, lead_score_level: scoreLevel(record.score, leads[leadIndex], sourceText) }, leads[leadIndex]);
     await writeRows("leads", leads);
   }
   return { profile: record, provider: profileResult.provider, fallback_reason: profileResult.fallback_reason || "" };
@@ -4210,6 +4404,8 @@ async function handleLeadCrawlerRun(req, res, taskId) {
         company_name: fallbackCompany,
         country: item.country || existingLead?.country || normalizeStringList(task.countries)[0] || "",
         industry: item.industry || existingLead?.industry || normalizeStringList(task.industries)[0] || "commercial vehicles",
+        customer_type: item.customer_type || existingLead?.customer_type || normalizeStringList(task.customer_types)[0] || "",
+        matched_vehicles: item.matched_vehicles || existingLead?.matched_vehicles || normalizeStringList(task.target_vehicles),
         contact_email: item.contact_email || item.email || existingLead?.contact_email || "",
         contact_phone: item.contact_phone || item.phone || existingLead?.contact_phone || "",
         contact_website: item.contact_website || existingLead?.contact_website || url,
@@ -4248,7 +4444,13 @@ async function handleLeadCrawlerRun(req, res, taskId) {
 
   await writeRows("leads", leadRows);
   await writeRows("crawlResults", crawlRows);
-  sendJson(res, 200, { ...result, saved_results: savedResults.length, saved_leads: savedLeads.length });
+  let generatedProfiles = 0;
+  for (const lead of savedLeads) {
+    const crawlResult = savedResults.find((row) => row.processed_lead_id === lead.id || row.url === lead.source_url) || {};
+    await upsertLeadProfile(lead, crawlResult);
+    generatedProfiles += 1;
+  }
+  sendJson(res, 200, { ...result, saved_results: savedResults.length, saved_leads: savedLeads.length, generated_profiles: generatedProfiles });
 }
 
 async function handleAiLogs(req, res) {

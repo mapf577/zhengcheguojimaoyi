@@ -437,6 +437,19 @@ test("lead profile rules score commercial vehicle prospects", () => {
   assert.equal(profile.export_fit, "high");
   assert.ok(profile.score >= 75);
   assert.match(profile.recommended_products, /Light trucks/);
+
+  const noContactProfile = buildLeadProfileRules({
+    lead: {
+      company_name: "East Africa Truck Procurement",
+      country: "Kenya",
+      industry: "fleet procurement",
+    },
+    crawlResult: {
+      title: "Truck importer and fleet operator",
+      content: "Importer dealer fleet procurement for dump truck cargo truck and tractor head.",
+    },
+  });
+  assert.notEqual(noContactProfile.scoring_breakdown.purchase_potential, "VERY_HIGH");
 });
 
 test("lead profile prompt and parser constrain AI output", () => {

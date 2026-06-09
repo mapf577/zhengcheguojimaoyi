@@ -459,33 +459,72 @@
               <div class="panel-title-stack">
                 <p class="eyebrow" data-i18n="nav.leadDiscovery">AI Lead Discovery</p>
                 <h2 data-i18n="leadDiscovery.title">Commercial Vehicle Lead Discovery</h2>
-                <p class="panel-hint" data-i18n="leadDiscovery.hint">Discover and profile export prospects for commercial vehicle sales.</p>
+                <p class="panel-hint" data-i18n="leadDiscovery.hint">Discover commercial vehicle importers, dealers, fleet operators and project buyers by country, vehicle type and industry.</p>
               </div>
               <button class="secondary-button" type="button" data-refresh data-i18n="action.refresh">Refresh</button>
             </div>
             <div class="lead-discovery-grid">
-              <form class="lead-form" data-lead-task-form>
-                <h3 data-i18n="leadDiscovery.searchTask">Search Task</h3>
-                <label><span data-i18n="leadDiscovery.keywords">Keywords</span><input name="keywords" required placeholder="commercial truck importer, bus fleet..." /></label>
-                <label><span data-i18n="leadDiscovery.countries">Countries</span><input name="countries" placeholder="Chile, Peru, UAE" /></label>
-                <label><span data-i18n="leadDiscovery.industries">Industries</span><input name="industries" placeholder="logistics, mining, construction" /></label>
-                <label><span data-i18n="table.status">Status</span><select name="status"><option value="active">Active</option><option value="paused">Paused</option><option value="disabled">Disabled</option></select></label>
+              <form class="lead-form lead-search-card" data-lead-task-form>
+                <div class="lead-card-heading">
+                  <span>01</span>
+                  <div>
+                    <h3 data-i18n="leadDiscovery.searchTask">Search Configuration</h3>
+                    <p data-i18n="leadDiscovery.searchTaskHint">Configure countries, vehicles and buyer profiles for commercial vehicle export prospecting.</p>
+                  </div>
+                </div>
+                <label><span data-i18n="leadDiscovery.targetCountries">Target countries / regions</span><select name="countries" multiple size="5" data-lead-template-source></select></label>
+                <label><span data-i18n="leadDiscovery.targetVehicles">Target vehicles</span><select name="target_vehicles" multiple size="5" data-lead-template-source></select></label>
+                <label><span data-i18n="leadDiscovery.customerTypes">Customer types</span><select name="customer_types" multiple size="5" data-lead-template-source></select></label>
+                <label><span data-i18n="leadDiscovery.purchaseScenarios">Purchase scenarios</span><select name="purchase_scenarios" multiple size="5" data-lead-template-source></select></label>
+                <label><span data-i18n="leadDiscovery.searchDepth">Search depth</span><select name="search_depth" data-lead-template-source><option value="quick">Quick</option><option value="standard" selected>Standard</option><option value="deep">Deep</option></select></label>
+                <label class="full"><span data-i18n="leadDiscovery.keywordTemplate">Search keyword template</span><textarea name="keywords_template" rows="3" readonly data-keyword-template></textarea></label>
+                <details class="lead-advanced-options">
+                  <summary data-i18n="leadDiscovery.advanced">Advanced options</summary>
+                  <label><span data-i18n="leadDiscovery.manualKeywords">Manual keywords</span><input name="manual_keywords" placeholder="site:.ke truck dealer procurement" data-lead-template-source /></label>
+                  <label><span data-i18n="table.status">Status</span><select name="status"><option value="active">Active</option><option value="paused">Paused</option><option value="disabled">Disabled</option></select></label>
+                </details>
                 <button class="primary-button" type="submit" data-i18n="leadDiscovery.createTask">Create Search Task</button>
                 <div class="lead-task-list" data-lead-tasks-list></div>
               </form>
-              <form class="lead-form" data-crawl-result-form>
-                <h3 data-i18n="leadDiscovery.crawlResult">Crawl Result URL</h3>
-                <label><span data-i18n="leadDiscovery.relatedTask">Related Task</span><select name="search_task_id" data-lead-task-select></select></label>
-                <label><span>URL</span><input name="url" type="url" required placeholder="https://example.com/company" /></label>
-                <label><span data-i18n="leadDiscovery.titleField">Title</span><input name="title" /></label>
-                <label class="full"><span data-i18n="leadDiscovery.sourceContent">Source Content</span><textarea name="content" rows="4"></textarea></label>
-                <button class="primary-button" type="submit" data-i18n="leadDiscovery.addUrl">Add URL</button>
-              </form>
+              <div class="lead-side-stack">
+                <section class="lead-form lead-progress-card">
+                  <div class="lead-card-heading">
+                    <span>02</span>
+                    <div>
+                      <h3 data-i18n="leadDiscovery.progress">Search Progress</h3>
+                      <p data-i18n="leadDiscovery.progressHint">Run a task to collect websites, contacts, scores and AI profiles.</p>
+                    </div>
+                  </div>
+                  <div class="lead-progress-steps" data-lead-progress></div>
+                </section>
+                <section class="lead-form lead-stats-card">
+                  <div class="lead-card-heading">
+                    <span>03</span>
+                    <div>
+                      <h3 data-i18n="leadDiscovery.statistics">Lead Statistics</h3>
+                      <p data-i18n="leadDiscovery.statisticsHint">Quality signals for current lead pool.</p>
+                    </div>
+                  </div>
+                  <div class="lead-stat-grid" data-lead-stats></div>
+                </section>
+                <details class="lead-form lead-manual-panel">
+                  <summary data-i18n="leadDiscovery.manualAdd">Manual Add Lead</summary>
+                  <form data-crawl-result-form>
+                    <label><span data-i18n="leadDiscovery.relatedTask">Related Task</span><select name="search_task_id" data-lead-task-select></select></label>
+                    <label><span>URL</span><input name="url" type="url" required placeholder="https://example.com/company" /></label>
+                    <label><span data-i18n="leadDiscovery.company">Company</span><input name="company_name" /></label>
+                    <label><span data-i18n="table.country">Country</span><input name="country" /></label>
+                    <label><span data-i18n="leadDiscovery.customerType">Customer Type</span><input name="customer_type" /></label>
+                    <label class="full"><span data-i18n="leadDiscovery.sourceContent">Source Content</span><textarea name="content" rows="4"></textarea></label>
+                    <button class="primary-button" type="submit" data-i18n="leadDiscovery.addUrl">Add Lead & Generate Profile</button>
+                  </form>
+                </details>
+              </div>
             </div>
             <div class="lead-discovery-content">
               <div class="lead-list-panel">
                 <div class="panel-header compact">
-                  <h3 data-i18n="leadDiscovery.leads">Leads</h3>
+                  <h3 data-i18n="leadDiscovery.leads">Lead Table</h3>
                 </div>
                 <div class="table-wrap">
                   <table>
@@ -493,11 +532,13 @@
                       <tr>
                         <th data-i18n="leadDiscovery.company">Company</th>
                         <th data-i18n="table.country">Country</th>
-                        <th data-i18n="leadDiscovery.industry">Industry</th>
-                        <th data-i18n="leadDiscovery.score">Score</th>
-                        <th data-i18n="leadDiscovery.contact">Contact</th>
+                        <th data-i18n="leadDiscovery.customerType">Customer Type</th>
+                        <th data-i18n="leadDiscovery.matchedVehicles">Matched Vehicles</th>
+                        <th data-i18n="leadDiscovery.leadScore">Lead Score</th>
+                        <th data-i18n="leadDiscovery.contactQuality">Contact Quality</th>
                         <th data-i18n="leadDiscovery.source">Source</th>
                         <th data-i18n="leadDiscovery.followStatus">Follow-up</th>
+                        <th data-i18n="leadDiscovery.lastUpdated">Last Updated</th>
                         <th data-i18n="table.actions">Actions</th>
                       </tr>
                     </thead>

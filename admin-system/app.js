@@ -275,39 +275,72 @@ const adminTranslations = {
     "nav.aiLogs": "AI Logs",
     "nav.aiMaintenance": "AI Maintenance",
     "leadDiscovery.title": "Commercial Vehicle Lead Discovery",
-    "leadDiscovery.hint": "Discover and profile export prospects for commercial vehicle sales.",
-    "leadDiscovery.searchTask": "Search Task",
+    "leadDiscovery.hint": "Discover commercial vehicle importers, dealers, fleet operators and project buyers by country, vehicle type and industry.",
+    "leadDiscovery.searchTask": "Search Configuration",
+    "leadDiscovery.searchTaskHint": "Configure countries, vehicles and buyer profiles for commercial vehicle export prospecting.",
     "leadDiscovery.keywords": "Keywords",
     "leadDiscovery.countries": "Countries",
     "leadDiscovery.industries": "Industries",
+    "leadDiscovery.targetCountries": "Target countries / regions",
+    "leadDiscovery.targetVehicles": "Target vehicles",
+    "leadDiscovery.customerTypes": "Customer types",
+    "leadDiscovery.customerType": "Customer Type",
+    "leadDiscovery.purchaseScenarios": "Purchase scenarios",
+    "leadDiscovery.searchDepth": "Search depth",
+    "leadDiscovery.keywordTemplate": "Search keyword template",
+    "leadDiscovery.advanced": "Advanced options",
+    "leadDiscovery.manualKeywords": "Manual keywords",
     "leadDiscovery.createTask": "Create Search Task",
     "leadDiscovery.runCrawler": "Run Crawler",
     "leadDiscovery.tasks": "Tasks",
-    "leadDiscovery.crawlResult": "Crawl Result URL",
+    "leadDiscovery.progress": "Search Progress",
+    "leadDiscovery.progressHint": "Run a task to collect websites, contacts, scores and AI profiles.",
+    "leadDiscovery.statistics": "Lead Statistics",
+    "leadDiscovery.statisticsHint": "Quality signals for current lead pool.",
+    "leadDiscovery.statTotal": "Total leads found",
+    "leadDiscovery.statHigh": "High potential leads",
+    "leadDiscovery.statContact": "Leads with WhatsApp/Email",
+    "leadDiscovery.statVerify": "Leads needing verification",
+    "leadDiscovery.manualAdd": "Manual Add Lead",
+    "leadDiscovery.crawlResult": "Manual Add Lead",
     "leadDiscovery.relatedTask": "Related Task",
     "leadDiscovery.titleField": "Title",
     "leadDiscovery.sourceContent": "Source Content",
-    "leadDiscovery.addUrl": "Add URL",
-    "leadDiscovery.leads": "Leads",
+    "leadDiscovery.addUrl": "Add Lead & Generate Profile",
+    "leadDiscovery.leads": "Lead Table",
     "leadDiscovery.company": "Company",
     "leadDiscovery.industry": "Industry",
     "leadDiscovery.score": "Score",
+    "leadDiscovery.leadScore": "Lead Score",
+    "leadDiscovery.matchedVehicles": "Matched Vehicles",
+    "leadDiscovery.contactQuality": "Contact Quality",
     "leadDiscovery.contact": "Contact",
     "leadDiscovery.source": "Source",
     "leadDiscovery.followStatus": "Follow-up",
+    "leadDiscovery.lastUpdated": "Last Updated",
     "leadDiscovery.selectLead": "Select a lead to review profile and contact history.",
     "leadDiscovery.profile": "AI Profile",
+    "leadDiscovery.possibleVehicles": "Possible Purchase Vehicles",
+    "leadDiscovery.purchaseReasons": "Purchase Reasons",
+    "leadDiscovery.keyEvidence": "Key Evidence",
+    "leadDiscovery.outreach": "WhatsApp / Email Outreach",
+    "leadDiscovery.riskFlags": "Risk Warnings",
+    "leadDiscovery.nextSteps": "Next Steps",
+    "leadDiscovery.scoring": "Scoring Breakdown",
     "leadDiscovery.contacts": "Contact Details",
     "leadDiscovery.sourceResults": "Source Content",
     "leadDiscovery.contactLogs": "Follow-up Records",
     "leadDiscovery.generateProfile": "Generate Profile",
+    "leadDiscovery.generateOutreach": "Generate outreach message",
+    "leadDiscovery.verifyContact": "Verify contact",
+    "leadDiscovery.openSource": "Open source website",
     "leadDiscovery.addContactLog": "Add Follow-up",
     "leadDiscovery.noProfile": "No AI profile yet.",
     "leadDiscovery.noLogs": "No follow-up records yet.",
     "leadDiscovery.noSource": "No source content yet.",
     "leadDiscovery.logContent": "Follow-up note",
     "toast.leadTaskCreated": "Search task created.",
-    "toast.crawlResultAdded": "Crawl result URL added.",
+    "toast.crawlResultAdded": "Lead added and AI profile generated.",
     "toast.leadProfileGenerated": "Lead profile generated.",
     "toast.contactLogAdded": "Follow-up record added.",
     "toast.crawlerFinished": "Crawler saved {results} result(s) and {leads} lead(s).",
@@ -416,39 +449,72 @@ const adminTranslations = {
     "nav.aiLogs": "AI日志",
     "nav.aiMaintenance": "AI维护",
     "leadDiscovery.title": "商用车出口客户发现",
-    "leadDiscovery.hint": "发现并画像商用车出口潜在客户。",
-    "leadDiscovery.searchTask": "搜索任务",
+    "leadDiscovery.hint": "按国家、车型和行业发现商用车进口商、经销商、车队运营商和项目采购方。",
+    "leadDiscovery.searchTask": "搜索配置",
+    "leadDiscovery.searchTaskHint": "配置国家、车型和客户画像，用于商用车出口线索开发。",
     "leadDiscovery.keywords": "搜索关键词",
     "leadDiscovery.countries": "国家",
     "leadDiscovery.industries": "行业",
+    "leadDiscovery.targetCountries": "目标国家/地区",
+    "leadDiscovery.targetVehicles": "目标车型",
+    "leadDiscovery.customerTypes": "客户类型",
+    "leadDiscovery.customerType": "客户类型",
+    "leadDiscovery.purchaseScenarios": "采购场景",
+    "leadDiscovery.searchDepth": "搜索深度",
+    "leadDiscovery.keywordTemplate": "搜索关键词模板",
+    "leadDiscovery.advanced": "高级选项",
+    "leadDiscovery.manualKeywords": "手动关键词",
     "leadDiscovery.createTask": "创建搜索任务",
     "leadDiscovery.runCrawler": "运行爬虫",
     "leadDiscovery.tasks": "任务",
-    "leadDiscovery.crawlResult": "抓取结果 URL",
+    "leadDiscovery.progress": "搜索进度",
+    "leadDiscovery.progressHint": "运行任务后采集网站、联系人、评分并生成 AI 画像。",
+    "leadDiscovery.statistics": "线索统计",
+    "leadDiscovery.statisticsHint": "当前线索池质量信号。",
+    "leadDiscovery.statTotal": "发现线索总数",
+    "leadDiscovery.statHigh": "高潜力线索",
+    "leadDiscovery.statContact": "有 WhatsApp/Email 的线索",
+    "leadDiscovery.statVerify": "需要验证的线索",
+    "leadDiscovery.manualAdd": "手动添加线索",
+    "leadDiscovery.crawlResult": "手动添加线索",
     "leadDiscovery.relatedTask": "关联任务",
     "leadDiscovery.titleField": "标题",
     "leadDiscovery.sourceContent": "来源内容",
-    "leadDiscovery.addUrl": "录入 URL",
-    "leadDiscovery.leads": "客户列表",
+    "leadDiscovery.addUrl": "添加线索并生成画像",
+    "leadDiscovery.leads": "线索表",
     "leadDiscovery.company": "公司名",
     "leadDiscovery.industry": "行业",
     "leadDiscovery.score": "评分",
+    "leadDiscovery.leadScore": "线索评分",
+    "leadDiscovery.matchedVehicles": "匹配车型",
+    "leadDiscovery.contactQuality": "联系方式质量",
     "leadDiscovery.contact": "联系方式",
     "leadDiscovery.source": "来源链接",
     "leadDiscovery.followStatus": "跟进状态",
+    "leadDiscovery.lastUpdated": "最后更新",
     "leadDiscovery.selectLead": "选择客户后查看 AI 画像、联系方式和跟进记录。",
     "leadDiscovery.profile": "AI画像",
+    "leadDiscovery.possibleVehicles": "可能采购车型",
+    "leadDiscovery.purchaseReasons": "采购理由",
+    "leadDiscovery.keyEvidence": "关键证据",
+    "leadDiscovery.outreach": "WhatsApp / Email开发话术",
+    "leadDiscovery.riskFlags": "风险提示",
+    "leadDiscovery.nextSteps": "下一步建议",
+    "leadDiscovery.scoring": "评分拆解",
     "leadDiscovery.contacts": "联系方式",
     "leadDiscovery.sourceResults": "来源内容",
     "leadDiscovery.contactLogs": "跟进记录",
     "leadDiscovery.generateProfile": "生成画像",
+    "leadDiscovery.generateOutreach": "生成开发话术",
+    "leadDiscovery.verifyContact": "验证联系方式",
+    "leadDiscovery.openSource": "打开来源网站",
     "leadDiscovery.addContactLog": "新增跟进",
     "leadDiscovery.noProfile": "暂无 AI 画像。",
     "leadDiscovery.noLogs": "暂无跟进记录。",
     "leadDiscovery.noSource": "暂无来源内容。",
     "leadDiscovery.logContent": "跟进内容",
     "toast.leadTaskCreated": "搜索任务已创建。",
-    "toast.crawlResultAdded": "抓取 URL 已录入。",
+    "toast.crawlResultAdded": "线索已添加，并已生成 AI 画像。",
     "toast.leadProfileGenerated": "客户画像已生成。",
     "toast.contactLogAdded": "跟进记录已新增。",
     "toast.crawlerFinished": "爬虫已保存 {results} 条结果、{leads} 个客户。",
@@ -1268,6 +1334,21 @@ const aiMaintenanceBody = document.querySelector("[data-ai-maintenance-body]");
 const aiMaintenanceApplyButton = document.querySelector("[data-ai-maintenance-apply]");
 const leadTaskForm = document.querySelector("[data-lead-task-form]");
 const crawlResultForm = document.querySelector("[data-crawl-result-form]");
+
+const leadDiscoveryOptions = {
+  countries: ["Kenya", "Tanzania", "Ghana", "Nigeria", "UAE", "Saudi Arabia", "Chile", "Peru", "Bolivia"],
+  target_vehicles: ["Tractor Head", "Dump Truck", "Cargo Truck", "Bus", "Refrigerated Truck", "Concrete Mixer Truck", "Pickup", "Used Commercial Vehicle", "Electric Truck"],
+  customer_types: ["Importer", "Dealer", "Fleet Operator", "Construction Company", "Mining Company", "Logistics Company", "Bus Company", "Government Procurement"],
+  purchase_scenarios: ["Logistics", "Mining", "Construction", "Public Transport", "Municipal Service", "Agriculture", "Oil & Gas"],
+};
+
+const leadProgressSteps = [
+  "Searching websites",
+  "Extracting company information",
+  "Finding contacts",
+  "Scoring lead quality",
+  "Generating AI profile",
+];
 
 function t(key, values = {}) {
   let text = adminTranslations[state.lang][key] || adminTranslations.en[key] || key;
@@ -2548,6 +2629,93 @@ function leadContactLabel(row = {}) {
   return [row.contact_email, row.contact_phone, row.contact_website].filter(Boolean).join(" / ") || "--";
 }
 
+function listValue(value) {
+  return Array.isArray(value) ? value.join(", ") : String(value || "");
+}
+
+function selectedValues(select) {
+  return Array.from(select?.selectedOptions || []).map((option) => option.value).filter(Boolean);
+}
+
+function leadKeywordTemplateFromForm(form) {
+  const countries = selectedValues(form.elements.countries);
+  const vehicles = selectedValues(form.elements.target_vehicles);
+  const customerTypes = selectedValues(form.elements.customer_types);
+  const scenarios = selectedValues(form.elements.purchase_scenarios);
+  const manual = String(form.elements.manual_keywords?.value || "").trim();
+  return [countries.join(" OR "), vehicles.join(" OR "), customerTypes.join(" OR "), scenarios.join(" OR "), manual]
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function populateLeadSelects() {
+  Object.entries(leadDiscoveryOptions).forEach(([name, values]) => {
+    const select = document.querySelector(`[data-lead-task-form] select[name="${name}"]`);
+    if (!select || select.dataset.ready === "true") {
+      return;
+    }
+    select.innerHTML = values.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("");
+    select.dataset.ready = "true";
+  });
+  updateLeadKeywordTemplate();
+}
+
+function updateLeadKeywordTemplate() {
+  const form = document.querySelector("[data-lead-task-form]");
+  const template = document.querySelector("[data-keyword-template]");
+  if (!form || !template) {
+    return;
+  }
+  template.value = leadKeywordTemplateFromForm(form);
+}
+
+function leadScoreLevel(row = {}) {
+  const score = Number(row.profile?.score ?? row.score ?? 0);
+  const hasContact = Boolean(row.contact_email || row.contact_phone || row.contact_website);
+  if (!hasContact && score >= 85) return "HIGH";
+  if (!hasContact && row.lead_score_level === "VERY_HIGH") return "HIGH";
+  return row.lead_score_level || (score >= 85 ? "VERY_HIGH" : score >= 70 ? "HIGH" : score >= 45 ? "MEDIUM" : "LOW");
+}
+
+function leadContactQuality(row = {}) {
+  if (row.contact_quality) return row.contact_quality;
+  const count = [row.contact_email, row.contact_phone, row.contact_website].filter(Boolean).length;
+  if (count >= 3) return "STRONG";
+  if (count >= 2) return "GOOD";
+  if (count === 1) return "BASIC";
+  return "MISSING";
+}
+
+function renderLeadProgress() {
+  const box = document.querySelector("[data-lead-progress]");
+  if (!box) {
+    return;
+  }
+  box.innerHTML = leadProgressSteps
+    .map((step, index) => `<div class="lead-progress-step"><span>${index + 1}</span><p>${escapeHtml(step)}</p></div>`)
+    .join("");
+}
+
+function renderLeadStats() {
+  const box = document.querySelector("[data-lead-stats]");
+  if (!box) {
+    return;
+  }
+  const leads = state.data.leads || [];
+  const high = leads.filter((lead) => ["VERY_HIGH", "HIGH"].includes(leadScoreLevel(lead))).length;
+  const withContact = leads.filter((lead) => ["STRONG", "GOOD", "BASIC"].includes(leadContactQuality(lead))).length;
+  const needingVerification = leads.filter((lead) => leadContactQuality(lead) === "MISSING" || lead.follow_status === "new").length;
+  const stats = [
+    [t("leadDiscovery.statTotal"), leads.length],
+    [t("leadDiscovery.statHigh"), high],
+    [t("leadDiscovery.statContact"), withContact],
+    [t("leadDiscovery.statVerify"), needingVerification],
+  ];
+  box.innerHTML = stats.map(([label, value]) => `<article><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></article>`).join("");
+}
+
 function renderLeadTaskOptions() {
   const select = document.querySelector("[data-lead-task-select]");
   const list = document.querySelector("[data-lead-tasks-list]");
@@ -2565,7 +2733,7 @@ function renderLeadTaskOptions() {
           .map(
             (task) => `
               <div class="lead-task-item">
-                <span>${escapeHtml(task.keywords || task.id)}</span>
+                <span>${escapeHtml(task.keywords_template || task.keywords || task.id)}</span>
                 <button class="secondary-button" type="button" data-run-crawler-task="${escapeHtml(task.id)}">${escapeHtml(t("leadDiscovery.runCrawler"))}</button>
               </div>
             `,
@@ -2582,21 +2750,24 @@ function renderLeadsTable() {
   }
   const leads = state.data.leads || [];
   if (!leads.length) {
-    body.innerHTML = `<tr><td colspan="8">${escapeHtml(t("leadDiscovery.selectLead"))}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="10">${escapeHtml(t("leadDiscovery.selectLead"))}</td></tr>`;
     return;
   }
   body.innerHTML = leads
     .map((row) => {
       const score = Number(row.profile?.score ?? row.score ?? 0);
+      const level = leadScoreLevel(row);
       return `
         <tr>
           <td><strong>${escapeHtml(row.company_name || "--")}</strong></td>
           <td>${escapeHtml(row.country || "")}</td>
-          <td>${escapeHtml(row.industry || "")}</td>
-          <td><span class="score-pill">${escapeHtml(score)}</span></td>
-          <td>${escapeHtml(leadContactLabel(row))}</td>
+          <td>${escapeHtml(row.customer_type || row.industry || "")}</td>
+          <td>${escapeHtml(listValue(row.matched_vehicles) || row.industry || "")}</td>
+          <td><span class="score-pill score-${escapeHtml(level.toLowerCase())}">${escapeHtml(level)} · ${escapeHtml(score)}</span></td>
+          <td>${escapeHtml(leadContactQuality(row))}</td>
           <td>${row.source_url ? `<a href="${escapeHtml(row.source_url)}" target="_blank" rel="noreferrer">${escapeHtml(row.source_url.slice(0, 36))}</a>` : "--"}</td>
           <td><span class="status-pill status-${statusClass(row.follow_status)}">${escapeHtml(row.follow_status || "new")}</span></td>
+          <td>${escapeHtml(formatDateTime(row.updated_at || row.created_at))}</td>
           <td>
             <div class="row-actions">
               <button class="secondary-button" type="button" data-lead-detail-id="${escapeHtml(row.id)}">${escapeHtml(t("dashboard.view"))}</button>
@@ -2621,30 +2792,69 @@ function renderLeadDetail(lead = null) {
   const sourceRows = (lead.crawl_results || []).length ? lead.crawl_results : (state.data.crawlResults || []).filter((row) => row.processed_lead_id === lead.id || row.url === lead.source_url);
   const logs = lead.contact_logs || [];
   const profile = lead.profile;
+  const score = Number(profile?.score ?? lead.score ?? 0);
+  const scoring = profile?.scoring_breakdown || {};
+  const evidence = profile?.key_evidence?.length ? profile.key_evidence : sourceRows.map((row) => row.title || row.url).filter(Boolean).slice(0, 3);
+  const outreach = profile?.outreach_message || `Hello, we supply commercial vehicles for export. Are you currently sourcing ${listValue(lead.matched_vehicles) || "trucks, buses or fleet vehicles"} for upcoming projects?`;
   panel.innerHTML = `
     <div class="lead-detail-header">
       <div>
-        <span>${escapeHtml(lead.country || "")}</span>
+        <span>${escapeHtml([lead.country, lead.customer_type || lead.industry].filter(Boolean).join(" · "))}</span>
         <h3>${escapeHtml(lead.company_name || "--")}</h3>
       </div>
-      <button class="primary-button" type="button" data-lead-profile-id="${escapeHtml(lead.id)}">${escapeHtml(t("leadDiscovery.generateProfile"))}</button>
+      <div class="lead-detail-actions">
+        <button class="primary-button" type="button" data-lead-profile-id="${escapeHtml(lead.id)}">${escapeHtml(t("leadDiscovery.generateOutreach"))}</button>
+        <button class="secondary-button" type="button" data-contact-log-focus="${escapeHtml(lead.id)}">${escapeHtml(t("leadDiscovery.addContactLog"))}</button>
+        <button class="secondary-button" type="button" data-lead-profile-id="${escapeHtml(lead.id)}">${escapeHtml(t("leadDiscovery.verifyContact"))}</button>
+        ${lead.source_url ? `<a class="secondary-button" href="${escapeHtml(lead.source_url)}" target="_blank" rel="noreferrer">${escapeHtml(t("leadDiscovery.openSource"))}</a>` : ""}
+      </div>
     </div>
     <section class="lead-detail-section">
       <h4>${escapeHtml(t("leadDiscovery.profile"))}</h4>
       ${
         profile
           ? `<p>${escapeHtml(profile.ai_summary || "")}</p>
-            <dl>
-              <div><dt>${escapeHtml(t("leadDiscovery.score"))}</dt><dd>${escapeHtml(profile.score || lead.score || 0)}</dd></div>
-              <div><dt>Fit</dt><dd>${escapeHtml(profile.export_fit || "")}</dd></div>
-              <div><dt>Products</dt><dd>${escapeHtml(profile.recommended_products || "")}</dd></div>
-            </dl>`
+            <div class="lead-score-strip"><span class="score-pill">${escapeHtml(leadScoreLevel({ ...lead, profile }))} · ${escapeHtml(score)}</span><span>${escapeHtml(profile.export_fit || "")}</span></div>`
           : `<p class="muted-text">${escapeHtml(t("leadDiscovery.noProfile"))}</p>`
       }
     </section>
     <section class="lead-detail-section">
+      <h4>${escapeHtml(t("leadDiscovery.scoring"))}</h4>
+      <dl>
+        <div><dt>Product Fit</dt><dd>${escapeHtml(scoring.product_fit ?? "--")}</dd></div>
+        <div><dt>Country Fit</dt><dd>${escapeHtml(scoring.country_fit ?? "--")}</dd></div>
+        <div><dt>Buyer Identity</dt><dd>${escapeHtml(scoring.buyer_identity_confidence ?? "--")}</dd></div>
+        <div><dt>Contact Complete</dt><dd>${escapeHtml(scoring.contact_completeness ?? "--")}</dd></div>
+        <div><dt>Purchase Potential</dt><dd>${escapeHtml(scoring.purchase_potential || "--")}</dd></div>
+      </dl>
+    </section>
+    <section class="lead-detail-section">
+      <h4>${escapeHtml(t("leadDiscovery.possibleVehicles"))}</h4>
+      <p>${escapeHtml(listValue(lead.matched_vehicles) || profile?.recommended_products || "--")}</p>
+    </section>
+    <section class="lead-detail-section">
+      <h4>${escapeHtml(t("leadDiscovery.purchaseReasons"))}</h4>
+      ${(profile?.purchase_reasons?.length ? profile.purchase_reasons : profile?.pain_points || []).map((item) => `<article>${escapeHtml(item)}</article>`).join("") || `<p class="muted-text">${escapeHtml(t("leadDiscovery.noProfile"))}</p>`}
+    </section>
+    <section class="lead-detail-section">
+      <h4>${escapeHtml(t("leadDiscovery.keyEvidence"))}</h4>
+      ${evidence.length ? evidence.map((item) => `<article>${escapeHtml(item)}</article>`).join("") : `<p class="muted-text">${escapeHtml(t("leadDiscovery.noSource"))}</p>`}
+    </section>
+    <section class="lead-detail-section">
       <h4>${escapeHtml(t("leadDiscovery.contacts"))}</h4>
       <p>${escapeHtml(leadContactLabel(lead))}</p>
+    </section>
+    <section class="lead-detail-section">
+      <h4>${escapeHtml(t("leadDiscovery.outreach"))}</h4>
+      <p>${escapeHtml(outreach)}</p>
+    </section>
+    <section class="lead-detail-section">
+      <h4>${escapeHtml(t("leadDiscovery.riskFlags"))}</h4>
+      ${(profile?.risk_flags || ["Verify buyer identity and contact ownership before quoting."]).map((item) => `<article>${escapeHtml(item)}</article>`).join("")}
+    </section>
+    <section class="lead-detail-section">
+      <h4>${escapeHtml(t("leadDiscovery.nextSteps"))}</h4>
+      ${(profile?.next_steps || ["Verify contact", "Confirm vehicle requirement", "Qualify budget and timeline"]).map((item) => `<article>${escapeHtml(item)}</article>`).join("")}
     </section>
     <section class="lead-detail-section">
       <h4>${escapeHtml(t("leadDiscovery.sourceResults"))}</h4>
@@ -2666,6 +2876,9 @@ function renderLeadDetail(lead = null) {
 }
 
 function renderLeadDiscovery() {
+  populateLeadSelects();
+  renderLeadProgress();
+  renderLeadStats();
   renderLeadTaskOptions();
   renderLeadsTable();
 }
@@ -3005,21 +3218,31 @@ if (aiMaintenanceForm) {
 }
 
 if (leadTaskForm) {
+  leadTaskForm.addEventListener("input", updateLeadKeywordTemplate);
+  leadTaskForm.addEventListener("change", updateLeadKeywordTemplate);
   leadTaskForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
     const data = new FormData(form);
+    const keywordsTemplate = leadKeywordTemplateFromForm(form);
     try {
       await api("/api/lead-discovery/search-tasks", {
         method: "POST",
         body: JSON.stringify({
-          keywords: data.get("keywords"),
-          countries: data.get("countries"),
-          industries: data.get("industries"),
+          keywords: keywordsTemplate,
+          keywords_template: keywordsTemplate,
+          countries: selectedValues(form.elements.countries),
+          industries: selectedValues(form.elements.purchase_scenarios),
+          target_vehicles: selectedValues(form.elements.target_vehicles),
+          customer_types: selectedValues(form.elements.customer_types),
+          purchase_scenarios: selectedValues(form.elements.purchase_scenarios),
+          search_depth: data.get("search_depth") || "standard",
+          manual_keywords: data.get("manual_keywords"),
           status: data.get("status") || "active",
         }),
       });
       form.reset();
+      updateLeadKeywordTemplate();
       await refreshData();
       showToast(t("toast.leadTaskCreated"));
     } catch (error) {
@@ -3039,7 +3262,10 @@ if (crawlResultForm) {
         body: JSON.stringify({
           search_task_id: data.get("search_task_id"),
           url: data.get("url"),
-          title: data.get("title"),
+          title: data.get("company_name"),
+          company_name: data.get("company_name"),
+          country: data.get("country"),
+          customer_type: data.get("customer_type"),
           content: data.get("content"),
         }),
       });
@@ -3163,6 +3389,15 @@ document.addEventListener("click", async (event) => {
       showToast(t("toast.leadProfileGenerated"));
     } catch (error) {
       showToast(error.message);
+    }
+    return;
+  }
+
+  const contactLogFocus = target.closest("[data-contact-log-focus]");
+  if (contactLogFocus) {
+    const input = document.querySelector(`[data-contact-log-form="${contactLogFocus.dataset.contactLogFocus}"] textarea`);
+    if (input) {
+      input.focus();
     }
     return;
   }
