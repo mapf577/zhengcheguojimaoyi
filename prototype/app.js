@@ -4,6 +4,7 @@ const siteTranslations = {
     "nav.vehicles": "Vehicles",
     "nav.usedVehicles": "Used Cars",
     "nav.parts": "Auto Parts",
+    "nav.partsRequest": "Parts Request",
     "nav.export": "Export Service",
     "nav.cases": "Cases",
     "nav.contact": "Contact",
@@ -13,6 +14,8 @@ const siteTranslations = {
     "action.details": "Details",
     "action.getQuote": "Get Quote",
     "action.askQuote": "Ask Quote",
+    "action.showAllVehicles": "Show all {count} vehicles",
+    "action.showFewerVehicles": "Show fewer",
     "ai.open": "Customer Service",
     "ai.title": "Customer Service",
     "ai.subtitle": "Collect request and connect sales",
@@ -26,6 +29,7 @@ const siteTranslations = {
     "hero.copy": "New energy vehicles, fuel cars, commercial vehicles, and OEM spare parts shipped from China to global markets.",
     "hero.browse": "Browse Vehicles",
     "hero.findParts": "Find Auto Parts",
+    "hero.requestParts": "Request Auto Parts",
     "search.brandModel": "Brand or model",
     "search.partName": "Part name",
     "search.keywordPlaceholder": "Brand, model, keyword...",
@@ -44,6 +48,13 @@ const siteTranslations = {
     "parts.eyebrow": "OE/OEM matching",
     "parts.title": "Auto Parts Categories",
     "parts.empty": "No auto parts have been published yet.",
+    "parts.sourcingTitle": "Auto parts sourcing is handled by inquiry",
+    "parts.sourcingCopy": "Share an OE number, part name, vehicle model, quantity, and destination. Sales will match available suppliers and confirm price, MOQ, and lead time.",
+    "parts.sourcingPoint1": "OE/OEM number matching",
+    "parts.sourcingPoint2": "Supplier and fitment confirmation",
+    "parts.sourcingPoint3": "MOQ, packing, and shipping quote",
+    "parts.sourcingCta": "Send parts request",
+    "catalog.summary": "Showing {shown} of {total} vehicles.",
     "filter.all": "All",
     "export.eyebrow": "Export workflow",
     "export.title": "From Inquiry To Delivery",
@@ -61,6 +72,7 @@ const siteTranslations = {
     "proof.copy": "The platform is designed for dealers who need reliable vehicle sourcing, correct spare part matching, and fast quote follow-up.",
     "metrics.brands": "Vehicle brands",
     "metrics.skus": "Parts SKUs",
+    "metrics.partCategories": "Parts categories",
     "metrics.markets": "Export markets",
     "metrics.vehicles": "Published vehicles",
     "metrics.quoteTarget": "Quote target",
@@ -121,6 +133,7 @@ const siteTranslations = {
     "nav.vehicles": "整车展示",
     "nav.usedVehicles": "二手车",
     "nav.parts": "汽车零配件",
+    "nav.partsRequest": "配件代寻",
     "nav.export": "出口服务",
     "nav.cases": "案例能力",
     "nav.contact": "联系我们",
@@ -130,6 +143,8 @@ const siteTranslations = {
     "action.details": "详情",
     "action.getQuote": "获取报价",
     "action.askQuote": "询价",
+    "action.showAllVehicles": "查看全部 {count} 台车",
+    "action.showFewerVehicles": "收起列表",
     "ai.open": "客服接待",
     "ai.title": "客服接待",
     "ai.subtitle": "收集需求并转销售跟进",
@@ -143,6 +158,7 @@ const siteTranslations = {
     "hero.copy": "提供新能源汽车、燃油车、商用车及 OEM 零配件，支持从中国发往全球市场。",
     "hero.browse": "查看整车",
     "hero.findParts": "查找配件",
+    "hero.requestParts": "提交配件需求",
     "search.brandModel": "品牌或车型",
     "search.partName": "配件名称",
     "search.keywordPlaceholder": "品牌、车型、关键词...",
@@ -161,6 +177,13 @@ const siteTranslations = {
     "parts.eyebrow": "OE/OEM 精准匹配",
     "parts.title": "汽车零配件分类",
     "parts.empty": "暂未发布零配件数据。",
+    "parts.sourcingTitle": "零配件暂以询盘代寻为主",
+    "parts.sourcingCopy": "请提交 OE 编号、配件名称、适配车型、数量和目的地，销售会匹配供应商并确认价格、MOQ 和交期。",
+    "parts.sourcingPoint1": "OE/OEM 编号匹配",
+    "parts.sourcingPoint2": "供应商与适配确认",
+    "parts.sourcingPoint3": "MOQ、包装和运输报价",
+    "parts.sourcingCta": "发送配件需求",
+    "catalog.summary": "当前显示 {shown} / {total} 台车。",
     "filter.all": "全部",
     "export.eyebrow": "出口流程",
     "export.title": "从询盘到交付",
@@ -178,6 +201,7 @@ const siteTranslations = {
     "proof.copy": "平台适用于需要稳定整车采购、准确配件匹配和快速报价跟进的海外客户。",
     "metrics.brands": "整车品牌",
     "metrics.skus": "配件 SKU",
+    "metrics.partCategories": "配件分类",
     "metrics.markets": "出口市场",
     "metrics.vehicles": "已发布整车",
     "metrics.quoteTarget": "报价目标",
@@ -236,6 +260,7 @@ const siteTranslations = {
 };
 
 let currentLang = localStorage.getItem("site_lang") === "zh" ? "zh" : "en";
+const VEHICLE_PREVIEW_LIMIT = 12;
 
 function t(key, values = {}) {
   let text = siteTranslations[currentLang][key] || siteTranslations.en[key] || key;
@@ -521,12 +546,50 @@ function setMetricValue(name, value) {
   }
 }
 
+function setMetricLabel(name, key) {
+  const label = document.querySelector(`[data-metric-value="${name}"]`)?.parentElement?.querySelector("[data-i18n]");
+  if (label) {
+    label.dataset.i18n = key;
+    label.textContent = t(key);
+  }
+}
+
 function renderMetrics() {
   const vehicleBrands = new Set(vehicles.map((vehicle) => vehicle.record?.brand).filter(Boolean));
+  const partCategoryCount = dictionaryRows("part_categories").length;
   setMetricValue("brands", formatNumber(vehicleBrands.size));
-  setMetricValue("parts", formatNumber(parts.length));
+  setMetricValue("parts", formatNumber(parts.length || partCategoryCount));
+  setMetricLabel("parts", parts.length ? "metrics.skus" : "metrics.partCategories");
   setMetricValue("vehicles", formatNumber(vehicles.length));
   setMetricValue("quoteTarget", "72h");
+}
+
+function syncContentAvailability() {
+  const hasUsedVehicles = usedVehicleItems().length > 0;
+  const usedSection = document.querySelector("#used-vehicles");
+  if (usedSection) {
+    usedSection.hidden = !hasUsedVehicles;
+  }
+  document.querySelectorAll('a[href="#used-vehicles"]').forEach((link) => {
+    link.hidden = !hasUsedVehicles;
+  });
+
+  const hasParts = parts.length > 0;
+  const partsNavKey = hasParts ? "nav.parts" : "nav.partsRequest";
+  document.querySelectorAll('.main-nav a[href="#parts"], [data-search-tab="parts"]').forEach((node) => {
+    node.dataset.i18n = partsNavKey;
+    node.textContent = t(partsNavKey);
+  });
+  document.querySelectorAll('.hero-actions a[href="#parts"]').forEach((node) => {
+    const key = hasParts ? "hero.findParts" : "hero.requestParts";
+    node.dataset.i18n = key;
+    node.textContent = t(key);
+  });
+
+  const partFilters = document.querySelector("[data-part-filters]");
+  if (partFilters) {
+    partFilters.hidden = !hasParts;
+  }
 }
 
 function activeVehicleFilter() {
@@ -590,6 +653,10 @@ function renderPartFilterControls() {
   if (!row) {
     return;
   }
+  row.hidden = parts.length === 0;
+  if (!parts.length) {
+    return;
+  }
   const counts = countItems(parts, "filterValue");
   const current = counts.has(activePartFilter()) ? activePartFilter() : "all";
   const buttons = [filterButtonHtml("parts", "all", t("filter.all"), parts.length, current === "all")];
@@ -618,6 +685,7 @@ function renderEnergyOptions() {
 }
 
 function renderFilterControls() {
+  syncContentAvailability();
   renderVehicleFilterControls();
   renderUsedVehicleFilterControls();
   renderPartFilterControls();
@@ -669,6 +737,10 @@ async function loadApiData() {
 let vehicles = loadVehicles();
 let parts = loadParts();
 let dictionaries = [];
+const vehicleListState = {
+  vehicles: { expanded: false },
+  usedVehicles: { expanded: false },
+};
 const inquiryItems = new Map();
 let activeSearchTab = "vehicles";
 const searchState = {
@@ -973,7 +1045,81 @@ function partMatchesSearch(part) {
   return matchesQuery && matchesOe;
 }
 
-function renderVehicleList(grid, items, filter, emptyKey) {
+function makeCatalogStatus(kind, shown, total) {
+  const status = document.createElement("div");
+  status.className = "catalog-status";
+  const canToggle = total > VEHICLE_PREVIEW_LIMIT;
+  const expanded = vehicleListState[kind]?.expanded;
+  status.innerHTML = `
+    <span>${escapeHtml(t("catalog.summary", { shown: formatNumber(shown), total: formatNumber(total) }))}</span>
+    ${
+      canToggle
+        ? `<button class="ghost-button" type="button" data-toggle-vehicle-list="${escapeHtml(kind)}">${
+            expanded
+              ? escapeHtml(t("action.showFewerVehicles"))
+              : escapeHtml(t("action.showAllVehicles", { count: formatNumber(total) }))
+          }</button>`
+        : ""
+    }
+  `;
+  return status;
+}
+
+function makePartsSourcingPanel() {
+  const panel = document.createElement("div");
+  panel.className = "sourcing-panel";
+  panel.innerHTML = `
+    <div>
+      <p class="eyebrow">${escapeHtml(t("parts.eyebrow"))}</p>
+      <h3>${escapeHtml(t("parts.sourcingTitle"))}</h3>
+      <p>${escapeHtml(t("parts.sourcingCopy"))}</p>
+    </div>
+    <ul>
+      <li>${escapeHtml(t("parts.sourcingPoint1"))}</li>
+      <li>${escapeHtml(t("parts.sourcingPoint2"))}</li>
+      <li>${escapeHtml(t("parts.sourcingPoint3"))}</li>
+    </ul>
+    <a class="solid-button" href="#contact">${escapeHtml(t("parts.sourcingCta"))}</a>
+  `;
+  return panel;
+}
+
+function groupedRows(rows, keyFn) {
+  return rows.reduce((groups, row) => {
+    const key = keyFn(row) || "other";
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key).push(row);
+    return groups;
+  }, new Map());
+}
+
+function interleaveGroups(groups, limit) {
+  const queues = groups.map((group) => [...group]).filter((group) => group.length);
+  const result = [];
+  while (result.length < limit && queues.some((group) => group.length)) {
+    queues.forEach((group) => {
+      if (group.length && result.length < limit) {
+        result.push(group.shift());
+      }
+    });
+  }
+  return result;
+}
+
+function balancedVehiclePreview(rows, limit) {
+  const brandGroups = [...groupedRows(rows, (vehicle) => vehicle.record?.brand || "other").values()].map((brandRows) =>
+    interleaveGroups([...groupedRows(brandRows, (vehicle) => vehicle.record?.vehicle_type || vehicle.filterValue).values()], brandRows.length),
+  );
+  return interleaveGroups(brandGroups, limit);
+}
+
+function hasActiveVehicleSearch() {
+  return Boolean(searchState.vehicles.query || searchState.vehicles.energy);
+}
+
+function renderVehicleList(grid, items, filter, emptyKey, kind = "vehicles") {
   if (!grid) {
     return;
   }
@@ -985,18 +1131,36 @@ function renderVehicleList(grid, items, filter, emptyKey) {
     grid.replaceChildren(empty);
     return;
   }
-  grid.replaceChildren(...filtered.map(makeVehicleCard));
+  const expanded = vehicleListState[kind]?.expanded;
+  const visible =
+    expanded || filtered.length <= VEHICLE_PREVIEW_LIMIT
+      ? filtered
+      : filter === "all" && !hasActiveVehicleSearch()
+        ? balancedVehiclePreview(filtered, VEHICLE_PREVIEW_LIMIT)
+        : filtered.slice(0, VEHICLE_PREVIEW_LIMIT);
+  const children = visible.map(makeVehicleCard);
+  if (filtered.length > VEHICLE_PREVIEW_LIMIT) {
+    children.push(makeCatalogStatus(kind, visible.length, filtered.length));
+  }
+  grid.replaceChildren(...children);
 }
 
 function renderVehicles(filter = "all") {
-  renderVehicleList(vehicleGrid, primaryVehicleItems(), filter, "vehicles.empty");
+  renderVehicleList(vehicleGrid, primaryVehicleItems(), filter, "vehicles.empty", "vehicles");
 }
 
 function renderUsedVehicles(filter = "all") {
-  renderVehicleList(usedVehicleGrid, usedVehicleItems(), filter, "usedVehicles.empty");
+  renderVehicleList(usedVehicleGrid, usedVehicleItems(), filter, "usedVehicles.empty", "usedVehicles");
 }
 
 function renderParts(filter = "all") {
+  if (!partGrid) {
+    return;
+  }
+  if (!parts.length) {
+    partGrid.replaceChildren(makePartsSourcingPanel());
+    return;
+  }
   const filtered = (filter === "all" ? parts : parts.filter((part) => part.filterValue === filter)).filter(partMatchesSearch);
   if (!filtered.length) {
     const empty = document.createElement("div");
@@ -1207,6 +1371,7 @@ document.addEventListener("click", (event) => {
 
   const vehicleFilter = target.closest("[data-vehicle-filter]");
   if (vehicleFilter) {
+    vehicleListState.vehicles.expanded = false;
     setActiveChip(vehicleFilter, "[data-vehicle-filter]");
     renderVehicles(vehicleFilter.dataset.vehicleFilter);
     return;
@@ -1214,6 +1379,7 @@ document.addEventListener("click", (event) => {
 
   const usedVehicleFilter = target.closest("[data-used-vehicle-filter]");
   if (usedVehicleFilter) {
+    vehicleListState.usedVehicles.expanded = false;
     setActiveChip(usedVehicleFilter, "[data-used-vehicle-filter]");
     renderUsedVehicles(usedVehicleFilter.dataset.usedVehicleFilter);
     return;
@@ -1229,6 +1395,20 @@ document.addEventListener("click", (event) => {
   const searchTab = target.closest("[data-search-tab]");
   if (searchTab) {
     setSearchTab(searchTab.dataset.searchTab);
+    return;
+  }
+
+  const listToggle = target.closest("[data-toggle-vehicle-list]");
+  if (listToggle) {
+    const kind = listToggle.dataset.toggleVehicleList;
+    if (vehicleListState[kind]) {
+      vehicleListState[kind].expanded = !vehicleListState[kind].expanded;
+      if (kind === "usedVehicles") {
+        renderUsedVehicles(activeUsedVehicleFilter());
+      } else {
+        renderVehicles(activeVehicleFilter());
+      }
+    }
     return;
   }
 
@@ -1302,6 +1482,8 @@ searchForm.addEventListener("submit", (event) => {
   const keyword = String(data.get("keyword") || "").trim();
   const target = activeSearchTab === "vehicles" ? "#vehicles" : "#parts";
   if (activeSearchTab === "vehicles") {
+    vehicleListState.vehicles.expanded = false;
+    vehicleListState.usedVehicles.expanded = false;
     searchState.vehicles.query = keyword;
     searchState.vehicles.energy = String(data.get("energy") || "").trim();
     renderVehicles(activeVehicleFilter());

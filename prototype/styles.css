@@ -17,6 +17,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -442,6 +446,80 @@ h2 {
 .product-card:hover,
 .part-card:hover {
   box-shadow: 0 12px 28px rgba(18, 27, 38, 0.1);
+}
+
+.catalog-status,
+.sourcing-panel {
+  grid-column: 1 / -1;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.catalog-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.catalog-status .ghost-button {
+  color: var(--blue);
+  border-color: rgba(20, 100, 168, 0.34);
+}
+
+.sourcing-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.72fr) auto;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+  background:
+    linear-gradient(135deg, rgba(20, 100, 168, 0.08), rgba(18, 125, 115, 0.08)),
+    #fff;
+}
+
+.sourcing-panel h3 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.08;
+}
+
+.sourcing-panel p {
+  margin: 12px 0 0;
+  color: var(--muted);
+}
+
+.sourcing-panel ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  color: var(--ink);
+  list-style: none;
+}
+
+.sourcing-panel li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.sourcing-panel li::before {
+  content: "";
+  position: absolute;
+  top: 0.65em;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--teal);
+  transform: translateY(-50%);
 }
 
 .card-media {
@@ -1077,8 +1155,9 @@ h2 {
   }
 
   .header-actions {
-    top: 408px;
-    grid-template-columns: 1fr 1fr;
+    top: auto;
+    bottom: 18px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
     padding: 12px;
     border: 1px solid var(--line);
@@ -1129,6 +1208,10 @@ h2 {
   .ai-reception-panel {
     width: calc(100vw - 24px);
     max-height: calc(100svh - 104px);
+  }
+
+  .header-actions {
+    grid-template-columns: 1fr;
   }
 
   .site-header {
@@ -1197,6 +1280,16 @@ h2 {
   .section {
     width: min(100% - 32px, var(--max));
     padding: 52px 0;
+  }
+
+  .catalog-status,
+  .sourcing-panel {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .catalog-status {
+    display: grid;
   }
 
   .section-muted {

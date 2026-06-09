@@ -206,7 +206,8 @@ textarea {
 }
 
 .sidebar nav button.active {
-  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(45, 212, 191, 0.34);
+  background: rgba(15, 118, 110, 0.42);
   color: #fff;
 }
 
@@ -280,7 +281,30 @@ textarea {
 }
 
 .metrics div {
+  position: relative;
+  overflow: hidden;
   padding: 16px;
+  box-shadow: 0 10px 26px rgba(23, 32, 42, 0.06);
+}
+
+.metrics div::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--brand);
+}
+
+.metrics div:nth-child(2)::before {
+  background: #2178de;
+}
+
+.metrics div:nth-child(3)::before {
+  background: #168348;
+}
+
+.metrics div:nth-child(4)::before {
+  background: var(--danger);
 }
 
 .metrics span {
@@ -298,6 +322,7 @@ textarea {
 
 .panel {
   overflow: hidden;
+  box-shadow: 0 12px 30px rgba(23, 32, 42, 0.07);
 }
 
 .panel-header {
@@ -334,6 +359,10 @@ th {
   text-transform: uppercase;
   letter-spacing: 0;
   background: #fbfcfe;
+}
+
+tbody tr:hover {
+  background: #f8fbfd;
 }
 
 .status-pill {
