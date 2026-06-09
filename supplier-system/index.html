@@ -12,53 +12,56 @@
         <a class="brand" href="/">
           <img src="/media/assets/globalthreads-logo-color.png" alt="GlobalThreads" />
         </a>
-        <div class="auth-tabs" role="tablist" aria-label="Supplier access">
-          <button class="active" type="button" data-auth-tab="login">Login</button>
-          <button type="button" data-auth-tab="register">Register</button>
+        <div class="auth-topline">
+          <div class="auth-tabs" role="tablist" aria-label="Supplier access" data-i18n-aria-label="auth.access">
+            <button class="active" type="button" data-auth-tab="login" data-i18n="auth.login">Login</button>
+            <button type="button" data-auth-tab="register" data-i18n="auth.register">Register</button>
+          </div>
+          <button class="secondary-button lang-button" type="button" data-lang-toggle>中文</button>
         </div>
 
         <form class="auth-form" data-login-form>
           <label>
-            <span>Username</span>
+            <span data-i18n="auth.username">Username</span>
             <input name="username" autocomplete="username" required />
           </label>
           <label>
-            <span>Password</span>
+            <span data-i18n="auth.password">Password</span>
             <input name="password" type="password" autocomplete="current-password" required />
           </label>
-          <button class="primary-button" type="submit">Login</button>
+          <button class="primary-button" type="submit" data-i18n="auth.login">Login</button>
         </form>
 
         <form class="auth-form" data-register-form hidden>
           <label>
-            <span>Company Name</span>
+            <span data-i18n="auth.companyName">Company Name</span>
             <input name="company_name" autocomplete="organization" required />
           </label>
           <label>
-            <span>Contact Name</span>
+            <span data-i18n="auth.contactName">Contact Name</span>
             <input name="contact_name" autocomplete="name" required />
           </label>
           <label>
-            <span>Email</span>
+            <span data-i18n="auth.email">Email</span>
             <input name="email" type="email" autocomplete="email" required />
           </label>
           <label>
-            <span>Phone / WhatsApp</span>
+            <span data-i18n="auth.phone">Phone / WhatsApp</span>
             <input name="phone" autocomplete="tel" />
           </label>
           <label>
-            <span>Country</span>
+            <span data-i18n="auth.country">Country</span>
             <input name="country" autocomplete="country-name" />
           </label>
           <label>
-            <span>Username</span>
+            <span data-i18n="auth.username">Username</span>
             <input name="username" autocomplete="username" required />
           </label>
           <label>
-            <span>Password</span>
+            <span data-i18n="auth.password">Password</span>
             <input name="password" type="password" autocomplete="new-password" minlength="8" required />
           </label>
-          <button class="primary-button" type="submit">Create Account</button>
+          <button class="primary-button" type="submit" data-i18n="auth.createAccount">Create Account</button>
         </form>
       </div>
     </section>
@@ -69,40 +72,41 @@
           <img src="/media/assets/globalthreads-logo-light.png" alt="GlobalThreads" />
         </a>
         <nav>
-          <button class="active" type="button" data-product-tab="vehicles">Vehicles</button>
-          <button type="button" data-product-tab="parts">Auto Parts</button>
+          <button class="active" type="button" data-product-tab="vehicles" data-i18n="products.vehicles">Vehicles</button>
+          <button type="button" data-product-tab="parts" data-i18n="products.parts">Auto Parts</button>
         </nav>
         <div class="supplier-card">
-          <span>Supplier</span>
+          <span data-i18n="supplier.label">Supplier</span>
           <strong data-supplier-name>--</strong>
           <em data-supplier-status>--</em>
         </div>
-        <button class="secondary-button" type="button" data-logout>Logout</button>
+        <button class="secondary-button lang-button" type="button" data-lang-toggle>中文</button>
+        <button class="secondary-button" type="button" data-logout data-i18n="auth.logout">Logout</button>
       </aside>
 
       <main class="workspace">
         <header class="workspace-header">
           <div>
-            <p>Supplier Workspace</p>
+            <p data-i18n="workspace.kicker">Supplier Workspace</p>
             <h1 data-view-title>Vehicles</h1>
           </div>
           <div class="header-actions">
-            <button class="secondary-button" type="button" data-refresh>Refresh</button>
-            <button class="primary-button" type="button" data-new-product>New Product</button>
+            <button class="secondary-button" type="button" data-refresh data-i18n="actions.refresh">Refresh</button>
+            <button class="primary-button" type="button" data-new-product data-i18n="actions.newProduct">New Product</button>
           </div>
         </header>
 
-        <section class="metrics" aria-label="Product status">
-          <div><span>Draft</span><strong data-count="draft">0</strong></div>
-          <div><span>Submitted</span><strong data-count="submitted">0</strong></div>
-          <div><span>Approved</span><strong data-count="approved">0</strong></div>
-          <div><span>Rejected</span><strong data-count="rejected">0</strong></div>
+        <section class="metrics" aria-label="Product status" data-i18n-aria-label="metrics.productStatus">
+          <div><span data-i18n="status.draft">Draft</span><strong data-count="draft">0</strong></div>
+          <div><span data-i18n="status.submitted">Submitted</span><strong data-count="submitted">0</strong></div>
+          <div><span data-i18n="status.approved">Approved</span><strong data-count="approved">0</strong></div>
+          <div><span data-i18n="status.rejected">Rejected</span><strong data-count="rejected">0</strong></div>
         </section>
 
         <section class="panel">
           <div class="panel-header">
             <h2 data-table-title>Vehicles</h2>
-            <input type="search" data-search placeholder="Search SKU, name, model..." />
+            <input type="search" data-search placeholder="Search SKU, name, model..." data-i18n-placeholder="search.placeholder" />
           </div>
           <div class="table-wrap">
             <table>
@@ -119,14 +123,14 @@
         <div class="drawer-header">
           <div>
             <span data-form-mode>Draft</span>
-            <h2 data-form-title>Product</h2>
+            <h2 data-form-title data-i18n="drawer.product">Product</h2>
           </div>
-          <button class="icon-button" type="button" data-close-drawer aria-label="Close">x</button>
+          <button class="icon-button" type="button" data-close-drawer aria-label="Close" data-i18n-aria-label="actions.close">x</button>
         </div>
         <div class="form-grid" data-form-fields></div>
         <div class="drawer-actions">
-          <button class="secondary-button" type="button" data-close-drawer>Cancel</button>
-          <button class="primary-button" type="submit">Save Draft</button>
+          <button class="secondary-button" type="button" data-close-drawer data-i18n="actions.cancel">Cancel</button>
+          <button class="primary-button" type="submit" data-i18n="actions.saveDraft">Save Draft</button>
         </div>
       </form>
     </aside>
