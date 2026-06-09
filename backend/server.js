@@ -75,6 +75,16 @@ const stores = {
     required: ["name", "message"],
     numeric: [],
   },
+  suppliers: {
+    file: path.join(DATA_DIR, "suppliers.json"),
+    required: ["company_name", "contact_name", "email", "status"],
+    numeric: [],
+  },
+  supplierUsers: {
+    file: path.join(DATA_DIR, "supplier-users.json"),
+    required: ["username", "supplier_id", "name", "status"],
+    numeric: [],
+  },
   aiSessions: {
     file: path.join(DATA_DIR, "ai-sessions.json"),
     required: ["session_id", "status"],
@@ -154,6 +164,25 @@ const permissionCatalog = [
       { code: "dictionaries:update", label_en: "Update dictionaries", label_zh: "编辑字典" },
       { code: "dictionaries:delete", label_en: "Delete dictionaries", label_zh: "删除字典" },
       { code: "dictionaries:import", label_en: "Import dictionaries", label_zh: "导入字典" },
+    ],
+  },
+  {
+    group: "suppliers",
+    label_en: "Suppliers",
+    label_zh: "供应商",
+    permissions: [
+      { code: "suppliers:view", label_en: "View suppliers", label_zh: "查看供应商" },
+      { code: "suppliers:update", label_en: "Update suppliers", label_zh: "编辑供应商" },
+    ],
+  },
+  {
+    group: "product_reviews",
+    label_en: "Product Reviews",
+    label_zh: "商品审核",
+    permissions: [
+      { code: "product_reviews:view", label_en: "View product reviews", label_zh: "查看商品审核" },
+      { code: "product_reviews:approve", label_en: "Approve products", label_zh: "审核通过商品" },
+      { code: "product_reviews:reject", label_en: "Reject products", label_zh: "驳回商品" },
     ],
   },
   {
@@ -555,7 +584,19 @@ function parseSignedToken(token) {
 
 function createSessionToken(user) {
   return signTokenPayload({
+    kind: "admin",
     userId: user.id,
+    username: user.username,
+    sessionVersion: Number(user.session_version || 0),
+    expiresAt: Date.now() + SESSION_TTL_MS,
+  });
+}
+
+function createSupplierSessionToken(user) {
+  return signTokenPayload({
+    kind: "supplier",
+    userId: user.id,
+    supplierId: user.supplier_id,
     username: user.username,
     sessionVersion: Number(user.session_version || 0),
     expiresAt: Date.now() + SESSION_TTL_MS,
@@ -584,6 +625,26 @@ function sanitizeRole(role = {}) {
   };
 }
 
+function sanitizeSupplier(supplier = {}) {
+  return {
+    id: supplier.id || "",
+    company_name: supplier.company_name || "",
+    contact_name: supplier.contact_name || "",
+    email: supplier.email || "",
+    phone: supplier.phone || "",
+    country: supplier.country || "",
+    business_license: supplier.business_license || "",
+    status: supplier.status || "pending",
+    created_at: supplier.created_at || "",
+    updated_at: supplier.updated_at || "",
+  };
+}
+
+function sanitizeSupplierUser(user = {}) {
+  const { password, password_hash, ...safe } = user;
+  return safe;
+}
+
 function getUserRoles(user, roles) {
   const roleIds = new Set(normalizeStringList(user.role_ids));
   return roles.filter((role) => role.status !== "disabled" && (roleIds.has(role.id) || roleIds.has(role.code)));
@@ -609,6 +670,130 @@ async function buildAuthPayload(user) {
     roles: userRoles,
     permissions,
   };
+}
+
+async function getOptionalAdminAuth(req, permission = "") {
+  const session = getSession(req);
+  if (!session || (session.kind && session.kind !== "admin")) {
+    return null;
+  }
+
+  const users = await readRows("adminUsers");
+  const user = users.find((item) => item.id === session.userId || item.username === session.username);
+  if (!user || user.status === "disabled") {
+    return null;
+  }
+  if (Number(session.sessionVersion || 0) !== Number(user.session_version || 0)) {
+    return null;
+  }
+
+  const roles = (await readRows("adminRoles")).map(sanitizeRole);
+  const permissions = getUserPermissions(user, roles);
+  if (permission && !permissions.includes(permission)) {
+    return null;
+  }
+  return { session, user, roles, permissions };
+}
+
+async function buildSupplierAuthPayload(user, supplier) {
+  return {
+    user: sanitizeSupplierUser(user),
+    supplier: sanitizeSupplier(supplier),
+  };
+}
+
+function safeSupplierPayload(body = {}, existing = {}) {
+  return {
+    company_name: String(body.company_name || existing.company_name || "").trim(),
+    contact_name: String(body.contact_name || existing.contact_name || "").trim(),
+    email: String(body.email || existing.email || "").trim(),
+    phone: String(body.phone || existing.phone || "").trim(),
+    country: String(body.country || existing.country || "").trim(),
+    business_license: String(body.business_license || existing.business_license || "").trim(),
+    status: ["active", "disabled", "pending"].includes(body.status) ? body.status : existing.status || "pending",
+  };
+}
+
+function safeSupplierUserPayload(body = {}, existing = {}) {
+  const password = String(body.password || "").trim();
+  const next = {
+    username: String(body.username || existing.username || "").trim(),
+    supplier_id: String(body.supplier_id || existing.supplier_id || "").trim(),
+    name: String(body.name || existing.name || "").trim(),
+    email: String(body.email || existing.email || "").trim(),
+    phone: String(body.phone || existing.phone || "").trim(),
+    status: body.status === "disabled" ? "disabled" : "active",
+    session_version: Number(existing.session_version || 0),
+  };
+
+  if (password) {
+    next.password_hash = hashPassword(password);
+  } else if (existing.password_hash) {
+    next.password_hash = existing.password_hash;
+  }
+
+  return next;
+}
+
+async function requireSupplierSession(req, res) {
+  const session = getSession(req);
+  if (!session || session.kind !== "supplier") {
+    sendJson(res, 401, { error: "Unauthorized" });
+    return null;
+  }
+
+  const users = await readRows("supplierUsers");
+  const user = users.find((item) => item.id === session.userId && item.supplier_id === session.supplierId);
+  if (!user || user.status === "disabled") {
+    sendJson(res, 401, { error: "Unauthorized" });
+    return null;
+  }
+  if (Number(session.sessionVersion || 0) !== Number(user.session_version || 0)) {
+    sendJson(res, 401, { error: "Unauthorized" });
+    return null;
+  }
+
+  const suppliers = await readRows("suppliers");
+  const supplier = suppliers.find((item) => item.id === user.supplier_id);
+  if (!supplier || supplier.status === "disabled") {
+    sendJson(res, 401, { error: "Supplier is disabled" });
+    return null;
+  }
+
+  return { session, user, supplier };
+}
+
+function isSupplierProduct(row = {}) {
+  return row.owner_type === "supplier" || Boolean(row.supplier_id);
+}
+
+function isPublicCatalogRow(row = {}) {
+  if (!isSupplierProduct(row)) {
+    return true;
+  }
+  return row.review_status === "approved" && row.publish_status === "published";
+}
+
+function supplierProductPayload(type, body = {}, existing = {}, auth) {
+  const supplierName = auth.supplier.company_name || auth.user.name || auth.user.username || "";
+  const existingStatus = reviewStatusLabel(existing.review_status);
+  const statusNeedsResubmit = existingStatus === "approved" || existingStatus === "submitted" || existing.publish_status === "published";
+  const reviewStatus = statusNeedsResubmit ? "draft" : existingStatus;
+  return {
+    ...body,
+    owner_type: "supplier",
+    supplier_id: auth.supplier.id,
+    supplier_name: supplierName,
+    review_status: reviewStatus,
+    publish_status: reviewStatus === "approved" ? "published" : "unpublished",
+    reviewed_at: statusNeedsResubmit ? "" : existing.reviewed_at || "",
+    reviewed_by: statusNeedsResubmit ? "" : existing.reviewed_by || "",
+    reject_reason: statusNeedsResubmit ? "" : existing.reject_reason || "",
+  };
+}
+
+function reviewStatusLabel(status) {
+  return ["draft", "submitted", "approved", "rejected"].includes(status) ? status : "draft";
 }
 
 async function ensureAuthBootstrap() {
@@ -803,6 +988,8 @@ function normalizeRecord(type, input, existing = {}) {
     adminUsers: "user",
     adminRoles: "role",
     inquiries: "inq",
+    suppliers: "supplier",
+    supplierUsers: "supplier_user",
   };
   return {
     ...existing,
@@ -949,7 +1136,7 @@ function getSessionUser(req) {
 
 async function requirePermission(req, res, permission) {
   const session = getSession(req);
-  if (!session) {
+  if (!session || session.kind === "supplier") {
     sendJson(res, 401, { error: "Unauthorized" });
     return null;
   }
@@ -1164,8 +1351,10 @@ function requireAuth(req, res) {
 function safeStaticPath(baseDir, requestPath) {
   const decoded = decodeURIComponent(requestPath.split("?")[0]);
   const normalized = decoded.replace(/^\/+/, "");
+  const base = path.resolve(baseDir);
   const resolved = path.resolve(baseDir, normalized);
-  if (!resolved.startsWith(path.resolve(baseDir))) {
+  const relative = path.relative(base, resolved);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
     return null;
   }
   return resolved;
@@ -1266,8 +1455,23 @@ function serveStatic(req, res, pathname) {
     return true;
   }
 
+  if (pathname === "/supplier" || pathname === "/supplier/") {
+    serveFile(res, path.join(ROOT, "supplier-system", "index.html"));
+    return true;
+  }
+
   if (pathname.startsWith("/admin-system/")) {
     const filePath = safeStaticPath(path.join(ROOT, "admin-system"), pathname.replace(/^\/admin-system\//, ""));
+    if (!filePath) {
+      sendText(res, 403, "Forbidden");
+      return true;
+    }
+    serveFile(res, filePath);
+    return true;
+  }
+
+  if (pathname.startsWith("/supplier-system/")) {
+    const filePath = safeStaticPath(path.join(ROOT, "supplier-system"), pathname.replace(/^\/supplier-system\//, ""));
     if (!filePath) {
       sendText(res, 403, "Forbidden");
       return true;
@@ -1371,9 +1575,309 @@ async function handleAdminSession(req, res) {
   });
 }
 
+async function handleSupplierRegister(req, res) {
+  const body = await readJson(req);
+  const password = String(body.password || "").trim();
+  const supplierPayload = safeSupplierPayload({ ...body, status: "pending" });
+  const userPayload = safeSupplierUserPayload({
+    username: body.username,
+    name: body.contact_name || body.name,
+    email: body.email,
+    phone: body.phone,
+    password,
+    status: "active",
+  });
+  const errors = [];
+  validateRecord("suppliers", supplierPayload).forEach((error) => errors.push(error));
+  if (!userPayload.username) {
+    errors.push("username is required");
+  }
+  if (!password) {
+    errors.push("password is required");
+  } else if (password.length < 8) {
+    errors.push("password must be at least 8 characters");
+  }
+  if (errors.length) {
+    sendJson(res, 400, { errors });
+    return;
+  }
+
+  const supplierUsers = await readRows("supplierUsers");
+  if (supplierUsers.some((user) => user.username === userPayload.username)) {
+    sendJson(res, 409, { error: "Supplier username already exists." });
+    return;
+  }
+
+  const suppliers = await readRows("suppliers");
+  const supplier = normalizeRecord("suppliers", supplierPayload);
+  const user = normalizeRecord("supplierUsers", { ...userPayload, supplier_id: supplier.id });
+  suppliers.push(supplier);
+  supplierUsers.push(user);
+  await writeRows("suppliers", suppliers);
+  await writeRows("supplierUsers", supplierUsers);
+
+  await appendAiLog(req, {
+    module: "suppliers",
+    action: "register",
+    source: "supplier",
+    actor: user.username,
+    target_type: "suppliers",
+    target_id: supplier.id,
+    target_label: supplier.company_name,
+    detail: "Supplier registered and is pending internal review.",
+  });
+
+  sendJson(res, 201, {
+    token: createSupplierSessionToken(user),
+    ...(await buildSupplierAuthPayload(user, supplier)),
+  });
+}
+
+async function handleSupplierLogin(req, res) {
+  const body = await readJson(req);
+  const username = String(body.username || "").trim();
+  const rateLimit = getLoginRateLimit(req, `supplier:${username}`);
+  if (rateLimit.limited) {
+    res.setHeader("Retry-After", String(rateLimit.retryAfterSeconds));
+    sendJson(res, 429, { error: "Too many failed login attempts. Please try again later.", retry_after_seconds: rateLimit.retryAfterSeconds });
+    return;
+  }
+
+  const supplierUsers = await readRows("supplierUsers");
+  const index = supplierUsers.findIndex((user) => user.username === username);
+  const user = index >= 0 ? supplierUsers[index] : null;
+  const suppliers = await readRows("suppliers");
+  const supplier = user ? suppliers.find((item) => item.id === user.supplier_id) : null;
+
+  if (!user || user.status === "disabled" || !supplier || supplier.status === "disabled" || !verifyPassword(body.password, user.password_hash)) {
+    recordFailedLogin(req, `supplier:${username}`);
+    sendJson(res, 401, { error: "Invalid username or password" });
+    return;
+  }
+
+  supplierUsers[index] = normalizeRecord("supplierUsers", { ...user, last_login_at: now() }, user);
+  await writeRows("supplierUsers", supplierUsers);
+  clearLoginAttempts(req, `supplier:${username}`);
+
+  sendJson(res, 200, {
+    token: createSupplierSessionToken(supplierUsers[index]),
+    ...(await buildSupplierAuthPayload(supplierUsers[index], supplier)),
+  });
+}
+
+async function handleSupplierSession(req, res) {
+  const auth = await requireSupplierSession(req, res);
+  if (!auth) {
+    return;
+  }
+  sendJson(res, 200, await buildSupplierAuthPayload(auth.user, auth.supplier));
+}
+
+async function handleSupplierProfile(req, res) {
+  const auth = await requireSupplierSession(req, res);
+  if (!auth) {
+    return;
+  }
+
+  if (req.method === "GET") {
+    sendJson(res, 200, { supplier: sanitizeSupplier(auth.supplier), user: sanitizeSupplierUser(auth.user) });
+    return;
+  }
+
+  if (req.method === "PUT") {
+    const body = await readJson(req);
+    const suppliers = await readRows("suppliers");
+    const index = suppliers.findIndex((supplier) => supplier.id === auth.supplier.id);
+    if (index === -1) {
+      sendJson(res, 404, { error: "Supplier not found" });
+      return;
+    }
+    const next = normalizeRecord("suppliers", safeSupplierPayload({ ...body, status: auth.supplier.status }, auth.supplier), auth.supplier);
+    const errors = validateRecord("suppliers", next);
+    if (errors.length) {
+      sendJson(res, 400, { errors });
+      return;
+    }
+    suppliers[index] = next;
+    await writeRows("suppliers", suppliers);
+    await appendAiLog(req, {
+      module: "suppliers",
+      action: "update_profile",
+      source: "supplier",
+      actor: auth.user.username,
+      target_type: "suppliers",
+      target_id: next.id,
+      target_label: next.company_name,
+      detail: "Supplier profile updated.",
+    });
+    sendJson(res, 200, { supplier: sanitizeSupplier(next) });
+    return;
+  }
+
+  sendJson(res, 405, { error: "Method not allowed" });
+}
+
+async function handleSupplierUpload(req, res) {
+  const auth = await requireSupplierSession(req, res);
+  if (!auth) {
+    return;
+  }
+  await writeUploadedImage(req, res, { source: "supplier", actor: auth.user.username });
+}
+
+async function handleSupplierProductSubmit(req, res, type, id) {
+  const auth = await requireSupplierSession(req, res);
+  if (!auth) {
+    return;
+  }
+  const rows = await readRows(type);
+  const index = rows.findIndex((row) => row.id === id && row.supplier_id === auth.supplier.id);
+  if (index === -1) {
+    sendJson(res, 404, { error: "Not found" });
+    return;
+  }
+  const next = normalizeRecord(type, {
+    ...rows[index],
+    review_status: "submitted",
+    publish_status: "unpublished",
+    submitted_at: now(),
+    reject_reason: "",
+  }, rows[index]);
+  const errors = validateRecord(type, next);
+  if (errors.length) {
+    sendJson(res, 400, { errors });
+    return;
+  }
+  rows[index] = next;
+  await writeRows(type, rows);
+  await appendAiLog(req, {
+    module: type,
+    action: "submit_review",
+    source: "supplier",
+    actor: auth.user.username,
+    target_type: type,
+    target_id: next.id,
+    target_label: targetLabel(next),
+    detail: `Supplier submitted ${type} product for review.`,
+  });
+  sendJson(res, 200, next);
+}
+
+async function handleSupplierCollection(req, res, type, id) {
+  const auth = await requireSupplierSession(req, res);
+  if (!auth) {
+    return;
+  }
+
+  if (req.method === "GET") {
+    const rows = (await readRows(type)).filter((row) => row.supplier_id === auth.supplier.id);
+    if (id) {
+      const row = rows.find((item) => item.id === id || item.sku === id);
+      sendJson(res, row ? 200 : 404, row || { error: "Not found" });
+      return;
+    }
+    sendJson(res, 200, { items: sortByUpdated(rows) });
+    return;
+  }
+
+  if (req.method === "POST") {
+    const body = await readJson(req);
+    const rows = await readRows(type);
+    if (rows.some((row) => row.sku && row.sku === body.sku)) {
+      sendJson(res, 409, { error: "SKU already exists. Please use a unique supplier SKU." });
+      return;
+    }
+    const record = normalizeRecord(type, supplierProductPayload(type, body, {}, auth));
+    const errors = validateRecord(type, record);
+    if (errors.length) {
+      sendJson(res, 400, { errors });
+      return;
+    }
+    rows.push(record);
+    await writeRows(type, rows);
+    await appendAiLog(req, {
+      module: type,
+      action: "supplier_create",
+      source: "supplier",
+      actor: auth.user.username,
+      target_type: type,
+      target_id: record.id,
+      target_label: targetLabel(record),
+      detail: `Supplier created ${type} draft.`,
+    });
+    sendJson(res, 201, record);
+    return;
+  }
+
+  if (!id) {
+    sendJson(res, 400, { error: "Missing record id" });
+    return;
+  }
+
+  const rows = await readRows(type);
+  const index = rows.findIndex((row) => row.id === id && row.supplier_id === auth.supplier.id);
+  if (index === -1) {
+    sendJson(res, 404, { error: "Not found" });
+    return;
+  }
+
+  if (req.method === "PUT") {
+    const body = await readJson(req);
+    const next = normalizeRecord(type, supplierProductPayload(type, body, rows[index], auth), rows[index]);
+    const errors = validateRecord(type, next);
+    if (errors.length) {
+      sendJson(res, 400, { errors });
+      return;
+    }
+    if (rows.some((row, rowIndex) => rowIndex !== index && row.sku && row.sku === next.sku)) {
+      sendJson(res, 409, { error: "SKU already exists. Please use a unique supplier SKU." });
+      return;
+    }
+    rows[index] = next;
+    await writeRows(type, rows);
+    await appendAiLog(req, {
+      module: type,
+      action: "supplier_update",
+      source: "supplier",
+      actor: auth.user.username,
+      target_type: type,
+      target_id: next.id,
+      target_label: targetLabel(next),
+      detail: `Supplier updated ${type} draft.`,
+    });
+    sendJson(res, 200, next);
+    return;
+  }
+
+  if (req.method === "DELETE") {
+    const [removed] = rows.splice(index, 1);
+    await writeRows(type, rows);
+    await appendAiLog(req, {
+      module: type,
+      action: "supplier_delete",
+      source: "supplier",
+      actor: auth.user.username,
+      target_type: type,
+      target_id: removed.id,
+      target_label: targetLabel(removed),
+      detail: `Supplier deleted ${type} product.`,
+    });
+    sendJson(res, 200, { removed });
+    return;
+  }
+
+  sendJson(res, 405, { error: "Method not allowed" });
+}
+
 async function handleCollection(req, res, type, id) {
   if (req.method === "GET") {
-    const rows = await readRows(type);
+    let rows = await readRows(type);
+    if (type === "vehicles" || type === "parts") {
+      const auth = await getOptionalAdminAuth(req, `${type}:view`);
+      if (!auth) {
+        rows = rows.filter(isPublicCatalogRow);
+      }
+    }
     if (id) {
       const row = rows.find((item) => item.id === id || item.sku === id || item.code === id);
       sendJson(res, row ? 200 : 404, row || { error: "Not found" });
@@ -1681,10 +2185,7 @@ async function uploadImageToOss({ objectName, buffer, ext }) {
   return buildMediaUrl(objectName);
 }
 
-async function handleUpload(req, res) {
-  if (!requireAuth(req, res)) {
-    return;
-  }
+async function writeUploadedImage(req, res, logContext = {}) {
   const body = await readJson(req);
   const originalName = String(body.filename || "upload").replace(/[^\w.\-]+/g, "-");
   const ext = path.extname(originalName).toLowerCase();
@@ -1713,6 +2214,8 @@ async function handleUpload(req, res) {
       await appendAiLog(req, {
         module: "uploads",
         action: "upload_image",
+        source: logContext.source || "admin",
+        actor: logContext.actor || getSessionUser(req) || "system",
         target_type: "oss",
         target_id: objectName,
         target_label: originalName,
@@ -1738,6 +2241,8 @@ async function handleUpload(req, res) {
   await appendAiLog(req, {
     module: "uploads",
     action: "upload_image",
+    source: logContext.source || "admin",
+    actor: logContext.actor || getSessionUser(req) || "system",
     target_type: "upload",
     target_id: filename,
     target_label: originalName,
@@ -1750,6 +2255,13 @@ async function handleUpload(req, res) {
     size: buffer.length,
     storage: "local",
   });
+}
+
+async function handleUpload(req, res) {
+  if (!(await requirePermission(req, res))) {
+    return;
+  }
+  await writeUploadedImage(req, res, { source: "admin" });
 }
 
 function normalizeAiMessages(value) {
@@ -2849,6 +3361,101 @@ async function handlePermissions(req, res) {
   sendJson(res, 200, { items: permissionCatalog });
 }
 
+async function handleAdminSuppliers(req, res, id) {
+  if (req.method === "GET") {
+    if (!(await requirePermission(req, res, "suppliers:view"))) {
+      return;
+    }
+    sendJson(res, 200, { items: sortByUpdated(await readRows("suppliers")).map(sanitizeSupplier) });
+    return;
+  }
+
+  if (req.method === "PUT" && id) {
+    if (!(await requirePermission(req, res, "suppliers:update"))) {
+      return;
+    }
+    const body = await readJson(req);
+    const rows = await readRows("suppliers");
+    const index = rows.findIndex((row) => row.id === id);
+    if (index === -1) {
+      sendJson(res, 404, { error: "Not found" });
+      return;
+    }
+    const next = normalizeRecord("suppliers", safeSupplierPayload(body, rows[index]), rows[index]);
+    const errors = validateRecord("suppliers", next);
+    if (errors.length) {
+      sendJson(res, 400, { errors });
+      return;
+    }
+    rows[index] = next;
+    await writeRows("suppliers", rows);
+    await appendAiLog(req, {
+      module: "suppliers",
+      action: "admin_update",
+      target_type: "suppliers",
+      target_id: next.id,
+      target_label: next.company_name,
+      detail: `Supplier status is ${next.status}.`,
+    });
+    sendJson(res, 200, sanitizeSupplier(next));
+    return;
+  }
+
+  sendJson(res, 405, { error: "Method not allowed" });
+}
+
+async function handleProductReviews(req, res, type, id, action) {
+  if (!type && req.method === "GET") {
+    if (!(await requirePermission(req, res, "product_reviews:view"))) {
+      return;
+    }
+    const [vehicles, parts] = await Promise.all([readRows("vehicles"), readRows("parts")]);
+    const items = [
+      ...vehicles.filter(isSupplierProduct).map((row) => ({ ...row, product_type: "vehicles" })),
+      ...parts.filter(isSupplierProduct).map((row) => ({ ...row, product_type: "parts" })),
+    ];
+    sendJson(res, 200, { items: sortByUpdated(items) });
+    return;
+  }
+
+  if (!["vehicles", "parts"].includes(type) || !id || !["approve", "reject"].includes(action) || req.method !== "POST") {
+    sendJson(res, 404, { error: "Review route not found" });
+    return;
+  }
+
+  if (!(await requirePermission(req, res, action === "approve" ? "product_reviews:approve" : "product_reviews:reject"))) {
+    return;
+  }
+  const auth = await getOptionalAdminAuth(req);
+  const body = await readJson(req);
+  const rows = await readRows(type);
+  const index = rows.findIndex((row) => row.id === id && isSupplierProduct(row));
+  if (index === -1) {
+    sendJson(res, 404, { error: "Not found" });
+    return;
+  }
+
+  const next = normalizeRecord(type, {
+    ...rows[index],
+    review_status: action === "approve" ? "approved" : "rejected",
+    publish_status: action === "approve" ? "published" : "unpublished",
+    reviewed_at: now(),
+    reviewed_by: auth?.user?.username || getSessionUser(req) || "admin",
+    reject_reason: action === "reject" ? String(body.reason || body.reject_reason || "").trim().slice(0, 1000) : "",
+  }, rows[index]);
+  rows[index] = next;
+  await writeRows(type, rows);
+  await appendAiLog(req, {
+    module: type,
+    action: action === "approve" ? "approve_supplier_product" : "reject_supplier_product",
+    target_type: type,
+    target_id: next.id,
+    target_label: targetLabel(next),
+    detail: action === "approve" ? "Supplier product approved and published." : `Supplier product rejected. ${next.reject_reason || ""}`.trim(),
+  });
+  sendJson(res, 200, next);
+}
+
 async function handleAdminUsers(req, res, id, action) {
   if (req.method === "GET") {
     if (!(await requirePermission(req, res, "users:view"))) {
@@ -3136,6 +3743,43 @@ async function handleApi(req, res, pathname) {
     return true;
   }
 
+  if (pathname === "/api/supplier/auth/register" && req.method === "POST") {
+    await handleSupplierRegister(req, res);
+    return true;
+  }
+
+  if (pathname === "/api/supplier/auth/login" && req.method === "POST") {
+    await handleSupplierLogin(req, res);
+    return true;
+  }
+
+  if (pathname === "/api/supplier/session") {
+    await handleSupplierSession(req, res);
+    return true;
+  }
+
+  if (pathname === "/api/supplier/profile") {
+    await handleSupplierProfile(req, res);
+    return true;
+  }
+
+  if (pathname === "/api/supplier/uploads" && req.method === "POST") {
+    await handleSupplierUpload(req, res);
+    return true;
+  }
+
+  const supplierSubmitMatch = pathname.match(/^\/api\/supplier\/(vehicles|parts)\/([^/]+)\/submit$/);
+  if (supplierSubmitMatch && req.method === "POST") {
+    await handleSupplierProductSubmit(req, res, supplierSubmitMatch[1], supplierSubmitMatch[2]);
+    return true;
+  }
+
+  const supplierCollectionMatch = pathname.match(/^\/api\/supplier\/(vehicles|parts)(?:\/([^/]+))?$/);
+  if (supplierCollectionMatch) {
+    await handleSupplierCollection(req, res, supplierCollectionMatch[1], supplierCollectionMatch[2]);
+    return true;
+  }
+
   if (pathname === "/api/ai/chat" && req.method === "POST") {
     await handleAiChat(req, res);
     return true;
@@ -3158,6 +3802,23 @@ async function handleApi(req, res, pathname) {
 
   if (pathname === "/api/admin/permissions") {
     await handlePermissions(req, res);
+    return true;
+  }
+
+  const adminSupplierMatch = pathname.match(/^\/api\/admin\/suppliers(?:\/([^/]+))?$/);
+  if (adminSupplierMatch) {
+    await handleAdminSuppliers(req, res, adminSupplierMatch[1]);
+    return true;
+  }
+
+  if (pathname === "/api/admin/product-reviews") {
+    await handleProductReviews(req, res);
+    return true;
+  }
+
+  const adminReviewActionMatch = pathname.match(/^\/api\/admin\/product-reviews\/(vehicles|parts)\/([^/]+)\/(approve|reject)$/);
+  if (adminReviewActionMatch) {
+    await handleProductReviews(req, res, adminReviewActionMatch[1], adminReviewActionMatch[2], adminReviewActionMatch[3]);
     return true;
   }
 

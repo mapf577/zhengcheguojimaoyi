@@ -59,7 +59,7 @@ const schemas = {
     title: "Vehicles",
     api: "/api/vehicles",
     importApi: "/api/import/vehicles",
-    columns: ["sku", "brand", "model", "year", "condition", "vehicle_type", "energy_type", "stock_status", "price_min", "price_max", "currency"],
+    columns: ["sku", "brand", "model", "year", "condition", "vehicle_type", "energy_type", "stock_status", "supplier_name", "review_status", "publish_status", "price_min", "price_max", "currency"],
     fields: [
       { name: "sku", label: "SKU", required: true },
       { name: "brand", label: "Brand", required: true, dictionaryType: "brands" },
@@ -87,6 +87,10 @@ const schemas = {
       { name: "accident_note", label: "Accident Note", type: "textarea" },
       { name: "color", label: "Color", dictionaryType: "colors" },
       { name: "stock_status", label: "Stock Status", required: true, dictionaryType: "stock_statuses" },
+      { name: "supplier_name", label: "Supplier Name" },
+      { name: "review_status", label: "Review Status", options: [["draft", "Draft"], ["submitted", "Submitted"], ["approved", "Approved"], ["rejected", "Rejected"]] },
+      { name: "publish_status", label: "Publish Status", options: [["unpublished", "Unpublished"], ["published", "Published"]] },
+      { name: "reject_reason", label: "Reject Reason", type: "textarea" },
       { name: "price_min", label: "Price Min" },
       { name: "price_max", label: "Price Max" },
       { name: "currency", label: "Currency", required: true, dictionaryType: "currencies" },
@@ -100,7 +104,7 @@ const schemas = {
     title: "Auto Parts",
     api: "/api/parts",
     importApi: "/api/import/parts",
-    columns: ["sku", "category", "brand", "name", "oe_numbers", "applicable_brand", "applicable_model", "moq", "stock_status", "price_min", "price_max", "currency"],
+    columns: ["sku", "category", "brand", "name", "oe_numbers", "applicable_brand", "applicable_model", "moq", "stock_status", "supplier_name", "review_status", "publish_status", "price_min", "price_max", "currency"],
     fields: [
       { name: "sku", label: "SKU", required: true },
       { name: "category", label: "Category", required: true, dictionaryType: "part_categories" },
@@ -115,6 +119,10 @@ const schemas = {
       { name: "applicable_year", label: "Applicable Year" },
       { name: "moq", label: "MOQ", required: true },
       { name: "stock_status", label: "Stock Status", required: true, dictionaryType: "stock_statuses" },
+      { name: "supplier_name", label: "Supplier Name" },
+      { name: "review_status", label: "Review Status", options: [["draft", "Draft"], ["submitted", "Submitted"], ["approved", "Approved"], ["rejected", "Rejected"]] },
+      { name: "publish_status", label: "Publish Status", options: [["unpublished", "Unpublished"], ["published", "Published"]] },
+      { name: "reject_reason", label: "Reject Reason", type: "textarea" },
       { name: "lead_time_days", label: "Lead Time Days" },
       { name: "unit_weight", label: "Unit Weight" },
       { name: "package_size", label: "Package Size" },
@@ -194,7 +202,7 @@ const fieldGroups = {
       titleKey: "form.usedVehicle",
       fields: ["mileage", "registration_date", "ownership_status", "location", "emission_standard", "inspection_report", "accident_note"],
     },
-    { titleKey: "form.commercial", fields: ["stock_status", "price_min", "price_max", "currency", "export_port"] },
+    { titleKey: "form.commercial", fields: ["stock_status", "supplier_name", "review_status", "publish_status", "reject_reason", "price_min", "price_max", "currency", "export_port"] },
     { titleKey: "form.media", fields: ["images", "description_en", "description_zh"] },
   ],
   parts: [
@@ -202,7 +210,7 @@ const fieldGroups = {
     { titleKey: "form.fitment", fields: ["applicable_brand", "applicable_model", "applicable_year"] },
     {
       titleKey: "form.commercial",
-      fields: ["moq", "stock_status", "lead_time_days", "unit_weight", "package_size", "price_min", "price_max", "currency"],
+      fields: ["moq", "stock_status", "supplier_name", "review_status", "publish_status", "reject_reason", "lead_time_days", "unit_weight", "package_size", "price_min", "price_max", "currency"],
     },
     { titleKey: "form.media", fields: ["images", "description_en", "description_zh"] },
   ],
@@ -229,7 +237,7 @@ schemas.usedVehicles = {
   sourceType: "vehicles",
   conditionFilter: "used",
   fixedValues: { condition: "used" },
-  columns: ["sku", "brand", "model", "year", "mileage", "registration_date", "vehicle_type", "energy_type", "stock_status", "price_min", "price_max", "currency"],
+  columns: ["sku", "brand", "model", "year", "mileage", "registration_date", "vehicle_type", "energy_type", "stock_status", "supplier_name", "review_status", "publish_status", "price_min", "price_max", "currency"],
   fields: schemas.vehicles.fields.filter((field) => field.name !== "condition"),
 };
 
@@ -243,7 +251,7 @@ fieldGroups.usedVehicles = [
     titleKey: "form.usedVehicle",
     fields: ["mileage", "registration_date", "ownership_status", "location", "emission_standard", "inspection_report", "accident_note"],
   },
-  { titleKey: "form.commercial", fields: ["stock_status", "price_min", "price_max", "currency", "export_port"] },
+  { titleKey: "form.commercial", fields: ["stock_status", "supplier_name", "review_status", "publish_status", "reject_reason", "price_min", "price_max", "currency", "export_port"] },
   { titleKey: "form.media", fields: ["images", "description_en", "description_zh"] },
 ];
 
@@ -279,6 +287,8 @@ const adminTranslations = {
     "action.importCsv": "Import CSV",
     "action.importBrands": "Import Brands",
     "action.exportCsv": "Export CSV",
+    "action.approve": "Approve",
+    "action.reject": "Reject",
     "action.saveVehicle": "Save Vehicle",
     "action.savePart": "Save Auto Part",
     "action.uploadImage": "Upload Image",
@@ -344,10 +354,12 @@ const adminTranslations = {
     "toast.saved": "{item} saved.",
     "toast.imported": "{saved} row(s) imported. {rejected} rejected.",
     "toast.inquiryUpdated": "Inquiry status updated.",
+    "toast.reviewUpdated": "Review status updated.",
     "toast.aiMaintenancePreview": "{valid} valid operation(s), {invalid} invalid.",
     "toast.aiMaintenanceApplied": "{applied} applied. {rejected} rejected.",
     "confirm.delete": "Delete {name}?",
     "confirm.aiMaintenanceApply": "Apply {count} valid AI maintenance operation(s)?",
+    "prompt.rejectReason": "Reject reason",
     "placeholder.image": "/uploads/image.jpg or external URL",
   },
   zh: {
@@ -443,10 +455,12 @@ const adminTranslations = {
     "toast.saved": "{item}已保存。",
     "toast.imported": "已导入 {saved} 行，拒绝 {rejected} 行。",
     "toast.inquiryUpdated": "询盘状态已更新。",
+    "toast.reviewUpdated": "审核状态已更新。",
     "toast.aiMaintenancePreview": "{valid} 条有效，{invalid} 条无效。",
     "toast.aiMaintenanceApplied": "已执行 {applied} 条，拒绝 {rejected} 条。",
     "confirm.delete": "确认删除 {name}？",
     "confirm.aiMaintenanceApply": "确认执行 {count} 条有效 AI 维护操作？",
+    "prompt.rejectReason": "请输入驳回原因",
     "placeholder.image": "/uploads/image.jpg 或外部图片 URL",
   },
 };
@@ -472,6 +486,10 @@ const fieldTranslations = {
     Mileage: "里程",
     Color: "颜色",
     "Stock Status": "库存状态",
+    "Supplier Name": "供应商名称",
+    "Review Status": "审核状态",
+    "Publish Status": "发布状态",
+    "Reject Reason": "驳回原因",
     "Price Min": "最低价",
     "Price Max": "最高价",
     Currency: "币种",
@@ -506,6 +524,9 @@ const columnTranslations = {
     vehicle_type: "车辆类型",
     energy_type: "能源类型",
     stock_status: "库存状态",
+    supplier_name: "供应商",
+    review_status: "审核状态",
+    publish_status: "发布状态",
     price_min: "最低价",
     price_max: "最高价",
     currency: "币种",
@@ -574,6 +595,8 @@ Object.assign(adminTranslations.zh, {
   "action.importCsv": "导入 CSV",
   "action.importBrands": "导入品牌",
   "action.exportCsv": "导出 CSV",
+  "action.approve": "通过",
+  "action.reject": "驳回",
   "action.saveVehicle": "保存整车",
   "action.savePart": "保存零配件",
   "action.saveDictionary": "保存字典项",
@@ -1840,6 +1863,8 @@ function shouldRenderPill(type, column) {
   return (
     column === "stock_status" ||
     column === "status" ||
+    column === "review_status" ||
+    column === "publish_status" ||
     column === "energy_type" ||
     (sourceType(type) === "vehicles" && column === "vehicle_type")
   );
@@ -1855,6 +1880,19 @@ function renderTableCell(type, column, row) {
     return `<td${classAttr}><span class="status-pill status-${statusClass(rawValue)}">${displayValue}</span></td>`;
   }
   return `<td${classAttr}>${displayValue}</td>`;
+}
+
+function renderReviewActions(type, row) {
+  const reviewType = sourceType(type);
+  if (!["vehicles", "parts"].includes(reviewType) || row.owner_type !== "supplier" || row.review_status !== "submitted") {
+    return "";
+  }
+  const id = escapeHtml(row.id);
+  const escapedType = escapeHtml(reviewType);
+  return `
+    ${can("product_reviews:approve") ? `<button class="secondary-button" type="button" data-review-action="approve" data-review-type="${escapedType}" data-id="${id}">${t("action.approve")}</button>` : ""}
+    ${can("product_reviews:reject") ? `<button class="danger-button" type="button" data-review-action="reject" data-review-type="${escapedType}" data-id="${id}">${t("action.reject")}</button>` : ""}
+  `;
 }
 
 function renderDictionaryTable() {
@@ -2179,6 +2217,7 @@ function renderTable(type) {
           <td>
             <div class="row-actions">
               <button class="secondary-button" type="button" data-edit="${escapeHtml(type)}" data-id="${escapeHtml(row.id)}">${t("action.edit")}</button>
+              ${renderReviewActions(type, row)}
               <button class="danger-button" type="button" data-delete="${escapeHtml(type)}" data-id="${escapeHtml(row.id)}">${t("action.delete")}</button>
             </div>
           </td>
@@ -2801,6 +2840,32 @@ document.addEventListener("click", async (event) => {
       });
       await refreshData();
       showToast(t("toast.passwordReset"));
+    } catch (error) {
+      showToast(error.message);
+    }
+    return;
+  }
+
+  const reviewButton = target.closest("[data-review-action]");
+  if (reviewButton) {
+    const action = reviewButton.dataset.reviewAction;
+    const type = reviewButton.dataset.reviewType;
+    const id = reviewButton.dataset.id;
+    const body = {};
+    if (action === "reject") {
+      const reason = window.prompt(t("prompt.rejectReason"));
+      if (!reason) {
+        return;
+      }
+      body.reason = reason;
+    }
+    try {
+      await api(`/api/admin/product-reviews/${type}/${id}/${action}`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
+      await refreshData();
+      showToast(t("toast.reviewUpdated"));
     } catch (error) {
       showToast(error.message);
     }

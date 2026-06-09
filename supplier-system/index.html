@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Supplier Portal | GlobalThreads</title>
+    <link rel="stylesheet" href="/supplier-system/styles.css" />
+  </head>
+  <body>
+    <section class="auth-screen" data-auth-screen>
+      <div class="auth-panel">
+        <a class="brand" href="/">
+          <img src="/media/assets/globalthreads-logo-color.png" alt="GlobalThreads" />
+        </a>
+        <div class="auth-tabs" role="tablist" aria-label="Supplier access">
+          <button class="active" type="button" data-auth-tab="login">Login</button>
+          <button type="button" data-auth-tab="register">Register</button>
+        </div>
+
+        <form class="auth-form" data-login-form>
+          <label>
+            <span>Username</span>
+            <input name="username" autocomplete="username" required />
+          </label>
+          <label>
+            <span>Password</span>
+            <input name="password" type="password" autocomplete="current-password" required />
+          </label>
+          <button class="primary-button" type="submit">Login</button>
+        </form>
+
+        <form class="auth-form" data-register-form hidden>
+          <label>
+            <span>Company Name</span>
+            <input name="company_name" autocomplete="organization" required />
+          </label>
+          <label>
+            <span>Contact Name</span>
+            <input name="contact_name" autocomplete="name" required />
+          </label>
+          <label>
+            <span>Email</span>
+            <input name="email" type="email" autocomplete="email" required />
+          </label>
+          <label>
+            <span>Phone / WhatsApp</span>
+            <input name="phone" autocomplete="tel" />
+          </label>
+          <label>
+            <span>Country</span>
+            <input name="country" autocomplete="country-name" />
+          </label>
+          <label>
+            <span>Username</span>
+            <input name="username" autocomplete="username" required />
+          </label>
+          <label>
+            <span>Password</span>
+            <input name="password" type="password" autocomplete="new-password" minlength="8" required />
+          </label>
+          <button class="primary-button" type="submit">Create Account</button>
+        </form>
+      </div>
+    </section>
+
+    <div class="supplier-app" data-supplier-app hidden>
+      <aside class="sidebar">
+        <a class="brand light" href="/" target="_blank" rel="noreferrer">
+          <img src="/media/assets/globalthreads-logo-light.png" alt="GlobalThreads" />
+        </a>
+        <nav>
+          <button class="active" type="button" data-product-tab="vehicles">Vehicles</button>
+          <button type="button" data-product-tab="parts">Auto Parts</button>
+        </nav>
+        <div class="supplier-card">
+          <span>Supplier</span>
+          <strong data-supplier-name>--</strong>
+          <em data-supplier-status>--</em>
+        </div>
+        <button class="secondary-button" type="button" data-logout>Logout</button>
+      </aside>
+
+      <main class="workspace">
+        <header class="workspace-header">
+          <div>
+            <p>Supplier Workspace</p>
+            <h1 data-view-title>Vehicles</h1>
+          </div>
+          <div class="header-actions">
+            <button class="secondary-button" type="button" data-refresh>Refresh</button>
+            <button class="primary-button" type="button" data-new-product>New Product</button>
+          </div>
+        </header>
+
+        <section class="metrics" aria-label="Product status">
+          <div><span>Draft</span><strong data-count="draft">0</strong></div>
+          <div><span>Submitted</span><strong data-count="submitted">0</strong></div>
+          <div><span>Approved</span><strong data-count="approved">0</strong></div>
+          <div><span>Rejected</span><strong data-count="rejected">0</strong></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2 data-table-title>Vehicles</h2>
+            <input type="search" data-search placeholder="Search SKU, name, model..." />
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead data-products-head></thead>
+              <tbody data-products-body></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <aside class="drawer" data-drawer aria-hidden="true">
+      <form class="drawer-panel" data-product-form>
+        <div class="drawer-header">
+          <div>
+            <span data-form-mode>Draft</span>
+            <h2 data-form-title>Product</h2>
+          </div>
+          <button class="icon-button" type="button" data-close-drawer aria-label="Close">x</button>
+        </div>
+        <div class="form-grid" data-form-fields></div>
+        <div class="drawer-actions">
+          <button class="secondary-button" type="button" data-close-drawer>Cancel</button>
+          <button class="primary-button" type="submit">Save Draft</button>
+        </div>
+      </form>
+    </aside>
+
+    <div class="toast" data-toast></div>
+    <script src="/supplier-system/app.js"></script>
+  </body>
+</html>
