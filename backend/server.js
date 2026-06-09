@@ -2435,7 +2435,7 @@ function redactAiContactText(text) {
 function buildDeepSeekSystemPrompt(locale) {
   const language = locale === "zh" ? "Chinese" : "English";
   return [
-    "You are the AI sales receptionist for a vehicle export and auto parts supplier.",
+    "You are the customer service receptionist for a vehicle export and auto parts supplier.",
     `Reply to the buyer in ${language}.`,
     "Your job is to collect inquiry details and route the request to human sales.",
     "You must not create orders, accept payment, promise final prices, guarantee stock, guarantee freight, or guarantee lead time.",
