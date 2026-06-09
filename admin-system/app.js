@@ -281,6 +281,8 @@ const adminTranslations = {
     "leadDiscovery.countries": "Countries",
     "leadDiscovery.industries": "Industries",
     "leadDiscovery.createTask": "Create Search Task",
+    "leadDiscovery.runCrawler": "Run Crawler",
+    "leadDiscovery.tasks": "Tasks",
     "leadDiscovery.crawlResult": "Crawl Result URL",
     "leadDiscovery.relatedTask": "Related Task",
     "leadDiscovery.titleField": "Title",
@@ -308,6 +310,7 @@ const adminTranslations = {
     "toast.crawlResultAdded": "Crawl result URL added.",
     "toast.leadProfileGenerated": "Lead profile generated.",
     "toast.contactLogAdded": "Follow-up record added.",
+    "toast.crawlerFinished": "Crawler saved {results} result(s) and {leads} lead(s).",
     "workspace.eyebrow": "Backend management",
     "action.logout": "Logout",
     "action.openWebsite": "Open Website",
@@ -419,6 +422,8 @@ const adminTranslations = {
     "leadDiscovery.countries": "国家",
     "leadDiscovery.industries": "行业",
     "leadDiscovery.createTask": "创建搜索任务",
+    "leadDiscovery.runCrawler": "运行爬虫",
+    "leadDiscovery.tasks": "任务",
     "leadDiscovery.crawlResult": "抓取结果 URL",
     "leadDiscovery.relatedTask": "关联任务",
     "leadDiscovery.titleField": "标题",
@@ -446,6 +451,7 @@ const adminTranslations = {
     "toast.crawlResultAdded": "抓取 URL 已录入。",
     "toast.leadProfileGenerated": "客户画像已生成。",
     "toast.contactLogAdded": "跟进记录已新增。",
+    "toast.crawlerFinished": "爬虫已保存 {results} 条结果、{leads} 个客户。",
     "workspace.eyebrow": "后台管理",
     "action.logout": "退出登录",
     "action.openWebsite": "打开官网",
@@ -2544,6 +2550,7 @@ function leadContactLabel(row = {}) {
 
 function renderLeadTaskOptions() {
   const select = document.querySelector("[data-lead-task-select]");
+  const list = document.querySelector("[data-lead-tasks-list]");
   if (!select) {
     return;
   }
@@ -2551,6 +2558,21 @@ function renderLeadTaskOptions() {
   select.innerHTML = `<option value="">--</option>${tasks
     .map((task) => `<option value="${escapeHtml(task.id)}">${escapeHtml(task.keywords || task.id)}</option>`)
     .join("")}`;
+  if (list) {
+    list.innerHTML = tasks.length
+      ? `<strong>${escapeHtml(t("leadDiscovery.tasks"))}</strong>${tasks
+          .slice(0, 5)
+          .map(
+            (task) => `
+              <div class="lead-task-item">
+                <span>${escapeHtml(task.keywords || task.id)}</span>
+                <button class="secondary-button" type="button" data-run-crawler-task="${escapeHtml(task.id)}">${escapeHtml(t("leadDiscovery.runCrawler"))}</button>
+              </div>
+            `,
+          )
+          .join("")}`
+      : "";
+  }
 }
 
 function renderLeadsTable() {
@@ -3141,6 +3163,21 @@ document.addEventListener("click", async (event) => {
       showToast(t("toast.leadProfileGenerated"));
     } catch (error) {
       showToast(error.message);
+    }
+    return;
+  }
+
+  const runCrawlerButton = target.closest("[data-run-crawler-task]");
+  if (runCrawlerButton) {
+    try {
+      runCrawlerButton.disabled = true;
+      const result = await api(`/api/lead-discovery/search-tasks/${runCrawlerButton.dataset.runCrawlerTask}/crawler-run`, { method: "POST" });
+      await refreshData();
+      showToast(t("toast.crawlerFinished", { results: result.saved_results || 0, leads: result.saved_leads || 0 }));
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      runCrawlerButton.disabled = false;
     }
     return;
   }

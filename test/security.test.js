@@ -33,6 +33,7 @@ const {
   hashPassword,
   isOriginAllowed,
   isOssConfigured,
+  isPrivateIp,
   isRequestOriginAllowed,
   isAllowedUploadedImage,
   mysqlRecordIdsToDelete,
@@ -43,6 +44,7 @@ const {
   parseAiMaintenanceJsonPlan,
   parseDeepSeekJsonReply,
   parseLeadProfileJson,
+  parseSearchResultLinks,
   parseSignedToken,
   previewAiMaintenanceOperation,
   recordFailedLogin,
@@ -450,4 +452,15 @@ test("lead profile prompt and parser constrain AI output", () => {
   assert.equal(parsed.export_fit, "high");
   assert.equal(parsed.score, 100);
   assert.deepEqual(parsed.pain_points, ["fleet renewal"]);
+});
+
+test("crawler helpers reject private networks and parse search result links", () => {
+  assert.equal(isPrivateIp("127.0.0.1"), true);
+  assert.equal(isPrivateIp("169.254.169.254"), true);
+  assert.equal(isPrivateIp("8.8.8.8"), false);
+
+  const links = parseSearchResultLinks(
+    '<a href="/l/?uddg=https%3A%2F%2Fexample.com%2Ffleet">result</a><a href="https://duckduckgo.com/about">skip</a>',
+  );
+  assert.deepEqual(links, ["https://example.com/fleet"]);
 });

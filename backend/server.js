@@ -1,6 +1,8 @@
 const crypto = require("crypto");
+const dns = require("dns").promises;
 const fs = require("fs");
 const http = require("http");
+const net = require("net");
 const path = require("path");
 const { URL } = require("url");
 
@@ -29,6 +31,11 @@ const DEEPSEEK_MODEL = String(process.env.DEEPSEEK_MODEL || "deepseek-v4-flash")
 const DEEPSEEK_THINKING = String(process.env.DEEPSEEK_THINKING || "disabled").toLowerCase() === "enabled" ? "enabled" : "disabled";
 const DEEPSEEK_TIMEOUT_MS = Number(process.env.DEEPSEEK_TIMEOUT_MS || 8000);
 const DEEPSEEK_MAX_TOKENS = Number(process.env.DEEPSEEK_MAX_TOKENS || 800);
+const CRAWLER_PROVIDER = String(process.env.CRAWLER_PROVIDER || (process.env.CRAWLER_ENDPOINT ? "endpoint" : "internal")).toLowerCase();
+const CRAWLER_ENDPOINT = String(process.env.CRAWLER_ENDPOINT || "");
+const CRAWLER_MAX_RESULTS = Math.max(1, Math.min(20, Number(process.env.CRAWLER_MAX_RESULTS || 6)));
+const CRAWLER_TIMEOUT_MS = Math.max(3000, Math.min(30000, Number(process.env.CRAWLER_TIMEOUT_MS || 10000)));
+const CRAWLER_USER_AGENT = String(process.env.CRAWLER_USER_AGENT || "GlobalThreadsLeadDiscovery/1.0");
 const OSS_ENABLED = String(process.env.OSS_ENABLED || "auto").toLowerCase();
 const OSS_BUCKET = String(process.env.OSS_BUCKET || "");
 const OSS_REGION = String(process.env.OSS_REGION || "");
@@ -3027,13 +3034,209 @@ async function generateLeadProfile({ lead = {}, crawlResult = {} } = {}, options
   }
 }
 
-async function runCrawlerService(task = {}) {
+function isPrivateIp(address) {
+  if (!address) return true;
+  if (net.isIPv4(address)) {
+    const parts = address.split(".").map(Number);
+    return (
+      parts[0] === 10 ||
+      parts[0] === 127 ||
+      (parts[0] === 169 && parts[1] === 254) ||
+      (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) ||
+      (parts[0] === 192 && parts[1] === 168) ||
+      parts[0] === 0
+    );
+  }
+  if (net.isIPv6(address)) {
+    const normalized = address.toLowerCase();
+    return normalized === "::1" || normalized.startsWith("fc") || normalized.startsWith("fd") || normalized.startsWith("fe80:");
+  }
+  return true;
+}
+
+async function assertCrawlableUrl(rawUrl) {
+  let parsed;
+  try {
+    parsed = new URL(String(rawUrl || "").trim());
+  } catch {
+    throw new Error("Invalid crawl URL.");
+  }
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new Error("Only http and https URLs can be crawled.");
+  }
+  const records = await dns.lookup(parsed.hostname, { all: true });
+  if (!records.length || records.some((record) => isPrivateIp(record.address))) {
+    throw new Error("Crawler blocked a private or local network address.");
+  }
+  return parsed.toString();
+}
+
+async function fetchCrawlerText(rawUrl, { timeoutMs = CRAWLER_TIMEOUT_MS, maxBytes = 900000, redirects = 0 } = {}) {
+  const url = await assertCrawlableUrl(rawUrl);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      headers: { "User-Agent": CRAWLER_USER_AGENT, Accept: "text/html,application/xhtml+xml,text/plain;q=0.8,*/*;q=0.1" },
+      signal: controller.signal,
+      redirect: "manual",
+    });
+    if (response.status >= 300 && response.status < 400 && response.headers.get("location")) {
+      if (redirects >= 3) {
+        throw new Error("Crawler stopped after too many redirects.");
+      }
+      const nextUrl = new URL(response.headers.get("location"), url).toString();
+      clearTimeout(timer);
+      return fetchCrawlerText(nextUrl, { timeoutMs, maxBytes, redirects: redirects + 1 });
+    }
+    const contentType = String(response.headers.get("content-type") || "");
+    if (!response.ok) {
+      throw new Error(`Crawler request failed: ${response.status}`);
+    }
+    if (!/text\/html|application\/xhtml|text\/plain/i.test(contentType)) {
+      throw new Error("Crawler skipped non-text content.");
+    }
+    const buffer = Buffer.from(await response.arrayBuffer());
+    return buffer.subarray(0, maxBytes).toString("utf8");
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function decodeHtmlEntities(text) {
+  return String(text || "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
+function extractHtmlTitle(html) {
+  return decodeHtmlEntities(String(html || "").match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "").replace(/\s+/g, " ").trim().slice(0, 240);
+}
+
+function extractReadableText(html) {
+  return decodeHtmlEntities(
+    String(html || "")
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim(),
+  ).slice(0, 6000);
+}
+
+function extractContactFromText(text) {
+  const email = extractEmail(text);
+  const phone = extractPhone(text);
+  return { email, phone };
+}
+
+function buildCrawlerQuery(task = {}) {
+  return [
+    task.keywords || "commercial truck importer",
+    normalizeStringList(task.countries).join(" "),
+    normalizeStringList(task.industries).join(" "),
+    "commercial vehicles importer distributor fleet",
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function parseSearchResultLinks(html) {
+  const links = [];
+  const seen = new Set();
+  for (const match of String(html || "").matchAll(/href=["']([^"']+)["']/gi)) {
+    let href = decodeHtmlEntities(match[1]);
+    try {
+      const parsed = new URL(href, "https://duckduckgo.com");
+      const uddg = parsed.searchParams.get("uddg");
+      if (uddg) {
+        href = decodeURIComponent(uddg);
+      } else if (parsed.hostname.includes("duckduckgo.com")) {
+        continue;
+      } else {
+        href = parsed.toString();
+      }
+      const normalized = new URL(href).toString();
+      if (!seen.has(normalized) && /^https?:\/\//i.test(normalized)) {
+        seen.add(normalized);
+        links.push(normalized);
+      }
+    } catch {
+      // Ignore malformed result URLs.
+    }
+  }
+  return links.slice(0, CRAWLER_MAX_RESULTS);
+}
+
+async function searchCrawlerUrls(task = {}) {
+  const query = buildCrawlerQuery(task);
+  const searchUrl = `https://duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+  const html = await fetchCrawlerText(searchUrl, { maxBytes: 500000 });
+  return parseSearchResultLinks(html);
+}
+
+async function crawlLeadUrl(url, task = {}) {
+  const html = await fetchCrawlerText(url);
+  const title = extractHtmlTitle(html) || new URL(url).hostname.replace(/^www\./, "");
+  const content = extractReadableText(html);
+  const contact = extractContactFromText(content);
   return {
-    ok: true,
-    status: "reserved",
-    message: "Crawler service is reserved for a future integration. Add crawl result URLs manually in this version.",
-    task_id: task.id || "",
+    search_task_id: task.id || "",
+    url,
+    title,
+    content,
+    status: "pending",
+    contact_email: contact.email,
+    contact_phone: contact.phone,
   };
+}
+
+async function callExternalCrawlerService(task = {}) {
+  if (!CRAWLER_ENDPOINT) {
+    throw new Error("CRAWLER_ENDPOINT is not configured.");
+  }
+  const endpoint = await assertCrawlableUrl(CRAWLER_ENDPOINT);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), CRAWLER_TIMEOUT_MS);
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "User-Agent": CRAWLER_USER_AGENT },
+      body: JSON.stringify({ task, max_results: CRAWLER_MAX_RESULTS }),
+      signal: controller.signal,
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(payload.error || `Crawler endpoint failed: ${response.status}`);
+    }
+    return Array.isArray(payload.results) ? payload.results : [];
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function runCrawlerService(task = {}) {
+  if (CRAWLER_PROVIDER === "endpoint") {
+    const results = await callExternalCrawlerService(task);
+    return { ok: true, provider: "endpoint", task_id: task.id || "", results: results.slice(0, CRAWLER_MAX_RESULTS) };
+  }
+
+  const urls = await searchCrawlerUrls(task);
+  const results = [];
+  const errors = [];
+  for (const url of urls) {
+    try {
+      results.push(await crawlLeadUrl(url, task));
+    } catch (error) {
+      errors.push({ url, error: String(error.message || error).slice(0, 200) });
+    }
+  }
+  return { ok: true, provider: "internal", task_id: task.id || "", query: buildCrawlerQuery(task), results, errors };
 }
 
 const aiMaintenanceSchemas = {
@@ -3982,7 +4185,70 @@ async function handleLeadCrawlerRun(req, res, taskId) {
     sendJson(res, 404, { error: "Not found" });
     return;
   }
-  sendJson(res, 200, await runCrawlerService(task));
+  const result = await runCrawlerService(task);
+  const crawlRows = await readRows("crawlResults");
+  const leadRows = await readRows("leads");
+  const savedResults = [];
+  const savedLeads = [];
+
+  for (const item of result.results || []) {
+    const url = String(item.url || item.source_url || "").trim();
+    if (!url) {
+      continue;
+    }
+    const existingCrawl = crawlRows.find((row) => row.url === url);
+    const existingLead = leadRows.find((row) => row.source_url === url);
+    let fallbackCompany = item.company_name || item.title || url;
+    try {
+      fallbackCompany = item.company_name || item.title || new URL(url).hostname.replace(/^www\./, "");
+    } catch {
+      fallbackCompany = item.company_name || item.title || url;
+    }
+    const lead = normalizeRecord(
+      "leads",
+      {
+        company_name: fallbackCompany,
+        country: item.country || existingLead?.country || normalizeStringList(task.countries)[0] || "",
+        industry: item.industry || existingLead?.industry || normalizeStringList(task.industries)[0] || "commercial vehicles",
+        contact_email: item.contact_email || item.email || existingLead?.contact_email || "",
+        contact_phone: item.contact_phone || item.phone || existingLead?.contact_phone || "",
+        contact_website: item.contact_website || existingLead?.contact_website || url,
+        source_url: url,
+        search_task_id: task.id,
+        follow_status: existingLead?.follow_status || "new",
+      },
+      existingLead || {},
+    );
+    if (existingLead) {
+      leadRows[leadRows.findIndex((row) => row.id === existingLead.id)] = lead;
+    } else {
+      leadRows.unshift(lead);
+    }
+
+    const crawlResult = normalizeRecord(
+      "crawlResults",
+      {
+        search_task_id: task.id,
+        url,
+        title: item.title || existingCrawl?.title || fallbackCompany,
+        content: item.content || item.text || existingCrawl?.content || "",
+        status: "pending",
+        processed_lead_id: lead.id,
+      },
+      existingCrawl || {},
+    );
+    if (existingCrawl) {
+      crawlRows[crawlRows.findIndex((row) => row.id === existingCrawl.id)] = crawlResult;
+    } else {
+      crawlRows.unshift(crawlResult);
+    }
+    savedResults.push(crawlResult);
+    savedLeads.push(lead);
+  }
+
+  await writeRows("leads", leadRows);
+  await writeRows("crawlResults", crawlRows);
+  sendJson(res, 200, { ...result, saved_results: savedResults.length, saved_leads: savedLeads.length });
 }
 
 async function handleAiLogs(req, res) {
@@ -4645,6 +4911,7 @@ module.exports = {
   hashPassword,
   isOriginAllowed,
   isOssConfigured,
+  isPrivateIp,
   isRequestOriginAllowed,
   isSameRequestOrigin,
   detectImageExtension,
@@ -4659,6 +4926,7 @@ module.exports = {
   parseAiMaintenanceJsonPlan,
   parseDeepSeekJsonReply,
   parseLeadProfileJson,
+  parseSearchResultLinks,
   previewAiMaintenanceOperation,
   previewAiMaintenanceOperations,
   parseSignedToken,
