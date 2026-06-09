@@ -472,10 +472,10 @@
                     <p data-i18n="leadDiscovery.searchTaskHint">Configure countries, vehicles and buyer profiles for commercial vehicle export prospecting.</p>
                   </div>
                 </div>
-                <label><span data-i18n="leadDiscovery.targetCountries">Target countries / regions</span><select name="countries" multiple size="5" data-lead-template-source></select></label>
-                <label><span data-i18n="leadDiscovery.targetVehicles">Target vehicles</span><select name="target_vehicles" multiple size="5" data-lead-template-source></select></label>
-                <label><span data-i18n="leadDiscovery.customerTypes">Customer types</span><select name="customer_types" multiple size="5" data-lead-template-source></select></label>
-                <label><span data-i18n="leadDiscovery.purchaseScenarios">Purchase scenarios</span><select name="purchase_scenarios" multiple size="5" data-lead-template-source></select></label>
+                <div class="lead-chip-field"><span data-i18n="leadDiscovery.targetCountries">Target countries / regions</span><div data-chip-field="countries"></div><input type="hidden" name="countries" data-lead-template-source /></div>
+                <div class="lead-chip-field"><span data-i18n="leadDiscovery.targetVehicles">Target vehicles</span><div data-chip-field="target_vehicles"></div><input type="hidden" name="target_vehicles" data-lead-template-source /></div>
+                <div class="lead-chip-field"><span data-i18n="leadDiscovery.customerTypes">Customer types</span><div data-chip-field="customer_types"></div><input type="hidden" name="customer_types" data-lead-template-source /></div>
+                <div class="lead-chip-field"><span data-i18n="leadDiscovery.purchaseScenarios">Purchase scenarios</span><div data-chip-field="purchase_scenarios"></div><input type="hidden" name="purchase_scenarios" data-lead-template-source /></div>
                 <label><span data-i18n="leadDiscovery.searchDepth">Search depth</span><select name="search_depth" data-lead-template-source><option value="quick">Quick</option><option value="standard" selected>Standard</option><option value="deep">Deep</option></select></label>
                 <label class="full"><span data-i18n="leadDiscovery.keywordTemplate">Search keyword template</span><textarea name="keywords_template" rows="3" readonly data-keyword-template></textarea></label>
                 <details class="lead-advanced-options">
@@ -483,8 +483,11 @@
                   <label><span data-i18n="leadDiscovery.manualKeywords">Manual keywords</span><input name="manual_keywords" placeholder="site:.ke truck dealer procurement" data-lead-template-source /></label>
                   <label><span data-i18n="table.status">Status</span><select name="status"><option value="active">Active</option><option value="paused">Paused</option><option value="disabled">Disabled</option></select></label>
                 </details>
-                <button class="primary-button" type="submit" data-i18n="leadDiscovery.createTask">Create Search Task</button>
-                <div class="lead-task-list" data-lead-tasks-list></div>
+                <div class="lead-config-actions">
+                  <button class="secondary-button" type="button" data-generate-lead-keywords data-i18n="leadDiscovery.generateKeywords">Generate Keywords</button>
+                  <button class="primary-button" type="submit" data-i18n="leadDiscovery.createTask">Create Search Task</button>
+                  <button class="secondary-button" type="button" data-reset-lead-config data-i18n="leadDiscovery.resetConfig">Reset Config</button>
+                </div>
               </form>
               <div class="lead-side-stack">
                 <section class="lead-form lead-progress-card">
@@ -506,6 +509,16 @@
                     </div>
                   </div>
                   <div class="lead-stat-grid" data-lead-stats></div>
+                </section>
+                <section class="lead-form lead-recent-card">
+                  <div class="lead-card-heading">
+                    <span>04</span>
+                    <div>
+                      <h3>Recent Search Tasks</h3>
+                      <p>Run or review recent commercial vehicle lead searches.</p>
+                    </div>
+                  </div>
+                  <div class="lead-task-list" data-lead-tasks-list></div>
                 </section>
                 <details class="lead-form lead-manual-panel">
                   <summary data-i18n="leadDiscovery.manualAdd">Manual Add Lead</summary>

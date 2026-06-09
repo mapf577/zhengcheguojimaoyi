@@ -290,6 +290,10 @@ const adminTranslations = {
     "leadDiscovery.keywordTemplate": "Search keyword template",
     "leadDiscovery.advanced": "Advanced options",
     "leadDiscovery.manualKeywords": "Manual keywords",
+    "leadDiscovery.generateKeywords": "Generate Keywords",
+    "leadDiscovery.resetConfig": "Reset Config",
+    "leadDiscovery.more": "More",
+    "leadDiscovery.addOption": "Search and add...",
     "leadDiscovery.createTask": "Create Search Task",
     "leadDiscovery.runCrawler": "Run Crawler",
     "leadDiscovery.tasks": "Tasks",
@@ -303,10 +307,11 @@ const adminTranslations = {
     "leadDiscovery.progressResult": "Saved {results} source result(s), {leads} lead(s), {profiles} AI profile(s).",
     "leadDiscovery.statistics": "Lead Statistics",
     "leadDiscovery.statisticsHint": "Quality signals for current lead pool.",
-    "leadDiscovery.statTotal": "Total leads found",
-    "leadDiscovery.statHigh": "High potential leads",
-    "leadDiscovery.statContact": "Leads with WhatsApp/Email",
-    "leadDiscovery.statVerify": "Leads needing verification",
+    "leadDiscovery.statTotal": "Total Leads",
+    "leadDiscovery.statHigh": "Qualified Leads",
+    "leadDiscovery.statContact": "Contactable Leads",
+    "leadDiscovery.statVerify": "Needs Verification",
+    "leadDiscovery.statInvalid": "Invalid / Low Quality",
     "leadDiscovery.manualAdd": "Manual Add Lead",
     "leadDiscovery.crawlResult": "Manual Add Lead",
     "leadDiscovery.relatedTask": "Related Task",
@@ -339,6 +344,9 @@ const adminTranslations = {
     "leadDiscovery.generateProfile": "Generate Profile",
     "leadDiscovery.generateOutreach": "Generate outreach message",
     "leadDiscovery.verifyContact": "Verify contact",
+    "leadDiscovery.verifyLead": "Verify Lead",
+    "leadDiscovery.addToCrm": "Add to CRM",
+    "leadDiscovery.markInvalid": "Mark Invalid",
     "leadDiscovery.openSource": "Open source website",
     "leadDiscovery.addContactLog": "Add Follow-up",
     "leadDiscovery.noProfile": "No AI profile yet.",
@@ -470,6 +478,10 @@ const adminTranslations = {
     "leadDiscovery.keywordTemplate": "搜索关键词模板",
     "leadDiscovery.advanced": "高级选项",
     "leadDiscovery.manualKeywords": "手动关键词",
+    "leadDiscovery.generateKeywords": "生成关键词",
+    "leadDiscovery.resetConfig": "重置配置",
+    "leadDiscovery.more": "更多",
+    "leadDiscovery.addOption": "搜索并添加...",
     "leadDiscovery.createTask": "创建搜索任务",
     "leadDiscovery.runCrawler": "运行爬虫",
     "leadDiscovery.tasks": "任务",
@@ -483,10 +495,11 @@ const adminTranslations = {
     "leadDiscovery.progressResult": "已保存 {results} 条来源、{leads} 个线索、{profiles} 个 AI 画像。",
     "leadDiscovery.statistics": "线索统计",
     "leadDiscovery.statisticsHint": "当前线索池质量信号。",
-    "leadDiscovery.statTotal": "发现线索总数",
-    "leadDiscovery.statHigh": "高潜力线索",
-    "leadDiscovery.statContact": "有 WhatsApp/Email 的线索",
-    "leadDiscovery.statVerify": "需要验证的线索",
+    "leadDiscovery.statTotal": "线索总数",
+    "leadDiscovery.statHigh": "合格线索",
+    "leadDiscovery.statContact": "可联系线索",
+    "leadDiscovery.statVerify": "需要验证",
+    "leadDiscovery.statInvalid": "无效/低质量",
     "leadDiscovery.manualAdd": "手动添加线索",
     "leadDiscovery.crawlResult": "手动添加线索",
     "leadDiscovery.relatedTask": "关联任务",
@@ -519,6 +532,9 @@ const adminTranslations = {
     "leadDiscovery.generateProfile": "生成画像",
     "leadDiscovery.generateOutreach": "生成开发话术",
     "leadDiscovery.verifyContact": "验证联系方式",
+    "leadDiscovery.verifyLead": "验证线索",
+    "leadDiscovery.addToCrm": "加入CRM",
+    "leadDiscovery.markInvalid": "标记无效",
     "leadDiscovery.openSource": "打开来源网站",
     "leadDiscovery.addContactLog": "新增跟进",
     "leadDiscovery.noProfile": "暂无 AI 画像。",
@@ -1363,6 +1379,15 @@ const leadDiscoveryOptions = {
   customer_types: ["Importer", "Dealer", "Fleet Operator", "Construction Company", "Mining Company", "Logistics Company", "Bus Company", "Government Procurement"],
   purchase_scenarios: ["Logistics", "Mining", "Construction", "Public Transport", "Municipal Service", "Agriculture", "Oil & Gas"],
 };
+
+const leadChipState = {
+  countries: [],
+  target_vehicles: [],
+  customer_types: [],
+  purchase_scenarios: [],
+};
+
+const leadStatuses = ["New", "Needs Verification", "Verified", "Contacted", "Interested", "Quoted", "Rejected", "Invalid"];
 
 const leadProgressSteps = [
   "Searching websites",
@@ -2656,6 +2681,12 @@ function listValue(value) {
 }
 
 function selectedValues(select) {
+  if (select?.type === "hidden") {
+    return String(select.value || "")
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
   return Array.from(select?.selectedOptions || []).map((option) => option.value).filter(Boolean);
 }
 
@@ -2672,14 +2703,60 @@ function leadKeywordTemplateFromForm(form) {
     .trim();
 }
 
+function leadTaskName(task = {}) {
+  const country = normalizeUiList(task.countries)[0] || "Global";
+  const vehicle = normalizeUiList(task.target_vehicles)[0] || "Commercial Vehicle";
+  const buyer = normalizeUiList(task.customer_types)[0] || normalizeUiList(task.purchase_scenarios)[0] || "Leads";
+  return `${country} ${vehicle} ${buyer} Leads`.replace(/\s+/g, " ").trim();
+}
+
+function normalizeUiList(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function sourceDomain(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return String(url || "--").slice(0, 28);
+  }
+}
+
 function populateLeadSelects() {
-  Object.entries(leadDiscoveryOptions).forEach(([name, values]) => {
-    const select = document.querySelector(`[data-lead-task-form] select[name="${name}"]`);
-    if (!select || select.dataset.ready === "true") {
-      return;
-    }
-    select.innerHTML = values.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("");
-    select.dataset.ready = "true";
+  Object.entries(leadDiscoveryOptions).forEach(([name]) => renderChipField(name));
+  updateLeadKeywordTemplate();
+}
+
+function renderChipField(name, expanded = false) {
+  const field = document.querySelector(`[data-chip-field="${name}"]`);
+  const input = document.querySelector(`[name="${name}"]`);
+  if (!field || !input) return;
+  const values = leadDiscoveryOptions[name] || [];
+  const selected = new Set(leadChipState[name] || []);
+  input.value = Array.from(selected).join(",");
+  const visibleValues = expanded ? values : values.slice(0, 5);
+  field.innerHTML = `
+    <div class="lead-chip-selected">
+      ${Array.from(selected).map((value) => `<button class="lead-chip is-selected" type="button" data-chip-remove="${escapeHtml(name)}" data-chip-value="${escapeHtml(value)}">${escapeHtml(value)} ×</button>`).join("") || `<span>${escapeHtml(t("leadDiscovery.addOption"))}</span>`}
+    </div>
+    <div class="lead-chip-options">
+      ${visibleValues.map((value) => `<button class="lead-chip ${selected.has(value) ? "is-active" : ""}" type="button" data-chip-toggle="${escapeHtml(name)}" data-chip-value="${escapeHtml(value)}">${escapeHtml(value)}</button>`).join("")}
+      ${values.length > 5 ? `<button class="lead-chip" type="button" data-chip-more="${escapeHtml(name)}">${escapeHtml(t("leadDiscovery.more"))}</button>` : ""}
+    </div>
+  `;
+}
+
+function resetLeadConfig() {
+  if (leadTaskForm) {
+    leadTaskForm.reset();
+  }
+  Object.keys(leadChipState).forEach((key) => {
+    leadChipState[key] = [];
+    renderChipField(key);
   });
   updateLeadKeywordTemplate();
 }
@@ -2698,7 +2775,7 @@ function leadScoreLevel(row = {}) {
   const hasContact = Boolean(row.contact_email || row.contact_phone || row.contact_website);
   if (!hasContact && score >= 85) return "HIGH";
   if (!hasContact && row.lead_score_level === "VERY_HIGH") return "HIGH";
-  return row.lead_score_level || (score >= 85 ? "VERY_HIGH" : score >= 70 ? "HIGH" : score >= 45 ? "MEDIUM" : "LOW");
+  return row.lead_score_level || (score >= 85 ? "VERY_HIGH" : score >= 70 ? "HIGH" : score >= 60 ? "MEDIUM_HIGH" : score >= 45 ? "MEDIUM" : "LOW");
 }
 
 function leadContactQuality(row = {}) {
@@ -2763,6 +2840,11 @@ function renderLeadProgress() {
   }
   const crawler = state.leadCrawler || {};
   const elapsed = crawler.startedAt ? Math.max(0, Math.round((Date.now() - crawler.startedAt) / 1000)) : 0;
+  const percent = crawler.result ? 100 : crawler.running ? Math.min(92, Math.max(8, (crawler.step + 1) * 18)) : 0;
+  const taskLeads = crawler.taskId ? (state.data.leads || []).filter((lead) => lead.search_task_id === crawler.taskId) : [];
+  const taskUrls = crawler.result?.saved_results || (crawler.running ? Math.max(0, crawler.step * 2) : 0);
+  const parsedCompanies = crawler.result?.saved_leads || taskLeads.length;
+  const validLeads = taskLeads.filter((lead) => ["VERY_HIGH", "HIGH", "MEDIUM_HIGH"].includes(leadScoreLevel(lead))).length;
   const statusKey = crawler.error ? "leadDiscovery.progressFailed" : crawler.running ? "leadDiscovery.progressRunning" : crawler.result ? "leadDiscovery.progressDone" : "leadDiscovery.progressIdle";
   const resultHtml = crawler.result
     ? `<p class="lead-progress-result">${escapeHtml(t("leadDiscovery.progressResult", { results: crawler.result.saved_results || 0, leads: crawler.result.saved_leads || 0, profiles: crawler.result.generated_profiles || 0 }))}</p>`
@@ -2780,6 +2862,7 @@ function renderLeadProgress() {
     `<div class="lead-progress-summary">
       <strong>${escapeHtml(t(statusKey))}</strong>
       <span>${crawler.taskLabel ? escapeHtml(t("leadDiscovery.progressMeta", { task: crawler.taskLabel.slice(0, 56), elapsed })) : escapeHtml(t("leadDiscovery.progressIdle"))}</span>
+      ${crawler.running || crawler.result ? `<div class="lead-progress-meter"><i style="width:${escapeHtml(percent)}%"></i></div><div class="lead-progress-metrics"><span>${escapeHtml(percent)}%</span><span>${escapeHtml(taskUrls)} URLs</span><span>${escapeHtml(parsedCompanies)} companies</span><span>${escapeHtml(validLeads)} valid</span></div>` : ""}
       ${resultHtml}
     </div>`,
   );
@@ -2791,14 +2874,20 @@ function renderLeadStats() {
     return;
   }
   const leads = state.data.leads || [];
-  const high = leads.filter((lead) => ["VERY_HIGH", "HIGH"].includes(leadScoreLevel(lead))).length;
-  const withContact = leads.filter((lead) => ["STRONG", "GOOD", "BASIC"].includes(leadContactQuality(lead))).length;
-  const needingVerification = leads.filter((lead) => leadContactQuality(lead) === "MISSING" || lead.follow_status === "new").length;
+  const qualified = leads.filter((lead) => ["VERY_HIGH", "HIGH", "MEDIUM_HIGH"].includes(leadScoreLevel(lead)) && !["invalid", "rejected"].includes(String(lead.follow_status || "").toLowerCase())).length;
+  const contactable = leads.filter((lead) => Boolean(lead.contact_email || lead.contact_phone || /whatsapp/i.test([lead.contact_phone, lead.profile?.ai_summary, lead.profile?.outreach_message].filter(Boolean).join(" ")))).length;
+  const needsVerification = leads.filter((lead) => {
+    const status = String(lead.follow_status || "").toLowerCase();
+    const evidenceCount = normalizeUiList(lead.profile?.key_evidence).length;
+    return ["new", "needs_verification", "needs verification"].includes(status) && evidenceCount < 2;
+  }).length;
+  const invalid = leads.filter((lead) => ["LOW"].includes(leadScoreLevel(lead)) || ["invalid", "rejected"].includes(String(lead.follow_status || "").toLowerCase())).length;
   const stats = [
     [t("leadDiscovery.statTotal"), leads.length],
-    [t("leadDiscovery.statHigh"), high],
-    [t("leadDiscovery.statContact"), withContact],
-    [t("leadDiscovery.statVerify"), needingVerification],
+    [t("leadDiscovery.statHigh"), qualified],
+    [t("leadDiscovery.statContact"), contactable],
+    [t("leadDiscovery.statVerify"), needsVerification],
+    [t("leadDiscovery.statInvalid"), invalid],
   ];
   box.innerHTML = stats.map(([label, value]) => `<article><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></article>`).join("");
 }
@@ -2815,17 +2904,22 @@ function renderLeadTaskOptions() {
     .join("")}`;
   if (list) {
     list.innerHTML = tasks.length
-      ? `<strong>${escapeHtml(t("leadDiscovery.tasks"))}</strong>${tasks
+      ? `<div class="lead-task-table">${tasks
           .slice(0, 5)
           .map(
             (task) => `
               <div class="lead-task-item">
-                <span>${escapeHtml(task.keywords_template || task.keywords || task.id)}</span>
+                <strong>${escapeHtml(leadTaskName(task))}</strong>
+                <span>${escapeHtml(normalizeUiList(task.countries).join(", ") || "--")}</span>
+                <span>${escapeHtml(normalizeUiList(task.target_vehicles).join(", ") || "--")}</span>
+                <span><b class="status-pill status-${statusClass(task.status)}">${escapeHtml(task.status || "active")}</b></span>
+                <span>${escapeHtml((state.data.leads || []).filter((lead) => lead.search_task_id === task.id).length)}</span>
+                <span>${escapeHtml(formatDateTime(task.created_at))}</span>
                 <button class="secondary-button" type="button" data-run-crawler-task="${escapeHtml(task.id)}" ${state.leadCrawler.running ? "disabled" : ""}>${escapeHtml(state.leadCrawler.running && state.leadCrawler.taskId === task.id ? t("leadDiscovery.progressRunning") : t("leadDiscovery.runCrawler"))}</button>
               </div>
             `,
           )
-          .join("")}`
+          .join("")}</div>`
       : "";
   }
 }
@@ -2846,19 +2940,21 @@ function renderLeadsTable() {
       const level = leadScoreLevel(row);
       return `
         <tr>
-          <td><strong>${escapeHtml(row.company_name || "--")}</strong></td>
-          <td>${escapeHtml(row.country || "")}</td>
+          <td><strong class="lead-company-cell">${escapeHtml(row.company_name || "--")}</strong></td>
+          <td class="lead-nowrap">${escapeHtml(row.country || "")}</td>
           <td>${escapeHtml(row.customer_type || row.industry || "")}</td>
           <td>${escapeHtml(listValue(row.matched_vehicles) || row.industry || "")}</td>
           <td><span class="score-pill score-${escapeHtml(level.toLowerCase())}">${escapeHtml(level)} · ${escapeHtml(score)}</span></td>
-          <td>${escapeHtml(leadContactQuality(row))}</td>
-          <td>${row.source_url ? `<a href="${escapeHtml(row.source_url)}" target="_blank" rel="noreferrer">${escapeHtml(row.source_url.slice(0, 36))}</a>` : "--"}</td>
+          <td><span class="contact-quality-badge">${escapeHtml(leadContactQuality(row))}</span></td>
+          <td>${row.source_url ? `<a href="${escapeHtml(row.source_url)}" target="_blank" rel="noreferrer">${escapeHtml(sourceDomain(row.source_url))}</a>` : "--"}</td>
           <td><span class="status-pill status-${statusClass(row.follow_status)}">${escapeHtml(row.follow_status || "new")}</span></td>
           <td>${escapeHtml(formatDateTime(row.updated_at || row.created_at))}</td>
-          <td>
+          <td class="lead-actions-sticky">
             <div class="row-actions">
               <button class="secondary-button" type="button" data-lead-detail-id="${escapeHtml(row.id)}">${escapeHtml(t("dashboard.view"))}</button>
-              <button class="secondary-button" type="button" data-lead-profile-id="${escapeHtml(row.id)}">${escapeHtml(t("leadDiscovery.generateProfile"))}</button>
+              <button class="secondary-button" type="button" data-lead-status-id="${escapeHtml(row.id)}" data-lead-status="Verified">${escapeHtml(t("leadDiscovery.verifyLead"))}</button>
+              <button class="secondary-button" type="button" data-lead-profile-id="${escapeHtml(row.id)}">${escapeHtml(t("leadDiscovery.generateOutreach"))}</button>
+              <button class="secondary-button" type="button" data-lead-status-id="${escapeHtml(row.id)}" data-lead-status="Invalid">${escapeHtml(t("leadDiscovery.markInvalid"))}</button>
             </div>
           </td>
         </tr>
@@ -2873,7 +2969,17 @@ function renderLeadDetail(lead = null) {
     return;
   }
   if (!lead) {
-    panel.innerHTML = `<div class="lead-detail-empty">${escapeHtml(t("leadDiscovery.selectLead"))}</div>`;
+    const topLeads = (state.data.leads || [])
+      .filter((row) => !["invalid", "rejected"].includes(String(row.follow_status || "").toLowerCase()))
+      .sort((a, b) => Number(b.profile?.score ?? b.score ?? 0) - Number(a.profile?.score ?? a.score ?? 0))
+      .slice(0, 5);
+    panel.innerHTML = `
+      <div class="lead-detail-empty lead-top-empty">
+        <h3>Top Leads</h3>
+        <p>${escapeHtml(t("leadDiscovery.selectLead"))}</p>
+        ${topLeads.map((row) => `<button type="button" data-lead-detail-id="${escapeHtml(row.id)}"><strong>${escapeHtml(row.company_name || "--")}</strong><span>${escapeHtml([row.country, leadScoreLevel(row)].filter(Boolean).join(" · "))}</span></button>`).join("")}
+      </div>
+    `;
     return;
   }
   const sourceRows = (lead.crawl_results || []).length ? lead.crawl_results : (state.data.crawlResults || []).filter((row) => row.processed_lead_id === lead.id || row.url === lead.source_url);
@@ -2890,9 +2996,11 @@ function renderLeadDetail(lead = null) {
         <h3>${escapeHtml(lead.company_name || "--")}</h3>
       </div>
       <div class="lead-detail-actions">
-        <button class="primary-button" type="button" data-lead-profile-id="${escapeHtml(lead.id)}">${escapeHtml(t("leadDiscovery.generateOutreach"))}</button>
+        <button class="primary-button" type="button" data-lead-status-id="${escapeHtml(lead.id)}" data-lead-status="Verified">${escapeHtml(t("leadDiscovery.verifyLead"))}</button>
+        <button class="secondary-button" type="button" data-lead-profile-id="${escapeHtml(lead.id)}">${escapeHtml(t("leadDiscovery.generateOutreach"))}</button>
         <button class="secondary-button" type="button" data-contact-log-focus="${escapeHtml(lead.id)}">${escapeHtml(t("leadDiscovery.addContactLog"))}</button>
-        <button class="secondary-button" type="button" data-lead-profile-id="${escapeHtml(lead.id)}">${escapeHtml(t("leadDiscovery.verifyContact"))}</button>
+        <button class="secondary-button" type="button" data-lead-status-id="${escapeHtml(lead.id)}" data-lead-status="Interested">${escapeHtml(t("leadDiscovery.addToCrm"))}</button>
+        <button class="secondary-button" type="button" data-lead-status-id="${escapeHtml(lead.id)}" data-lead-status="Invalid">${escapeHtml(t("leadDiscovery.markInvalid"))}</button>
         ${lead.source_url ? `<a class="secondary-button" href="${escapeHtml(lead.source_url)}" target="_blank" rel="noreferrer">${escapeHtml(t("leadDiscovery.openSource"))}</a>` : ""}
       </div>
     </div>
@@ -2968,6 +3076,24 @@ function renderLeadDiscovery() {
   renderLeadStats();
   renderLeadTaskOptions();
   renderLeadsTable();
+}
+
+async function updateLeadStatus(leadId, nextStatus) {
+  const existing = (state.data.leads || []).find((lead) => lead.id === leadId) || {};
+  await api(`/api/lead-discovery/leads/${leadId}`, {
+    method: "PUT",
+    body: JSON.stringify({ ...existing, follow_status: nextStatus }),
+  });
+  await api(`/api/lead-discovery/leads/${leadId}/contact-logs`, {
+    method: "POST",
+    body: JSON.stringify({
+      channel: "System",
+      content: `Status updated to ${nextStatus}.`,
+      result_status: nextStatus,
+    }),
+  });
+  await refreshData();
+  renderLeadDetail(await api(`/api/lead-discovery/leads/${leadId}`));
 }
 
 function renderUsers() {
@@ -3328,8 +3454,7 @@ if (leadTaskForm) {
           status: data.get("status") || "active",
         }),
       });
-      form.reset();
-      updateLeadKeywordTemplate();
+      resetLeadConfig();
       await refreshData();
       showToast(t("toast.leadTaskCreated"));
     } catch (error) {
@@ -3403,6 +3528,43 @@ document.querySelectorAll("[data-password-toggle]").forEach((button) => {
 document.addEventListener("click", async (event) => {
   const target = event.target;
 
+  const chipToggle = target.closest("[data-chip-toggle]");
+  if (chipToggle) {
+    const name = chipToggle.dataset.chipToggle;
+    const value = chipToggle.dataset.chipValue;
+    const selected = new Set(leadChipState[name] || []);
+    selected.has(value) ? selected.delete(value) : selected.add(value);
+    leadChipState[name] = Array.from(selected);
+    renderChipField(name);
+    updateLeadKeywordTemplate();
+    return;
+  }
+
+  const chipRemove = target.closest("[data-chip-remove]");
+  if (chipRemove) {
+    const name = chipRemove.dataset.chipRemove;
+    leadChipState[name] = (leadChipState[name] || []).filter((value) => value !== chipRemove.dataset.chipValue);
+    renderChipField(name);
+    updateLeadKeywordTemplate();
+    return;
+  }
+
+  const chipMore = target.closest("[data-chip-more]");
+  if (chipMore) {
+    renderChipField(chipMore.dataset.chipMore, true);
+    return;
+  }
+
+  if (target.closest("[data-generate-lead-keywords]")) {
+    updateLeadKeywordTemplate();
+    return;
+  }
+
+  if (target.closest("[data-reset-lead-config]")) {
+    resetLeadConfig();
+    return;
+  }
+
   const dictionaryTab = target.closest("[data-dictionary-tab]");
   if (dictionaryTab) {
     state.dictionaryType = dictionaryTab.dataset.dictionaryTab;
@@ -3474,6 +3636,17 @@ document.addEventListener("click", async (event) => {
       await refreshData();
       renderLeadDetail(await api(`/api/lead-discovery/leads/${result.profile.lead_id}`));
       showToast(t("toast.leadProfileGenerated"));
+    } catch (error) {
+      showToast(error.message);
+    }
+    return;
+  }
+
+  const leadStatusButton = target.closest("[data-lead-status-id]");
+  if (leadStatusButton) {
+    try {
+      await updateLeadStatus(leadStatusButton.dataset.leadStatusId, leadStatusButton.dataset.leadStatus);
+      showToast(t("toast.contactLogAdded"));
     } catch (error) {
       showToast(error.message);
     }

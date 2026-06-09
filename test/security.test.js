@@ -429,8 +429,8 @@ test("lead profile rules score commercial vehicle prospects", () => {
       source_url: "https://example.com",
     },
     crawlResult: {
-      title: "Truck fleet and heavy duty transport procurement",
-      content: "Distributor imports trucks and manages logistics fleet renewal.",
+      title: "Commercial vehicle dealer and truck importer",
+      content: "Truck importer, commercial vehicle dealer and fleet procurement team imports trucks for logistics fleet renewal.",
     },
   });
 
@@ -450,6 +450,20 @@ test("lead profile rules score commercial vehicle prospects", () => {
     },
   });
   assert.notEqual(noContactProfile.scoring_breakdown.purchase_potential, "VERY_HIGH");
+
+  const logisticsOnly = buildLeadProfileRules({
+    lead: {
+      company_name: "General Logistics Co",
+      country: "Tanzania",
+      industry: "logistics company",
+      contact_email: "ops@example.com",
+    },
+    crawlResult: {
+      title: "Logistics company and supply chain management",
+      content: "Transport service, freight forwarding and supply chain management for regional cargo.",
+    },
+  });
+  assert.ok(logisticsOnly.score <= 68);
 });
 
 test("lead profile prompt and parser constrain AI output", () => {

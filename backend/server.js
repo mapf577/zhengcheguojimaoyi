@@ -833,6 +833,7 @@ function scoreLevel(score, lead = {}, sourceText = "") {
   const cappedScore = contactSignalCount(lead, sourceText) ? score : Math.min(score, 74);
   if (cappedScore >= 85) return "VERY_HIGH";
   if (cappedScore >= 70) return "HIGH";
+  if (cappedScore >= 60) return "MEDIUM_HIGH";
   if (cappedScore >= 45) return "MEDIUM";
   return "LOW";
 }
@@ -1369,7 +1370,7 @@ function normalizeRecord(type, input, existing = {}) {
       contact_phone: String(input.contact_phone ?? existing.contact_phone ?? "").trim(),
       contact_website: String(input.contact_website ?? existing.contact_website ?? "").trim(),
       source_url: String(input.source_url ?? existing.source_url ?? "").trim(),
-      follow_status: ["new", "contacted", "qualified", "quoted", "won", "lost", "invalid"].includes(input.follow_status) ? input.follow_status : existing.follow_status || "new",
+      follow_status: ["new", "needs_verification", "needs verification", "verified", "contacted", "interested", "qualified", "quoted", "rejected", "invalid", "won", "lost", "New", "Needs Verification", "Verified", "Contacted", "Interested", "Quoted", "Rejected", "Invalid"].includes(input.follow_status) ? input.follow_status : existing.follow_status || "New",
       search_task_id: String(input.search_task_id ?? existing.search_task_id ?? "").trim(),
     };
     const sourceText = [nextLead.source_url, nextLead.contact_website].filter(Boolean).join(" ");
@@ -3040,19 +3041,32 @@ async function callDeepSeekReception(input, options = {}) {
 
 function buildLeadProfileRules({ lead = {}, crawlResult = {} } = {}) {
   const sourceText = [lead.company_name, lead.country, lead.industry, lead.customer_type, normalizeStringList(lead.matched_vehicles).join(" "), lead.contact_website, lead.source_url, crawlResult.title, crawlResult.content].filter(Boolean).join(" ").toLowerCase();
-  const commercialSignals = ["tractor", "dump truck", "cargo truck", "truck", "bus", "fleet", "logistics", "transport", "construction", "mining", "municipal", "commercial vehicle", "heavy duty", "light truck", "pickup", "mixer", "refrigerated"];
-  const importSignals = ["import", "dealer", "distributor", "fleet", "procurement", "wholesale", "trading", "government", "tender", "contractor", "operator"];
-  const weakSourceSignals = ["news", "blog", "magazine", "article", "catalog", "directory", "product page", "parts catalog"];
+  const explicitBuyerSignals = ["truck importer", "commercial vehicle dealer", "used trucks for sale", "fleet procurement", "vehicle distributor", "truck dealer", "bus dealer", "tractor head dealer", "truck distributor"];
+  const logisticsOnlySignals = ["logistics company", "transport service", "supply chain management", "freight forwarding", "cargo transport"];
+  const commercialSignals = ["tractor", "dump truck", "cargo truck", "truck", "bus", "fleet", "construction", "mining", "municipal", "commercial vehicle", "heavy duty", "light truck", "pickup", "mixer", "refrigerated"];
+  const importSignals = ["import", "dealer", "distributor", "fleet procurement", "wholesale", "trading", "government", "tender", "contractor", "operator"];
+  const weakSourceSignals = ["news", "blog", "magazine", "article", "catalog", "directory", "listing", "product page", "parts catalog"];
   const contactSignals = [lead.contact_email, lead.contact_phone, lead.contact_website].filter(Boolean).length;
+  const explicitHits = explicitBuyerSignals.filter((token) => sourceText.includes(token)).length;
+  const logisticsOnlyHits = logisticsOnlySignals.filter((token) => sourceText.includes(token)).length;
   const commercialHits = commercialSignals.filter((token) => sourceText.includes(token)).length;
   const importHits = importSignals.filter((token) => sourceText.includes(token)).length;
   const weakHits = weakSourceSignals.filter((token) => sourceText.includes(token)).length;
   const productFit = Math.min(100, 35 + commercialHits * 12);
   const countryFit = lead.country ? 78 : 45;
-  const buyerIdentityConfidence = Math.max(20, Math.min(100, 35 + importHits * 14 - weakHits * 12));
+  const buyerIdentityConfidence = Math.max(20, Math.min(100, 30 + explicitHits * 22 + importHits * 9 - weakHits * 18 - logisticsOnlyHits * 8));
   const contactCompleteness = Math.min(100, contactSignals * 28 + (/whatsapp/.test(sourceText) ? 16 : 0));
   const purchaseBase = Math.round(productFit * 0.26 + countryFit * 0.16 + buyerIdentityConfidence * 0.28 + contactCompleteness * 0.18 + importHits * 4);
-  const score = Math.max(25, Math.min(95, purchaseBase - weakHits * 7));
+  let score = Math.max(25, Math.min(95, purchaseBase - weakHits * 10));
+  if (!explicitHits && logisticsOnlyHits) {
+    score = Math.min(score, 68);
+  }
+  if (weakHits) {
+    score = Math.min(score, 55);
+  }
+  if (!contactSignals) {
+    score = Math.min(score, 74);
+  }
   const businessType = commercialHits >= 2 ? "Commercial vehicle buyer or fleet operator" : "Potential vehicle trade prospect";
   const exportFit = score >= 75 ? "high" : score >= 55 ? "medium" : "early-stage";
   const purchasePotential = purchasePotentialLevel(score, lead, sourceText);
@@ -3074,6 +3088,7 @@ function buildLeadProfileRules({ lead = {}, crawlResult = {} } = {}) {
     riskFlags.push("No direct WhatsApp, phone, email, or website contact was confirmed.");
   }
   const evidence = [
+    explicitHits ? `${explicitHits} explicit buyer signal(s) found.` : "",
     commercialHits ? `${commercialHits} commercial vehicle signal(s) found in source text.` : "",
     importHits ? `${importHits} importer/dealer/fleet/procurement signal(s) found.` : "",
     contactSignals ? `${contactSignals} contact channel(s) available.` : "",
@@ -3097,7 +3112,7 @@ function buildLeadProfileRules({ lead = {}, crawlResult = {} } = {}) {
     outreach_message: `Hello, we supply commercial vehicles for export including trucks, buses, pickups and fleet solutions. May I know if ${lead.company_name || "your company"} is currently sourcing vehicles for upcoming projects or fleet renewal?`,
     risk_flags: riskFlags.length ? riskFlags : ["Validate buyer identity and purchase authority before quoting."],
     next_steps: ["Verify contact channel", "Confirm target vehicle type and quantity", "Check import requirements and delivery timeline"],
-    raw_json: { provider: "rules", commercial_hits: commercialHits, import_hits: importHits, weak_source_hits: weakHits, contact_signals: contactSignals },
+    raw_json: { provider: "rules", explicit_buyer_hits: explicitHits, logistics_only_hits: logisticsOnlyHits, commercial_hits: commercialHits, import_hits: importHits, weak_source_hits: weakHits, contact_signals: contactSignals },
   };
 }
 
@@ -4251,12 +4266,20 @@ async function upsertLeadProfile(lead, crawlResult = {}) {
   const profiles = await readRows("leadProfiles");
   const existing = profiles.find((row) => row.lead_id === lead.id);
   const sourceText = [crawlResult.content, crawlResult.title, lead.source_url, lead.contact_website].filter(Boolean).join(" ");
+  const sourceLower = sourceText.toLowerCase();
+  const hasExplicitBuyerSignal = /truck importer|commercial vehicle dealer|used trucks for sale|fleet procurement|vehicle distributor|truck dealer|bus dealer|tractor head dealer|truck distributor/.test(sourceLower);
+  const isLogisticsOnly = /logistics company|transport service|supply chain management|freight forwarding|cargo transport/.test(sourceLower) && !hasExplicitBuyerSignal;
+  const isWeakSource = /directory|listing|blog|article|magazine|catalog|product page/.test(sourceLower);
   const contactQuality = contactQualityLabel(lead, sourceText);
   const score = Number(profileResult.profile.score || 0);
-  const purchasePotential = purchasePotentialLevel(score, lead, sourceText);
+  let cappedScore = score;
+  if (!hasExplicitBuyerSignal && isLogisticsOnly) cappedScore = Math.min(cappedScore, 68);
+  if (isWeakSource) cappedScore = Math.min(cappedScore, 55);
+  if (!contactSignalCount(lead, sourceText)) cappedScore = Math.min(cappedScore, 74);
+  const purchasePotential = purchasePotentialLevel(cappedScore, lead, sourceText);
   const safeProfile = {
     ...profileResult.profile,
-    score: !contactSignalCount(lead, sourceText) && score >= 85 ? 74 : score,
+    score: cappedScore,
     scoring_breakdown: {
       ...(profileResult.profile.scoring_breakdown || {}),
       purchase_potential: purchasePotential,
