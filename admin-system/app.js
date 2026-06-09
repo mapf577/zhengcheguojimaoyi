@@ -295,6 +295,12 @@ const adminTranslations = {
     "leadDiscovery.tasks": "Tasks",
     "leadDiscovery.progress": "Search Progress",
     "leadDiscovery.progressHint": "Run a task to collect websites, contacts, scores and AI profiles.",
+    "leadDiscovery.progressIdle": "No crawler task is running.",
+    "leadDiscovery.progressRunning": "Crawler running",
+    "leadDiscovery.progressDone": "Crawler completed",
+    "leadDiscovery.progressFailed": "Crawler failed",
+    "leadDiscovery.progressMeta": "{task} · {elapsed}s",
+    "leadDiscovery.progressResult": "Saved {results} source result(s), {leads} lead(s), {profiles} AI profile(s).",
     "leadDiscovery.statistics": "Lead Statistics",
     "leadDiscovery.statisticsHint": "Quality signals for current lead pool.",
     "leadDiscovery.statTotal": "Total leads found",
@@ -469,6 +475,12 @@ const adminTranslations = {
     "leadDiscovery.tasks": "任务",
     "leadDiscovery.progress": "搜索进度",
     "leadDiscovery.progressHint": "运行任务后采集网站、联系人、评分并生成 AI 画像。",
+    "leadDiscovery.progressIdle": "当前没有正在运行的爬虫任务。",
+    "leadDiscovery.progressRunning": "爬虫运行中",
+    "leadDiscovery.progressDone": "爬虫已完成",
+    "leadDiscovery.progressFailed": "爬虫运行失败",
+    "leadDiscovery.progressMeta": "{task} · {elapsed}秒",
+    "leadDiscovery.progressResult": "已保存 {results} 条来源、{leads} 个线索、{profiles} 个 AI 画像。",
     "leadDiscovery.statistics": "线索统计",
     "leadDiscovery.statisticsHint": "当前线索池质量信号。",
     "leadDiscovery.statTotal": "发现线索总数",
@@ -1303,6 +1315,16 @@ const state = {
   aiMaintenance: {
     operations: [],
     lastPreview: null,
+  },
+  leadCrawler: {
+    running: false,
+    taskId: "",
+    taskLabel: "",
+    step: -1,
+    startedAt: 0,
+    result: null,
+    error: "",
+    timer: null,
   },
   permissions: [],
   session: {
@@ -2688,14 +2710,79 @@ function leadContactQuality(row = {}) {
   return "MISSING";
 }
 
+function resetLeadCrawlerTimer() {
+  if (state.leadCrawler.timer) {
+    clearInterval(state.leadCrawler.timer);
+    state.leadCrawler.timer = null;
+  }
+}
+
+function startLeadCrawlerProgress(task = {}) {
+  resetLeadCrawlerTimer();
+  state.leadCrawler = {
+    running: true,
+    taskId: task.id || "",
+    taskLabel: task.keywords_template || task.keywords || task.id || "",
+    step: 0,
+    startedAt: Date.now(),
+    result: null,
+    error: "",
+    timer: null,
+  };
+  state.leadCrawler.timer = setInterval(() => {
+    if (!state.leadCrawler.running) {
+      resetLeadCrawlerTimer();
+      return;
+    }
+    state.leadCrawler.step = Math.min(leadProgressSteps.length - 1, state.leadCrawler.step + 1);
+    renderLeadProgress();
+  }, 3500);
+  renderLeadDiscovery();
+}
+
+function finishLeadCrawlerProgress(result = {}) {
+  resetLeadCrawlerTimer();
+  state.leadCrawler.running = false;
+  state.leadCrawler.step = leadProgressSteps.length;
+  state.leadCrawler.result = result;
+  state.leadCrawler.error = "";
+  renderLeadDiscovery();
+}
+
+function failLeadCrawlerProgress(error) {
+  resetLeadCrawlerTimer();
+  state.leadCrawler.running = false;
+  state.leadCrawler.error = String(error?.message || error || "");
+  renderLeadProgress();
+}
+
 function renderLeadProgress() {
   const box = document.querySelector("[data-lead-progress]");
   if (!box) {
     return;
   }
+  const crawler = state.leadCrawler || {};
+  const elapsed = crawler.startedAt ? Math.max(0, Math.round((Date.now() - crawler.startedAt) / 1000)) : 0;
+  const statusKey = crawler.error ? "leadDiscovery.progressFailed" : crawler.running ? "leadDiscovery.progressRunning" : crawler.result ? "leadDiscovery.progressDone" : "leadDiscovery.progressIdle";
+  const resultHtml = crawler.result
+    ? `<p class="lead-progress-result">${escapeHtml(t("leadDiscovery.progressResult", { results: crawler.result.saved_results || 0, leads: crawler.result.saved_leads || 0, profiles: crawler.result.generated_profiles || 0 }))}</p>`
+    : crawler.error
+      ? `<p class="lead-progress-result is-error">${escapeHtml(crawler.error)}</p>`
+      : "";
   box.innerHTML = leadProgressSteps
-    .map((step, index) => `<div class="lead-progress-step"><span>${index + 1}</span><p>${escapeHtml(step)}</p></div>`)
+    .map((step, index) => {
+      const stateClass = crawler.error && index === Math.max(0, crawler.step) ? "is-error" : index < crawler.step || crawler.result ? "is-done" : index === crawler.step && crawler.running ? "is-active" : "is-pending";
+      return `<div class="lead-progress-step ${stateClass}"><span>${index + 1}</span><p>${escapeHtml(step)}</p></div>`;
+    })
     .join("");
+  box.insertAdjacentHTML(
+    "afterbegin",
+    `<div class="lead-progress-summary">
+      <strong>${escapeHtml(t(statusKey))}</strong>
+      <span>${crawler.taskLabel ? escapeHtml(t("leadDiscovery.progressMeta", { task: crawler.taskLabel.slice(0, 56), elapsed })) : escapeHtml(t("leadDiscovery.progressIdle"))}</span>
+      ${resultHtml}
+    </div>`,
+  );
 }
 
 function renderLeadStats() {
@@ -2734,7 +2821,7 @@ function renderLeadTaskOptions() {
             (task) => `
               <div class="lead-task-item">
                 <span>${escapeHtml(task.keywords_template || task.keywords || task.id)}</span>
-                <button class="secondary-button" type="button" data-run-crawler-task="${escapeHtml(task.id)}">${escapeHtml(t("leadDiscovery.runCrawler"))}</button>
+                <button class="secondary-button" type="button" data-run-crawler-task="${escapeHtml(task.id)}" ${state.leadCrawler.running ? "disabled" : ""}>${escapeHtml(state.leadCrawler.running && state.leadCrawler.taskId === task.id ? t("leadDiscovery.progressRunning") : t("leadDiscovery.runCrawler"))}</button>
               </div>
             `,
           )
@@ -3404,15 +3491,19 @@ document.addEventListener("click", async (event) => {
 
   const runCrawlerButton = target.closest("[data-run-crawler-task]");
   if (runCrawlerButton) {
+    const task = (state.data.searchTasks || []).find((row) => row.id === runCrawlerButton.dataset.runCrawlerTask) || { id: runCrawlerButton.dataset.runCrawlerTask };
     try {
       runCrawlerButton.disabled = true;
+      startLeadCrawlerProgress(task);
       const result = await api(`/api/lead-discovery/search-tasks/${runCrawlerButton.dataset.runCrawlerTask}/crawler-run`, { method: "POST" });
       await refreshData();
+      finishLeadCrawlerProgress(result);
       showToast(t("toast.crawlerFinished", { results: result.saved_results || 0, leads: result.saved_leads || 0 }));
     } catch (error) {
+      failLeadCrawlerProgress(error);
       showToast(error.message);
     } finally {
-      runCrawlerButton.disabled = false;
+      renderLeadTaskOptions();
     }
     return;
   }

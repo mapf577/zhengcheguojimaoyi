@@ -1578,6 +1578,32 @@ textarea:focus {
   gap: 8px;
 }
 
+.lead-progress-summary {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #f8fafc;
+}
+
+.lead-progress-summary strong {
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.lead-progress-summary span,
+.lead-progress-result {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.lead-progress-result.is-error {
+  color: #b42318;
+}
+
 .lead-progress-step {
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr);
@@ -1587,6 +1613,22 @@ textarea:focus {
   border-radius: 8px;
   padding: 8px;
   background: var(--soft-2);
+}
+
+.lead-progress-step.is-active {
+  border-color: #2f6fed;
+  background: #eef4ff;
+  box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.08);
+}
+
+.lead-progress-step.is-done {
+  border-color: #b7e4c7;
+  background: #f0fdf4;
+}
+
+.lead-progress-step.is-error {
+  border-color: #f4b4ab;
+  background: #fff1f0;
 }
 
 .lead-progress-step span {
@@ -1601,10 +1643,35 @@ textarea:focus {
   font-weight: 850;
 }
 
+.lead-progress-step.is-active span {
+  animation: leadPulse 1.1s ease-in-out infinite;
+  background: #2f6fed;
+}
+
+.lead-progress-step.is-done span {
+  background: #138a43;
+}
+
+.lead-progress-step.is-error span {
+  background: #b42318;
+}
+
 .lead-progress-step p {
   margin: 0;
   color: var(--muted);
   font-size: 13px;
+}
+
+@keyframes leadPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(47, 111, 237, 0.32);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(47, 111, 237, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(47, 111, 237, 0);
+  }
 }
 
 .lead-stat-grid {
