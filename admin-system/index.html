@@ -136,14 +136,15 @@
           <button type="button" data-view="usedVehicles" data-short="UC"><span class="nav-icon">03</span><span data-i18n="nav.usedVehicles">Used Cars</span></button>
           <button type="button" data-view="parts" data-short="P"><span class="nav-icon">04</span><span data-i18n="nav.parts">Auto Parts</span></button>
           <button type="button" data-view="inquiries" data-short="I"><span class="nav-icon">05</span><span data-i18n="nav.inquiries">Inquiries</span></button>
+          <button type="button" data-view="leadDiscovery" data-short="LD"><span class="nav-icon">06</span><span data-i18n="nav.leadDiscovery">AI Lead Discovery</span></button>
         </nav>
         <p class="side-nav-label side-nav-label-secondary" data-i18n="nav.groupSystem">System</p>
         <nav class="side-nav" aria-label="System sections">
-          <button type="button" data-view="users" data-short="U"><span class="nav-icon">06</span><span data-i18n="nav.users">Users</span></button>
-          <button type="button" data-view="roles" data-short="R"><span class="nav-icon">07</span><span data-i18n="nav.roles">Roles</span></button>
-          <button type="button" data-view="settings" data-short="S"><span class="nav-icon">08</span><span data-i18n="nav.settings">Settings</span></button>
-          <button type="button" data-view="aiMaintenance" data-short="M"><span class="nav-icon">09</span><span data-i18n="nav.aiMaintenance">AI Maintenance</span></button>
-          <button type="button" data-view="aiLogs" data-short="A"><span class="nav-icon">10</span><span data-i18n="nav.aiLogs">AI Logs</span></button>
+          <button type="button" data-view="users" data-short="U"><span class="nav-icon">07</span><span data-i18n="nav.users">Users</span></button>
+          <button type="button" data-view="roles" data-short="R"><span class="nav-icon">08</span><span data-i18n="nav.roles">Roles</span></button>
+          <button type="button" data-view="settings" data-short="S"><span class="nav-icon">09</span><span data-i18n="nav.settings">Settings</span></button>
+          <button type="button" data-view="aiMaintenance" data-short="M"><span class="nav-icon">10</span><span data-i18n="nav.aiMaintenance">AI Maintenance</span></button>
+          <button type="button" data-view="aiLogs" data-short="A"><span class="nav-icon">11</span><span data-i18n="nav.aiLogs">AI Logs</span></button>
         </nav>
         <div class="sidebar-account">
           <span data-i18n="workspace.account">Current account</span>
@@ -448,6 +449,64 @@
                 </thead>
                 <tbody data-inquiries-body></tbody>
               </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" data-view-panel="leadDiscovery" hidden>
+          <section class="panel list-panel lead-discovery-shell">
+            <div class="panel-header wrap">
+              <div class="panel-title-stack">
+                <p class="eyebrow" data-i18n="nav.leadDiscovery">AI Lead Discovery</p>
+                <h2 data-i18n="leadDiscovery.title">Commercial Vehicle Lead Discovery</h2>
+                <p class="panel-hint" data-i18n="leadDiscovery.hint">Discover and profile export prospects for commercial vehicle sales.</p>
+              </div>
+              <button class="secondary-button" type="button" data-refresh data-i18n="action.refresh">Refresh</button>
+            </div>
+            <div class="lead-discovery-grid">
+              <form class="lead-form" data-lead-task-form>
+                <h3 data-i18n="leadDiscovery.searchTask">Search Task</h3>
+                <label><span data-i18n="leadDiscovery.keywords">Keywords</span><input name="keywords" required placeholder="commercial truck importer, bus fleet..." /></label>
+                <label><span data-i18n="leadDiscovery.countries">Countries</span><input name="countries" placeholder="Chile, Peru, UAE" /></label>
+                <label><span data-i18n="leadDiscovery.industries">Industries</span><input name="industries" placeholder="logistics, mining, construction" /></label>
+                <label><span data-i18n="table.status">Status</span><select name="status"><option value="active">Active</option><option value="paused">Paused</option><option value="disabled">Disabled</option></select></label>
+                <button class="primary-button" type="submit" data-i18n="leadDiscovery.createTask">Create Search Task</button>
+              </form>
+              <form class="lead-form" data-crawl-result-form>
+                <h3 data-i18n="leadDiscovery.crawlResult">Crawl Result URL</h3>
+                <label><span data-i18n="leadDiscovery.relatedTask">Related Task</span><select name="search_task_id" data-lead-task-select></select></label>
+                <label><span>URL</span><input name="url" type="url" required placeholder="https://example.com/company" /></label>
+                <label><span data-i18n="leadDiscovery.titleField">Title</span><input name="title" /></label>
+                <label class="full"><span data-i18n="leadDiscovery.sourceContent">Source Content</span><textarea name="content" rows="4"></textarea></label>
+                <button class="primary-button" type="submit" data-i18n="leadDiscovery.addUrl">Add URL</button>
+              </form>
+            </div>
+            <div class="lead-discovery-content">
+              <div class="lead-list-panel">
+                <div class="panel-header compact">
+                  <h3 data-i18n="leadDiscovery.leads">Leads</h3>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th data-i18n="leadDiscovery.company">Company</th>
+                        <th data-i18n="table.country">Country</th>
+                        <th data-i18n="leadDiscovery.industry">Industry</th>
+                        <th data-i18n="leadDiscovery.score">Score</th>
+                        <th data-i18n="leadDiscovery.contact">Contact</th>
+                        <th data-i18n="leadDiscovery.source">Source</th>
+                        <th data-i18n="leadDiscovery.followStatus">Follow-up</th>
+                        <th data-i18n="table.actions">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody data-leads-body></tbody>
+                  </table>
+                </div>
+              </div>
+              <aside class="lead-detail-panel" data-lead-detail>
+                <div class="lead-detail-empty" data-i18n="leadDiscovery.selectLead">Select a lead to review profile and contact history.</div>
+              </aside>
             </div>
           </section>
         </section>

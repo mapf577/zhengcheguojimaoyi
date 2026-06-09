@@ -17,6 +17,8 @@ const {
   buildAiMaintenanceSystemPrompt,
   buildContentSecurityPolicy,
   buildDeepSeekUserPrompt,
+  buildLeadProfilePrompt,
+  buildLeadProfileRules,
   buildMediaUrl,
   buildOssObjectName,
   buildOssPublicUrl,
@@ -40,6 +42,7 @@ const {
   normalizeOssPrefix,
   parseAiMaintenanceJsonPlan,
   parseDeepSeekJsonReply,
+  parseLeadProfileJson,
   parseSignedToken,
   previewAiMaintenanceOperation,
   recordFailedLogin,
@@ -412,4 +415,39 @@ test("deepseek reception reports not configured without an api key", async () =>
 
   assert.equal(result.ok, false);
   assert.equal(result.error, "not_configured");
+});
+
+test("lead profile rules score commercial vehicle prospects", () => {
+  const profile = buildLeadProfileRules({
+    lead: {
+      company_name: "Andes Fleet Logistics",
+      country: "Chile",
+      industry: "logistics",
+      contact_email: "fleet@example.com",
+      source_url: "https://example.com",
+    },
+    crawlResult: {
+      title: "Truck fleet and heavy duty transport procurement",
+      content: "Distributor imports trucks and manages logistics fleet renewal.",
+    },
+  });
+
+  assert.equal(profile.export_fit, "high");
+  assert.ok(profile.score >= 75);
+  assert.match(profile.recommended_products, /Light trucks/);
+});
+
+test("lead profile prompt and parser constrain AI output", () => {
+  const prompt = buildLeadProfilePrompt({
+    lead: { company_name: "Gulf Bus Dealer", country: "UAE", industry: "bus dealer" },
+    crawlResult: { url: "https://example.com", content: "Bus and truck dealer." },
+  });
+  const parsed = parseLeadProfileJson(
+    '{"ai_summary":"Strong bus importer.","business_type":"Dealer","export_fit":"high","pain_points":["fleet renewal"],"recommended_products":"Buses and light trucks","score":120}',
+  );
+
+  assert.match(prompt, /commercial vehicle export lead profile/);
+  assert.equal(parsed.export_fit, "high");
+  assert.equal(parsed.score, 100);
+  assert.deepEqual(parsed.pain_points, ["fleet renewal"]);
 });

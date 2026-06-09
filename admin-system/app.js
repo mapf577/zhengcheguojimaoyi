@@ -271,8 +271,43 @@ const adminTranslations = {
     "nav.vehicles": "Vehicles",
     "nav.parts": "Auto Parts",
     "nav.inquiries": "Inquiries",
+    "nav.leadDiscovery": "AI Lead Discovery",
     "nav.aiLogs": "AI Logs",
     "nav.aiMaintenance": "AI Maintenance",
+    "leadDiscovery.title": "Commercial Vehicle Lead Discovery",
+    "leadDiscovery.hint": "Discover and profile export prospects for commercial vehicle sales.",
+    "leadDiscovery.searchTask": "Search Task",
+    "leadDiscovery.keywords": "Keywords",
+    "leadDiscovery.countries": "Countries",
+    "leadDiscovery.industries": "Industries",
+    "leadDiscovery.createTask": "Create Search Task",
+    "leadDiscovery.crawlResult": "Crawl Result URL",
+    "leadDiscovery.relatedTask": "Related Task",
+    "leadDiscovery.titleField": "Title",
+    "leadDiscovery.sourceContent": "Source Content",
+    "leadDiscovery.addUrl": "Add URL",
+    "leadDiscovery.leads": "Leads",
+    "leadDiscovery.company": "Company",
+    "leadDiscovery.industry": "Industry",
+    "leadDiscovery.score": "Score",
+    "leadDiscovery.contact": "Contact",
+    "leadDiscovery.source": "Source",
+    "leadDiscovery.followStatus": "Follow-up",
+    "leadDiscovery.selectLead": "Select a lead to review profile and contact history.",
+    "leadDiscovery.profile": "AI Profile",
+    "leadDiscovery.contacts": "Contact Details",
+    "leadDiscovery.sourceResults": "Source Content",
+    "leadDiscovery.contactLogs": "Follow-up Records",
+    "leadDiscovery.generateProfile": "Generate Profile",
+    "leadDiscovery.addContactLog": "Add Follow-up",
+    "leadDiscovery.noProfile": "No AI profile yet.",
+    "leadDiscovery.noLogs": "No follow-up records yet.",
+    "leadDiscovery.noSource": "No source content yet.",
+    "leadDiscovery.logContent": "Follow-up note",
+    "toast.leadTaskCreated": "Search task created.",
+    "toast.crawlResultAdded": "Crawl result URL added.",
+    "toast.leadProfileGenerated": "Lead profile generated.",
+    "toast.contactLogAdded": "Follow-up record added.",
     "workspace.eyebrow": "Backend management",
     "action.logout": "Logout",
     "action.openWebsite": "Open Website",
@@ -374,8 +409,43 @@ const adminTranslations = {
     "nav.vehicles": "整车管理",
     "nav.parts": "零配件管理",
     "nav.inquiries": "询盘管理",
+    "nav.leadDiscovery": "AI客户发现",
     "nav.aiLogs": "AI日志",
     "nav.aiMaintenance": "AI维护",
+    "leadDiscovery.title": "商用车出口客户发现",
+    "leadDiscovery.hint": "发现并画像商用车出口潜在客户。",
+    "leadDiscovery.searchTask": "搜索任务",
+    "leadDiscovery.keywords": "搜索关键词",
+    "leadDiscovery.countries": "国家",
+    "leadDiscovery.industries": "行业",
+    "leadDiscovery.createTask": "创建搜索任务",
+    "leadDiscovery.crawlResult": "抓取结果 URL",
+    "leadDiscovery.relatedTask": "关联任务",
+    "leadDiscovery.titleField": "标题",
+    "leadDiscovery.sourceContent": "来源内容",
+    "leadDiscovery.addUrl": "录入 URL",
+    "leadDiscovery.leads": "客户列表",
+    "leadDiscovery.company": "公司名",
+    "leadDiscovery.industry": "行业",
+    "leadDiscovery.score": "评分",
+    "leadDiscovery.contact": "联系方式",
+    "leadDiscovery.source": "来源链接",
+    "leadDiscovery.followStatus": "跟进状态",
+    "leadDiscovery.selectLead": "选择客户后查看 AI 画像、联系方式和跟进记录。",
+    "leadDiscovery.profile": "AI画像",
+    "leadDiscovery.contacts": "联系方式",
+    "leadDiscovery.sourceResults": "来源内容",
+    "leadDiscovery.contactLogs": "跟进记录",
+    "leadDiscovery.generateProfile": "生成画像",
+    "leadDiscovery.addContactLog": "新增跟进",
+    "leadDiscovery.noProfile": "暂无 AI 画像。",
+    "leadDiscovery.noLogs": "暂无跟进记录。",
+    "leadDiscovery.noSource": "暂无来源内容。",
+    "leadDiscovery.logContent": "跟进内容",
+    "toast.leadTaskCreated": "搜索任务已创建。",
+    "toast.crawlResultAdded": "抓取 URL 已录入。",
+    "toast.leadProfileGenerated": "客户画像已生成。",
+    "toast.contactLogAdded": "跟进记录已新增。",
     "workspace.eyebrow": "后台管理",
     "action.logout": "退出登录",
     "action.openWebsite": "打开官网",
@@ -1152,6 +1222,9 @@ const state = {
     inquiries: [],
     dictionaries: [],
     aiLogs: [],
+    searchTasks: [],
+    leads: [],
+    crawlResults: [],
     adminUsers: [],
     adminRoles: [],
   },
@@ -1187,6 +1260,8 @@ const aiMaintenanceMeta = document.querySelector("[data-ai-maintenance-meta]");
 const aiMaintenanceWarnings = document.querySelector("[data-ai-maintenance-warnings]");
 const aiMaintenanceBody = document.querySelector("[data-ai-maintenance-body]");
 const aiMaintenanceApplyButton = document.querySelector("[data-ai-maintenance-apply]");
+const leadTaskForm = document.querySelector("[data-lead-task-form]");
+const crawlResultForm = document.querySelector("[data-crawl-result-form]");
 
 function t(key, values = {}) {
   let text = adminTranslations[state.lang][key] || adminTranslations.en[key] || key;
@@ -1598,6 +1673,7 @@ function applyLanguage() {
   renderDictionaryTable();
   renderInquiries();
   renderAiLogs();
+  renderLeadDiscovery();
   renderDashboard();
   renderAiMaintenanceResult();
   renderUsers();
@@ -2462,6 +2538,116 @@ function formatDateTime(value) {
   return String(value || "").slice(0, 19).replace("T", " ");
 }
 
+function leadContactLabel(row = {}) {
+  return [row.contact_email, row.contact_phone, row.contact_website].filter(Boolean).join(" / ") || "--";
+}
+
+function renderLeadTaskOptions() {
+  const select = document.querySelector("[data-lead-task-select]");
+  if (!select) {
+    return;
+  }
+  const tasks = state.data.searchTasks || [];
+  select.innerHTML = `<option value="">--</option>${tasks
+    .map((task) => `<option value="${escapeHtml(task.id)}">${escapeHtml(task.keywords || task.id)}</option>`)
+    .join("")}`;
+}
+
+function renderLeadsTable() {
+  const body = document.querySelector("[data-leads-body]");
+  if (!body) {
+    return;
+  }
+  const leads = state.data.leads || [];
+  if (!leads.length) {
+    body.innerHTML = `<tr><td colspan="8">${escapeHtml(t("leadDiscovery.selectLead"))}</td></tr>`;
+    return;
+  }
+  body.innerHTML = leads
+    .map((row) => {
+      const score = Number(row.profile?.score ?? row.score ?? 0);
+      return `
+        <tr>
+          <td><strong>${escapeHtml(row.company_name || "--")}</strong></td>
+          <td>${escapeHtml(row.country || "")}</td>
+          <td>${escapeHtml(row.industry || "")}</td>
+          <td><span class="score-pill">${escapeHtml(score)}</span></td>
+          <td>${escapeHtml(leadContactLabel(row))}</td>
+          <td>${row.source_url ? `<a href="${escapeHtml(row.source_url)}" target="_blank" rel="noreferrer">${escapeHtml(row.source_url.slice(0, 36))}</a>` : "--"}</td>
+          <td><span class="status-pill status-${statusClass(row.follow_status)}">${escapeHtml(row.follow_status || "new")}</span></td>
+          <td>
+            <div class="row-actions">
+              <button class="secondary-button" type="button" data-lead-detail-id="${escapeHtml(row.id)}">${escapeHtml(t("dashboard.view"))}</button>
+              <button class="secondary-button" type="button" data-lead-profile-id="${escapeHtml(row.id)}">${escapeHtml(t("leadDiscovery.generateProfile"))}</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
+function renderLeadDetail(lead = null) {
+  const panel = document.querySelector("[data-lead-detail]");
+  if (!panel) {
+    return;
+  }
+  if (!lead) {
+    panel.innerHTML = `<div class="lead-detail-empty">${escapeHtml(t("leadDiscovery.selectLead"))}</div>`;
+    return;
+  }
+  const sourceRows = (lead.crawl_results || []).length ? lead.crawl_results : (state.data.crawlResults || []).filter((row) => row.processed_lead_id === lead.id || row.url === lead.source_url);
+  const logs = lead.contact_logs || [];
+  const profile = lead.profile;
+  panel.innerHTML = `
+    <div class="lead-detail-header">
+      <div>
+        <span>${escapeHtml(lead.country || "")}</span>
+        <h3>${escapeHtml(lead.company_name || "--")}</h3>
+      </div>
+      <button class="primary-button" type="button" data-lead-profile-id="${escapeHtml(lead.id)}">${escapeHtml(t("leadDiscovery.generateProfile"))}</button>
+    </div>
+    <section class="lead-detail-section">
+      <h4>${escapeHtml(t("leadDiscovery.profile"))}</h4>
+      ${
+        profile
+          ? `<p>${escapeHtml(profile.ai_summary || "")}</p>
+            <dl>
+              <div><dt>${escapeHtml(t("leadDiscovery.score"))}</dt><dd>${escapeHtml(profile.score || lead.score || 0)}</dd></div>
+              <div><dt>Fit</dt><dd>${escapeHtml(profile.export_fit || "")}</dd></div>
+              <div><dt>Products</dt><dd>${escapeHtml(profile.recommended_products || "")}</dd></div>
+            </dl>`
+          : `<p class="muted-text">${escapeHtml(t("leadDiscovery.noProfile"))}</p>`
+      }
+    </section>
+    <section class="lead-detail-section">
+      <h4>${escapeHtml(t("leadDiscovery.contacts"))}</h4>
+      <p>${escapeHtml(leadContactLabel(lead))}</p>
+    </section>
+    <section class="lead-detail-section">
+      <h4>${escapeHtml(t("leadDiscovery.sourceResults"))}</h4>
+      ${
+        sourceRows.length
+          ? sourceRows.map((row) => `<article><strong>${escapeHtml(row.title || row.url)}</strong><p>${escapeHtml(String(row.content || "").slice(0, 420))}</p></article>`).join("")
+          : `<p class="muted-text">${escapeHtml(t("leadDiscovery.noSource"))}</p>`
+      }
+    </section>
+    <section class="lead-detail-section">
+      <h4>${escapeHtml(t("leadDiscovery.contactLogs"))}</h4>
+      ${logs.length ? logs.map((log) => `<article><strong>${escapeHtml(log.channel || "Follow-up")} · ${escapeHtml(formatDateTime(log.created_at))}</strong><p>${escapeHtml(log.content || "")}</p></article>`).join("") : `<p class="muted-text">${escapeHtml(t("leadDiscovery.noLogs"))}</p>`}
+      <form class="lead-log-form" data-contact-log-form="${escapeHtml(lead.id)}">
+        <label><span>${escapeHtml(t("leadDiscovery.logContent"))}</span><textarea name="content" rows="3" required></textarea></label>
+        <button class="secondary-button" type="submit">${escapeHtml(t("leadDiscovery.addContactLog"))}</button>
+      </form>
+    </section>
+  `;
+}
+
+function renderLeadDiscovery() {
+  renderLeadTaskOptions();
+  renderLeadsTable();
+}
+
 function renderUsers() {
   const body = document.querySelector("[data-users-body]");
   if (!body) {
@@ -2541,12 +2727,15 @@ function renderRoles() {
 }
 
 async function refreshData() {
-  const [vehicles, parts, inquiries, dictionaries, aiLogs, adminUsers, adminRoles, permissions] = await Promise.all([
+  const [vehicles, parts, inquiries, dictionaries, aiLogs, searchTasks, leads, crawlResults, adminUsers, adminRoles, permissions] = await Promise.all([
     api("/api/vehicles"),
     api("/api/parts"),
     apiIfAllowed("/api/inquiries", "inquiries:view"),
     api("/api/dictionaries"),
     apiIfAllowed("/api/ai-logs", "ai_logs:view"),
+    apiIfAllowed("/api/lead-discovery/search-tasks", "lead_discovery:view"),
+    apiIfAllowed("/api/lead-discovery/leads", "lead_discovery:view"),
+    apiIfAllowed("/api/lead-discovery/crawl-results", "lead_discovery:view"),
     apiIfAllowed("/api/admin/users", "users:view"),
     apiIfAllowed("/api/admin/roles", "roles:view"),
     api("/api/admin/permissions"),
@@ -2556,6 +2745,9 @@ async function refreshData() {
   state.data.inquiries = inquiries.items || [];
   state.data.dictionaries = dictionaries.items || [];
   state.data.aiLogs = aiLogs.items || [];
+  state.data.searchTasks = searchTasks.items || [];
+  state.data.leads = leads.items || [];
+  state.data.crawlResults = crawlResults.items || [];
   state.data.adminUsers = adminUsers.items || [];
   state.data.adminRoles = adminRoles.items || [];
   state.permissions = permissions.items || [];
@@ -2567,6 +2759,7 @@ async function refreshData() {
   renderDictionaryTable();
   renderInquiries();
   renderAiLogs();
+  renderLeadDiscovery();
   renderUsers();
   renderRoles();
 }
@@ -2789,6 +2982,76 @@ if (aiMaintenanceForm) {
   });
 }
 
+if (leadTaskForm) {
+  leadTaskForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    try {
+      await api("/api/lead-discovery/search-tasks", {
+        method: "POST",
+        body: JSON.stringify({
+          keywords: data.get("keywords"),
+          countries: data.get("countries"),
+          industries: data.get("industries"),
+          status: data.get("status") || "active",
+        }),
+      });
+      form.reset();
+      await refreshData();
+      showToast(t("toast.leadTaskCreated"));
+    } catch (error) {
+      showToast(error.message);
+    }
+  });
+}
+
+if (crawlResultForm) {
+  crawlResultForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    try {
+      await api("/api/lead-discovery/crawl-results", {
+        method: "POST",
+        body: JSON.stringify({
+          search_task_id: data.get("search_task_id"),
+          url: data.get("url"),
+          title: data.get("title"),
+          content: data.get("content"),
+        }),
+      });
+      form.reset();
+      await refreshData();
+      showToast(t("toast.crawlResultAdded"));
+    } catch (error) {
+      showToast(error.message);
+    }
+  });
+}
+
+document.addEventListener("submit", async (event) => {
+  const form = event.target.closest("[data-contact-log-form]");
+  if (!form) {
+    return;
+  }
+  event.preventDefault();
+  const leadId = form.dataset.contactLogForm;
+  const data = new FormData(form);
+  try {
+    await api(`/api/lead-discovery/leads/${leadId}/contact-logs`, {
+      method: "POST",
+      body: JSON.stringify({ content: data.get("content"), channel: "note" }),
+    });
+    form.reset();
+    await refreshData();
+    renderLeadDetail(await api(`/api/lead-discovery/leads/${leadId}`));
+    showToast(t("toast.contactLogAdded"));
+  } catch (error) {
+    showToast(error.message);
+  }
+});
+
 document.querySelectorAll("[data-password-toggle]").forEach((button) => {
   button.addEventListener("click", () => {
     const input = button.parentElement && button.parentElement.querySelector("input");
@@ -2856,6 +3119,29 @@ document.addEventListener("click", async (event) => {
   if (target.closest("[data-refresh]")) {
     await refreshData();
     showToast(t("toast.refreshed"));
+    return;
+  }
+
+  const leadDetailButton = target.closest("[data-lead-detail-id]");
+  if (leadDetailButton) {
+    try {
+      renderLeadDetail(await api(`/api/lead-discovery/leads/${leadDetailButton.dataset.leadDetailId}`));
+    } catch (error) {
+      showToast(error.message);
+    }
+    return;
+  }
+
+  const leadProfileButton = target.closest("[data-lead-profile-id]");
+  if (leadProfileButton) {
+    try {
+      const result = await api(`/api/lead-discovery/leads/${leadProfileButton.dataset.leadProfileId}/profile`, { method: "POST" });
+      await refreshData();
+      renderLeadDetail(await api(`/api/lead-discovery/leads/${result.profile.lead_id}`));
+      showToast(t("toast.leadProfileGenerated"));
+    } catch (error) {
+      showToast(error.message);
+    }
     return;
   }
 

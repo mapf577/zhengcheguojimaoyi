@@ -100,6 +100,31 @@ const stores = {
     required: ["category", "module", "action", "status"],
     numeric: [],
   },
+  searchTasks: {
+    file: path.join(DATA_DIR, "search-tasks.json"),
+    required: ["keywords", "status"],
+    numeric: [],
+  },
+  leads: {
+    file: path.join(DATA_DIR, "leads.json"),
+    required: ["company_name"],
+    numeric: ["score"],
+  },
+  leadProfiles: {
+    file: path.join(DATA_DIR, "lead-profiles.json"),
+    required: ["lead_id"],
+    numeric: ["score"],
+  },
+  crawlResults: {
+    file: path.join(DATA_DIR, "crawl-results.json"),
+    required: ["url"],
+    numeric: [],
+  },
+  contactLogs: {
+    file: path.join(DATA_DIR, "contact-logs.json"),
+    required: ["lead_id", "content"],
+    numeric: [],
+  },
   adminUsers: {
     file: path.join(DATA_DIR, "admin-users.json"),
     required: ["username", "name", "status"],
@@ -219,6 +244,16 @@ const permissionCatalog = [
     label_en: "AI Maintenance",
     label_zh: "AI维护",
     permissions: [{ code: "ai_maintenance:manage", label_en: "Manage data with AI", label_zh: "使用AI维护数据" }],
+  },
+  {
+    group: "lead_discovery",
+    label_en: "AI Lead Discovery",
+    label_zh: "AI客户发现",
+    permissions: [
+      { code: "lead_discovery:view", label_en: "View lead discovery", label_zh: "查看客户发现" },
+      { code: "lead_discovery:manage", label_en: "Manage search tasks and leads", label_zh: "管理搜索任务和客户" },
+      { code: "lead_discovery:profile", label_en: "Generate AI profiles", label_zh: "生成AI画像" },
+    ],
   },
 ];
 
@@ -375,6 +410,97 @@ async function ensureMysqlSchema() {
   if (!indexes.length) {
     await mysqlPool.execute("CREATE INDEX idx_store_order ON app_records (store_type, row_order)");
   }
+
+  await ensureLeadDiscoveryTables();
+}
+
+async function ensureLeadDiscoveryTables() {
+  await mysqlPool.execute(`
+    CREATE TABLE IF NOT EXISTS search_tasks (
+      id VARCHAR(80) NOT NULL,
+      keywords TEXT NOT NULL,
+      countries JSON NULL,
+      industries JSON NULL,
+      status VARCHAR(32) NOT NULL DEFAULT 'active',
+      notes TEXT NULL,
+      created_at VARCHAR(40) NULL,
+      updated_at VARCHAR(40) NULL,
+      PRIMARY KEY (id),
+      KEY idx_search_tasks_status (status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+  await mysqlPool.execute(`
+    CREATE TABLE IF NOT EXISTS leads (
+      id VARCHAR(80) NOT NULL,
+      company_name VARCHAR(255) NOT NULL,
+      country VARCHAR(120) NULL,
+      industry VARCHAR(160) NULL,
+      score INT NULL,
+      contact_email VARCHAR(255) NULL,
+      contact_phone VARCHAR(120) NULL,
+      contact_website VARCHAR(500) NULL,
+      source_url TEXT NULL,
+      follow_status VARCHAR(40) NOT NULL DEFAULT 'new',
+      search_task_id VARCHAR(80) NULL,
+      created_at VARCHAR(40) NULL,
+      updated_at VARCHAR(40) NULL,
+      PRIMARY KEY (id),
+      KEY idx_leads_country (country),
+      KEY idx_leads_industry (industry),
+      KEY idx_leads_score (score),
+      KEY idx_leads_status (follow_status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+  await mysqlPool.execute(`
+    CREATE TABLE IF NOT EXISTS lead_profiles (
+      id VARCHAR(80) NOT NULL,
+      lead_id VARCHAR(80) NOT NULL,
+      ai_summary TEXT NULL,
+      business_type VARCHAR(160) NULL,
+      export_fit VARCHAR(120) NULL,
+      pain_points JSON NULL,
+      recommended_products TEXT NULL,
+      score INT NULL,
+      raw_json JSON NULL,
+      created_at VARCHAR(40) NULL,
+      updated_at VARCHAR(40) NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uniq_lead_profiles_lead (lead_id),
+      KEY idx_lead_profiles_score (score)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+  await mysqlPool.execute(`
+    CREATE TABLE IF NOT EXISTS crawl_results (
+      id VARCHAR(80) NOT NULL,
+      search_task_id VARCHAR(80) NULL,
+      url TEXT NOT NULL,
+      title VARCHAR(500) NULL,
+      content LONGTEXT NULL,
+      status VARCHAR(32) NOT NULL DEFAULT 'pending',
+      processed_lead_id VARCHAR(80) NULL,
+      created_at VARCHAR(40) NULL,
+      updated_at VARCHAR(40) NULL,
+      PRIMARY KEY (id),
+      KEY idx_crawl_results_status (status),
+      KEY idx_crawl_results_task (search_task_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+  await mysqlPool.execute(`
+    CREATE TABLE IF NOT EXISTS contact_logs (
+      id VARCHAR(80) NOT NULL,
+      lead_id VARCHAR(80) NOT NULL,
+      channel VARCHAR(80) NULL,
+      contact_person VARCHAR(160) NULL,
+      content TEXT NOT NULL,
+      result_status VARCHAR(80) NULL,
+      next_follow_up_at VARCHAR(40) NULL,
+      created_at VARCHAR(40) NULL,
+      updated_at VARCHAR(40) NULL,
+      PRIMARY KEY (id),
+      KEY idx_contact_logs_lead (lead_id),
+      KEY idx_contact_logs_next (next_follow_up_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
 }
 
 async function seedMysqlFromJson() {
@@ -445,6 +571,96 @@ function mysqlRecordIdsToDelete(existingIds, nextRows) {
   return existingIds.filter((id) => !nextIds.has(id));
 }
 
+const leadDiscoveryTableSchemas = {
+  searchTasks: {
+    table: "search_tasks",
+    json: ["countries", "industries"],
+    fields: ["id", "keywords", "countries", "industries", "status", "notes", "created_at", "updated_at"],
+  },
+  leads: {
+    table: "leads",
+    fields: ["id", "company_name", "country", "industry", "score", "contact_email", "contact_phone", "contact_website", "source_url", "follow_status", "search_task_id", "created_at", "updated_at"],
+  },
+  leadProfiles: {
+    table: "lead_profiles",
+    json: ["pain_points", "raw_json"],
+    fields: ["id", "lead_id", "ai_summary", "business_type", "export_fit", "pain_points", "recommended_products", "score", "raw_json", "created_at", "updated_at"],
+  },
+  crawlResults: {
+    table: "crawl_results",
+    fields: ["id", "search_task_id", "url", "title", "content", "status", "processed_lead_id", "created_at", "updated_at"],
+  },
+  contactLogs: {
+    table: "contact_logs",
+    fields: ["id", "lead_id", "channel", "contact_person", "content", "result_status", "next_follow_up_at", "created_at", "updated_at"],
+  },
+};
+
+function isLeadDiscoveryStore(type) {
+  return Boolean(leadDiscoveryTableSchemas[type]);
+}
+
+function normalizeMysqlTableValue(schema, field, value) {
+  if ((schema.json || []).includes(field)) {
+    return JSON.stringify(Array.isArray(value) || (value && typeof value === "object") ? value : []);
+  }
+  if (field === "score" && value !== "" && value !== null && value !== undefined) {
+    const score = Number(value);
+    return Number.isFinite(score) ? Math.max(0, Math.min(100, Math.round(score))) : null;
+  }
+  return value === undefined ? null : value;
+}
+
+function parseMysqlTableValue(schema, field, value) {
+  if ((schema.json || []).includes(field)) {
+    if (Array.isArray(value) || (value && typeof value === "object")) {
+      return value;
+    }
+    try {
+      return value ? JSON.parse(value) : [];
+    } catch {
+      return [];
+    }
+  }
+  return value ?? "";
+}
+
+async function readMysqlTableRows(type) {
+  const schema = leadDiscoveryTableSchemas[type];
+  const [rows] = await mysqlPool.execute(`SELECT ${schema.fields.map((field) => `\`${field}\``).join(", ")} FROM \`${schema.table}\` ORDER BY updated_at DESC, created_at DESC`);
+  return rows.map((row) => Object.fromEntries(schema.fields.map((field) => [field, parseMysqlTableValue(schema, field, row[field])])));
+}
+
+async function writeMysqlTableRows(type, rows) {
+  const schema = leadDiscoveryTableSchemas[type];
+  const connection = await mysqlPool.getConnection();
+  const normalizedRows = rows.map((row) => normalizeRecord(type, row));
+  try {
+    await connection.beginTransaction();
+    const [existingRows] = await connection.execute(`SELECT id FROM \`${schema.table}\``);
+    const nextIds = new Set(normalizedRows.map((row) => row.id));
+    const idsToDelete = existingRows.map((row) => row.id).filter((id) => !nextIds.has(id));
+    for (const idChunk of chunkRows(idsToDelete)) {
+      await connection.execute(`DELETE FROM \`${schema.table}\` WHERE id IN (${idChunk.map(() => "?").join(",")})`, idChunk);
+    }
+    for (const row of normalizedRows) {
+      const values = schema.fields.map((field) => normalizeMysqlTableValue(schema, field, row[field]));
+      await connection.execute(
+        `INSERT INTO \`${schema.table}\` (${schema.fields.map((field) => `\`${field}\``).join(", ")})
+          VALUES (${schema.fields.map(() => "?").join(", ")})
+          ON DUPLICATE KEY UPDATE ${schema.fields.filter((field) => field !== "id").map((field) => `\`${field}\` = VALUES(\`${field}\`)`).join(", ")}`,
+        values,
+      );
+    }
+    await connection.commit();
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
 async function writeMysqlRows(type, rows) {
   const connection = await mysqlPool.getConnection();
   const nextRows = rows.map((row, index) => mysqlRecordSnapshot(type, row, index));
@@ -498,6 +714,9 @@ async function writeMysqlRows(type, rows) {
 
 async function readRows(type) {
   if (mysqlPool) {
+    if (isLeadDiscoveryStore(type)) {
+      return readMysqlTableRows(type);
+    }
     return readMysqlRows(type);
   }
   return readJsonRows(type);
@@ -505,6 +724,10 @@ async function readRows(type) {
 
 async function writeRows(type, rows) {
   if (mysqlPool) {
+    if (isLeadDiscoveryStore(type)) {
+      await writeMysqlTableRows(type, rows);
+      return;
+    }
     await writeMysqlRows(type, rows);
     return;
   }
@@ -990,13 +1213,83 @@ function normalizeRecord(type, input, existing = {}) {
     inquiries: "inq",
     suppliers: "supplier",
     supplierUsers: "supplier_user",
+    searchTasks: "search_task",
+    leads: "lead",
+    leadProfiles: "lead_profile",
+    crawlResults: "crawl_result",
+    contactLogs: "contact_log",
   };
-  return {
+  const base = {
     ...existing,
     ...input,
     id: existing.id || input.id || createId(prefixes[type] || "rec"),
     created_at: existing.created_at || input.created_at || timestamp,
     updated_at: timestamp,
+  };
+  if (type === "searchTasks") {
+    return {
+      ...base,
+      keywords: String(input.keywords ?? existing.keywords ?? "").trim(),
+      countries: normalizeStringList(input.countries ?? existing.countries),
+      industries: normalizeStringList(input.industries ?? existing.industries),
+      status: ["active", "paused", "disabled"].includes(input.status) ? input.status : existing.status || "active",
+      notes: String(input.notes ?? existing.notes ?? "").trim(),
+    };
+  }
+  if (type === "leads") {
+    const score = Number(input.score ?? existing.score ?? 0);
+    return {
+      ...base,
+      company_name: String(input.company_name ?? existing.company_name ?? "").trim(),
+      country: String(input.country ?? existing.country ?? "").trim(),
+      industry: String(input.industry ?? existing.industry ?? "commercial vehicles").trim(),
+      score: Number.isFinite(score) ? Math.max(0, Math.min(100, Math.round(score))) : 0,
+      contact_email: String(input.contact_email ?? existing.contact_email ?? "").trim(),
+      contact_phone: String(input.contact_phone ?? existing.contact_phone ?? "").trim(),
+      contact_website: String(input.contact_website ?? existing.contact_website ?? "").trim(),
+      source_url: String(input.source_url ?? existing.source_url ?? "").trim(),
+      follow_status: ["new", "contacted", "qualified", "quoted", "won", "lost", "invalid"].includes(input.follow_status) ? input.follow_status : existing.follow_status || "new",
+      search_task_id: String(input.search_task_id ?? existing.search_task_id ?? "").trim(),
+    };
+  }
+  if (type === "leadProfiles") {
+    const score = Number(input.score ?? existing.score ?? 0);
+    return {
+      ...base,
+      lead_id: String(input.lead_id ?? existing.lead_id ?? "").trim(),
+      ai_summary: String(input.ai_summary ?? existing.ai_summary ?? "").trim(),
+      business_type: String(input.business_type ?? existing.business_type ?? "").trim(),
+      export_fit: String(input.export_fit ?? existing.export_fit ?? "").trim(),
+      pain_points: normalizeStringList(input.pain_points ?? existing.pain_points),
+      recommended_products: String(input.recommended_products ?? existing.recommended_products ?? "").trim(),
+      score: Number.isFinite(score) ? Math.max(0, Math.min(100, Math.round(score))) : 0,
+      raw_json: input.raw_json && typeof input.raw_json === "object" ? input.raw_json : existing.raw_json || {},
+    };
+  }
+  if (type === "crawlResults") {
+    return {
+      ...base,
+      search_task_id: String(input.search_task_id ?? existing.search_task_id ?? "").trim(),
+      url: String(input.url ?? existing.url ?? "").trim(),
+      title: String(input.title ?? existing.title ?? "").trim(),
+      content: String(input.content ?? existing.content ?? "").trim(),
+      status: ["pending", "profiled", "ignored"].includes(input.status) ? input.status : existing.status || "pending",
+      processed_lead_id: String(input.processed_lead_id ?? existing.processed_lead_id ?? "").trim(),
+    };
+  }
+  if (type === "contactLogs") {
+    return {
+      ...base,
+      lead_id: String(input.lead_id ?? existing.lead_id ?? "").trim(),
+      channel: String(input.channel ?? existing.channel ?? "").trim(),
+      contact_person: String(input.contact_person ?? existing.contact_person ?? "").trim(),
+      content: String(input.content ?? existing.content ?? "").trim(),
+      result_status: String(input.result_status ?? existing.result_status ?? "").trim(),
+      next_follow_up_at: String(input.next_follow_up_at ?? existing.next_follow_up_at ?? "").trim(),
+    };
+  }
+  return {
+    ...base,
   };
 }
 
@@ -2612,6 +2905,137 @@ async function callDeepSeekReception(input, options = {}) {
   }
 }
 
+function buildLeadProfileRules({ lead = {}, crawlResult = {} } = {}) {
+  const sourceText = [lead.company_name, lead.country, lead.industry, lead.contact_website, lead.source_url, crawlResult.title, crawlResult.content].filter(Boolean).join(" ").toLowerCase();
+  const commercialSignals = ["truck", "bus", "fleet", "logistics", "transport", "construction", "mining", "municipal", "commercial vehicle", "heavy duty", "light truck", "van"];
+  const importSignals = ["import", "dealer", "distributor", "fleet", "procurement", "wholesale", "trading", "government", "tender"];
+  const contactSignals = [lead.contact_email, lead.contact_phone, lead.contact_website].filter(Boolean).length;
+  const commercialHits = commercialSignals.filter((token) => sourceText.includes(token)).length;
+  const importHits = importSignals.filter((token) => sourceText.includes(token)).length;
+  const score = Math.max(25, Math.min(95, 35 + commercialHits * 8 + importHits * 7 + contactSignals * 8));
+  const businessType = commercialHits >= 2 ? "Commercial vehicle buyer or fleet operator" : "Potential vehicle trade prospect";
+  const exportFit = score >= 75 ? "high" : score >= 55 ? "medium" : "early-stage";
+  const painPoints = [];
+  if (/logistics|transport|fleet/.test(sourceText)) {
+    painPoints.push("fleet renewal");
+  }
+  if (/construction|mining|heavy/.test(sourceText)) {
+    painPoints.push("heavy-duty operating needs");
+  }
+  if (!contactSignals) {
+    painPoints.push("contact details need verification");
+  }
+  return {
+    ai_summary: `${lead.company_name || "This company"} appears to be a ${businessType.toLowerCase()} for commercial vehicle export outreach. Review source content before sales contact.`,
+    business_type: businessType,
+    export_fit: exportFit,
+    pain_points: painPoints.length ? painPoints : ["commercial vehicle sourcing validation"],
+    recommended_products: "Light trucks, cargo vans, buses, dump trucks, tractors, and related commercial vehicle solutions.",
+    score,
+    raw_json: { provider: "rules", commercial_hits: commercialHits, import_hits: importHits, contact_signals: contactSignals },
+  };
+}
+
+function buildLeadProfilePrompt({ lead = {}, crawlResult = {} } = {}) {
+  return [
+    "Create a commercial vehicle export lead profile as strict JSON only.",
+    "Score from 0 to 100 based on fit for China commercial vehicle export sales.",
+    'JSON shape: {"ai_summary":"...","business_type":"...","export_fit":"high|medium|early-stage|low","pain_points":["..."],"recommended_products":"...","score":72}',
+    `lead_json: ${JSON.stringify({
+      company_name: lead.company_name,
+      country: lead.country,
+      industry: lead.industry,
+      contact_email: lead.contact_email,
+      contact_phone: lead.contact_phone,
+      contact_website: lead.contact_website,
+      source_url: lead.source_url,
+    })}`,
+    `source_json: ${JSON.stringify({
+      url: crawlResult.url,
+      title: crawlResult.title,
+      content: String(crawlResult.content || "").slice(0, 5000),
+    })}`,
+  ].join("\n");
+}
+
+function parseLeadProfileJson(content) {
+  let parsed = null;
+  try {
+    const text = String(content || "").replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+    const firstBrace = text.indexOf("{");
+    const lastBrace = text.lastIndexOf("}");
+    parsed = JSON.parse(firstBrace >= 0 && lastBrace > firstBrace ? text.slice(firstBrace, lastBrace + 1) : text);
+  } catch {
+    return null;
+  }
+  const score = Number(parsed.score);
+  return {
+    ai_summary: String(parsed.ai_summary || "").trim().slice(0, 2000),
+    business_type: String(parsed.business_type || "").trim().slice(0, 200),
+    export_fit: ["high", "medium", "early-stage", "low"].includes(parsed.export_fit) ? parsed.export_fit : "medium",
+    pain_points: normalizeStringList(parsed.pain_points).slice(0, 8),
+    recommended_products: String(parsed.recommended_products || "").trim().slice(0, 1000),
+    score: Number.isFinite(score) ? Math.max(0, Math.min(100, Math.round(score))) : 50,
+    raw_json: parsed,
+  };
+}
+
+async function generateLeadProfile({ lead = {}, crawlResult = {} } = {}, options = {}) {
+  const fallback = buildLeadProfileRules({ lead, crawlResult });
+  const apiKey = options.apiKey ?? DEEPSEEK_API_KEY;
+  if (!apiKey || AI_PROVIDER !== "deepseek") {
+    return { ok: true, provider: "rules", profile: fallback };
+  }
+
+  const fetchImpl = options.fetchImpl || globalThis.fetch;
+  if (typeof fetchImpl !== "function") {
+    return { ok: true, provider: "rules", profile: fallback, fallback_reason: "fetch_unavailable" };
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), Number(options.timeoutMs || DEEPSEEK_TIMEOUT_MS));
+  try {
+    const response = await fetchImpl(`${String(options.baseUrl || DEEPSEEK_BASE_URL).replace(/\/+$/, "")}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: options.model || DEEPSEEK_MODEL,
+        messages: [
+          { role: "system", content: "You profile B2B export prospects for commercial vehicles. Return only valid JSON." },
+          { role: "user", content: buildLeadProfilePrompt({ lead, crawlResult }) },
+        ],
+        stream: false,
+        max_tokens: Number(options.maxTokens || DEEPSEEK_MAX_TOKENS),
+        response_format: { type: "json_object" },
+        thinking: { type: DEEPSEEK_THINKING === "enabled" ? "enabled" : "disabled" },
+      }),
+      signal: controller.signal,
+    });
+    const payload = await response.json().catch(() => ({}));
+    const parsed = response.ok ? parseLeadProfileJson(payload.choices?.[0]?.message?.content || "") : null;
+    if (!parsed) {
+      return { ok: true, provider: "rules", profile: fallback, fallback_reason: response.ok ? "invalid_json" : `http_${response.status}` };
+    }
+    return { ok: true, provider: "deepseek", model: options.model || DEEPSEEK_MODEL, profile: parsed, usage: payload.usage || {} };
+  } catch (error) {
+    return { ok: true, provider: "rules", profile: fallback, fallback_reason: error.name === "AbortError" ? "timeout" : "request_failed" };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function runCrawlerService(task = {}) {
+  return {
+    ok: true,
+    status: "reserved",
+    message: "Crawler service is reserved for a future integration. Add crawl result URLs manually in this version.",
+    task_id: task.id || "",
+  };
+}
+
 const aiMaintenanceSchemas = {
   vehicles: {
     keyFields: ["sku"],
@@ -3340,6 +3764,227 @@ async function handleInquiryUpdate(req, res, id) {
   sendJson(res, 200, rows[index]);
 }
 
+async function handleLeadSearchTasks(req, res, id = "") {
+  if (!(await requirePermission(req, res, req.method === "GET" ? "lead_discovery:view" : "lead_discovery:manage"))) {
+    return;
+  }
+  const rows = await readRows("searchTasks");
+  if (req.method === "GET") {
+    sendJson(res, 200, { items: rows });
+    return;
+  }
+  if (req.method === "POST") {
+    const body = await readJson(req);
+    const record = normalizeRecord("searchTasks", body);
+    const errors = validateRecord("searchTasks", record);
+    if (errors.length) {
+      sendJson(res, 400, { errors });
+      return;
+    }
+    rows.unshift(record);
+    await writeRows("searchTasks", rows);
+    sendJson(res, 201, record);
+    return;
+  }
+  if (req.method === "PUT" && id) {
+    const index = rows.findIndex((row) => row.id === id);
+    if (index === -1) {
+      sendJson(res, 404, { error: "Not found" });
+      return;
+    }
+    rows[index] = normalizeRecord("searchTasks", await readJson(req), rows[index]);
+    const errors = validateRecord("searchTasks", rows[index]);
+    if (errors.length) {
+      sendJson(res, 400, { errors });
+      return;
+    }
+    await writeRows("searchTasks", rows);
+    sendJson(res, 200, rows[index]);
+    return;
+  }
+  sendJson(res, 405, { error: "Method not allowed" });
+}
+
+async function handleLeadCrawlResults(req, res, id = "") {
+  if (!(await requirePermission(req, res, req.method === "GET" ? "lead_discovery:view" : "lead_discovery:manage"))) {
+    return;
+  }
+  const rows = await readRows("crawlResults");
+  if (req.method === "GET") {
+    sendJson(res, 200, { items: rows });
+    return;
+  }
+  if (req.method === "POST") {
+    const body = await readJson(req);
+    const record = normalizeRecord("crawlResults", body);
+    const errors = validateRecord("crawlResults", record);
+    if (errors.length) {
+      sendJson(res, 400, { errors });
+      return;
+    }
+    const leads = await readRows("leads");
+    const existingLead = leads.find((lead) => lead.source_url === record.url);
+    let fallbackCompany = record.title || record.url;
+    try {
+      fallbackCompany = record.title || new URL(record.url).hostname.replace(/^www\./, "");
+    } catch {
+      fallbackCompany = record.title || record.url;
+    }
+    const lead = existingLead || normalizeRecord("leads", {
+      company_name: fallbackCompany,
+      country: "",
+      industry: "commercial vehicles",
+      source_url: record.url,
+      search_task_id: record.search_task_id,
+      follow_status: "new",
+    });
+    if (!existingLead) {
+      leads.unshift(lead);
+      await writeRows("leads", leads);
+    }
+    record.processed_lead_id = lead.id;
+    rows.unshift(record);
+    await writeRows("crawlResults", rows);
+    sendJson(res, 201, { ...record, lead });
+    return;
+  }
+  if (req.method === "PUT" && id) {
+    const index = rows.findIndex((row) => row.id === id);
+    if (index === -1) {
+      sendJson(res, 404, { error: "Not found" });
+      return;
+    }
+    rows[index] = normalizeRecord("crawlResults", await readJson(req), rows[index]);
+    await writeRows("crawlResults", rows);
+    sendJson(res, 200, rows[index]);
+    return;
+  }
+  sendJson(res, 405, { error: "Method not allowed" });
+}
+
+async function upsertLeadProfile(lead, crawlResult = {}) {
+  const profileResult = await generateLeadProfile({ lead, crawlResult });
+  const profiles = await readRows("leadProfiles");
+  const existing = profiles.find((row) => row.lead_id === lead.id);
+  const record = normalizeRecord("leadProfiles", { ...profileResult.profile, lead_id: lead.id }, existing || {});
+  if (existing) {
+    profiles[profiles.findIndex((row) => row.id === existing.id)] = record;
+  } else {
+    profiles.unshift(record);
+  }
+  await writeRows("leadProfiles", profiles);
+
+  const leads = await readRows("leads");
+  const leadIndex = leads.findIndex((row) => row.id === lead.id);
+  if (leadIndex >= 0) {
+    leads[leadIndex] = normalizeRecord("leads", { score: record.score }, leads[leadIndex]);
+    await writeRows("leads", leads);
+  }
+  return { profile: record, provider: profileResult.provider, fallback_reason: profileResult.fallback_reason || "" };
+}
+
+async function handleLeadCollection(req, res, id = "", action = "") {
+  const permission = req.method === "GET" ? "lead_discovery:view" : action === "profile" ? "lead_discovery:profile" : "lead_discovery:manage";
+  if (!(await requirePermission(req, res, permission))) {
+    return;
+  }
+  const rows = await readRows("leads");
+  if (req.method === "GET" && !id) {
+    const profiles = await readRows("leadProfiles");
+    sendJson(res, 200, {
+      items: rows.map((lead) => ({ ...lead, profile: profiles.find((profile) => profile.lead_id === lead.id) || null })),
+    });
+    return;
+  }
+  if (req.method === "GET" && id) {
+    const lead = rows.find((row) => row.id === id);
+    if (!lead) {
+      sendJson(res, 404, { error: "Not found" });
+      return;
+    }
+    const [profiles, crawlResults, contactLogs] = await Promise.all([readRows("leadProfiles"), readRows("crawlResults"), readRows("contactLogs")]);
+    sendJson(res, 200, {
+      ...lead,
+      profile: profiles.find((profile) => profile.lead_id === lead.id) || null,
+      crawl_results: crawlResults.filter((row) => row.processed_lead_id === lead.id || row.url === lead.source_url),
+      contact_logs: contactLogs.filter((row) => row.lead_id === lead.id),
+    });
+    return;
+  }
+  if (req.method === "POST" && !id) {
+    const record = normalizeRecord("leads", await readJson(req));
+    const errors = validateRecord("leads", record);
+    if (errors.length) {
+      sendJson(res, 400, { errors });
+      return;
+    }
+    rows.unshift(record);
+    await writeRows("leads", rows);
+    sendJson(res, 201, record);
+    return;
+  }
+  if (req.method === "PUT" && id) {
+    const index = rows.findIndex((row) => row.id === id);
+    if (index === -1) {
+      sendJson(res, 404, { error: "Not found" });
+      return;
+    }
+    rows[index] = normalizeRecord("leads", await readJson(req), rows[index]);
+    await writeRows("leads", rows);
+    sendJson(res, 200, rows[index]);
+    return;
+  }
+  if (req.method === "POST" && id && action === "profile") {
+    const lead = rows.find((row) => row.id === id);
+    if (!lead) {
+      sendJson(res, 404, { error: "Not found" });
+      return;
+    }
+    const crawlResults = await readRows("crawlResults");
+    const crawlResult = crawlResults.find((row) => row.processed_lead_id === lead.id || row.url === lead.source_url) || {};
+    const result = await upsertLeadProfile(lead, crawlResult);
+    sendJson(res, 200, result);
+    return;
+  }
+  sendJson(res, 405, { error: "Method not allowed" });
+}
+
+async function handleLeadContactLogs(req, res, leadId) {
+  if (!(await requirePermission(req, res, req.method === "GET" ? "lead_discovery:view" : "lead_discovery:manage"))) {
+    return;
+  }
+  const rows = await readRows("contactLogs");
+  if (req.method === "GET") {
+    sendJson(res, 200, { items: rows.filter((row) => row.lead_id === leadId) });
+    return;
+  }
+  if (req.method === "POST") {
+    const record = normalizeRecord("contactLogs", { ...(await readJson(req)), lead_id: leadId });
+    const errors = validateRecord("contactLogs", record);
+    if (errors.length) {
+      sendJson(res, 400, { errors });
+      return;
+    }
+    rows.unshift(record);
+    await writeRows("contactLogs", rows);
+    sendJson(res, 201, record);
+    return;
+  }
+  sendJson(res, 405, { error: "Method not allowed" });
+}
+
+async function handleLeadCrawlerRun(req, res, taskId) {
+  if (!(await requirePermission(req, res, "lead_discovery:manage"))) {
+    return;
+  }
+  const task = (await readRows("searchTasks")).find((row) => row.id === taskId);
+  if (!task) {
+    sendJson(res, 404, { error: "Not found" });
+    return;
+  }
+  sendJson(res, 200, await runCrawlerService(task));
+}
+
 async function handleAiLogs(req, res) {
   if (!(await requirePermission(req, res, "ai_logs:view"))) {
     return;
@@ -3805,6 +4450,36 @@ async function handleApi(req, res, pathname) {
     return true;
   }
 
+  const leadTaskCrawlerMatch = pathname.match(/^\/api\/lead-discovery\/search-tasks\/([^/]+)\/crawler-run$/);
+  if (leadTaskCrawlerMatch && req.method === "POST") {
+    await handleLeadCrawlerRun(req, res, leadTaskCrawlerMatch[1]);
+    return true;
+  }
+
+  const leadTaskMatch = pathname.match(/^\/api\/lead-discovery\/search-tasks(?:\/([^/]+))?$/);
+  if (leadTaskMatch) {
+    await handleLeadSearchTasks(req, res, leadTaskMatch[1]);
+    return true;
+  }
+
+  const crawlResultMatch = pathname.match(/^\/api\/lead-discovery\/crawl-results(?:\/([^/]+))?$/);
+  if (crawlResultMatch) {
+    await handleLeadCrawlResults(req, res, crawlResultMatch[1]);
+    return true;
+  }
+
+  const leadContactMatch = pathname.match(/^\/api\/lead-discovery\/leads\/([^/]+)\/contact-logs$/);
+  if (leadContactMatch) {
+    await handleLeadContactLogs(req, res, leadContactMatch[1]);
+    return true;
+  }
+
+  const leadMatch = pathname.match(/^\/api\/lead-discovery\/leads(?:\/([^/]+)(?:\/([^/]+))?)?$/);
+  if (leadMatch) {
+    await handleLeadCollection(req, res, leadMatch[1], leadMatch[2]);
+    return true;
+  }
+
   const adminSupplierMatch = pathname.match(/^\/api\/admin\/suppliers(?:\/([^/]+))?$/);
   if (adminSupplierMatch) {
     await handleAdminSuppliers(req, res, adminSupplierMatch[1]);
@@ -3952,6 +4627,8 @@ module.exports = {
   buildContentSecurityPolicy,
   buildDeepSeekSystemPrompt,
   buildDeepSeekUserPrompt,
+  buildLeadProfileRules,
+  buildLeadProfilePrompt,
   buildAiMaintenanceSystemPrompt,
   buildAiMaintenanceUserPrompt,
   buildMediaUrl,
@@ -3981,6 +4658,7 @@ module.exports = {
   normalizeDictionaryImportRow,
   parseAiMaintenanceJsonPlan,
   parseDeepSeekJsonReply,
+  parseLeadProfileJson,
   previewAiMaintenanceOperation,
   previewAiMaintenanceOperations,
   parseSignedToken,
