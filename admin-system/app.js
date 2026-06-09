@@ -789,11 +789,13 @@ Object.assign(adminTranslations.en, {
   "metric.inquiriesHint": "Customer request pipeline",
   "metric.aiLogsHint": "Traceable assistant actions",
   "dashboard.heroEyebrow": "Live operations",
-  "dashboard.heroTitle": "Export Command Center",
-  "dashboard.heroText": "Track catalogue capacity, inquiry pressure and AI activity from one control surface.",
+  "dashboard.heroTitle": "Export Operation Command Center",
+  "dashboard.heroText": "Prioritize export-ready inventory, new buyer requests, follow-ups and assisted actions from one command surface.",
+  "dashboard.viewInquiries": "View Inquiries",
+  "dashboard.createQuote": "Create Quote",
   "dashboard.live": "Live",
-  "dashboard.snapshotEyebrow": "Snapshot",
-  "dashboard.catalogTitle": "Catalogue Overview",
+  "dashboard.snapshotEyebrow": "Inventory",
+  "dashboard.catalogTitle": "Inventory Health",
   "dashboard.pipelineEyebrow": "Pipeline",
   "dashboard.inquiryTitle": "Latest Inquiries",
   "dashboard.activityEyebrow": "Realtime",
@@ -802,6 +804,26 @@ Object.assign(adminTranslations.en, {
   "dashboard.tableTotal": "Total",
   "dashboard.tableReady": "Ready",
   "dashboard.tableTop": "Top Category",
+  "dashboard.tableBuyer": "Buyer",
+  "dashboard.tableRequest": "Request",
+  "dashboard.metricAvailableVehicles": "Available Vehicles",
+  "dashboard.metricNewInquiries": "New Inquiries",
+  "dashboard.metricPendingFollowups": "Pending Follow-ups",
+  "dashboard.metricAiActions": "AI Actions",
+  "dashboard.subExportReady": "{count} export-ready",
+  "dashboard.subToday": "{count} today",
+  "dashboard.subWaiting": "{count} waiting",
+  "dashboard.subNeedAction": "{count} need action",
+  "dashboard.healthTotal": "Total",
+  "dashboard.healthAvailable": "Available",
+  "dashboard.healthMissingPrice": "Missing price",
+  "dashboard.healthMissingImages": "Missing images",
+  "dashboard.healthTotalHint": "Vehicles and parts",
+  "dashboard.healthAvailableHint": "Ready or in stock",
+  "dashboard.healthMissingPriceHint": "Need commercial review",
+  "dashboard.healthMissingImagesHint": "Need presentation assets",
+  "dashboard.view": "View",
+  "dashboard.followUp": "Follow up",
   "dashboard.segmentVehicles": "Vehicles",
   "dashboard.segmentParts": "Auto Parts",
   "dashboard.segmentInquiries": "Inquiries",
@@ -883,11 +905,13 @@ Object.assign(adminTranslations.zh, {
   "metric.inquiriesHint": "客户询盘流程",
   "metric.aiLogsHint": "可追踪的 AI 操作",
   "dashboard.heroEyebrow": "实时运营",
-  "dashboard.heroTitle": "出口业务指挥中心",
-  "dashboard.heroText": "集中查看商品容量、询盘压力和 AI 动作，快速判断今天该处理什么。",
+  "dashboard.heroTitle": "汽车出口业务指挥中心",
+  "dashboard.heroText": "集中处理可出口库存、新询盘、待跟进事项和辅助动作，快速判断今天该优先推进什么。",
+  "dashboard.viewInquiries": "查看询盘",
+  "dashboard.createQuote": "创建报价",
   "dashboard.live": "实时",
-  "dashboard.snapshotEyebrow": "总览",
-  "dashboard.catalogTitle": "商品数据概览",
+  "dashboard.snapshotEyebrow": "库存",
+  "dashboard.catalogTitle": "库存健康度",
   "dashboard.pipelineEyebrow": "管线",
   "dashboard.inquiryTitle": "最新询盘",
   "dashboard.activityEyebrow": "实时",
@@ -896,6 +920,26 @@ Object.assign(adminTranslations.zh, {
   "dashboard.tableTotal": "总数",
   "dashboard.tableReady": "可用",
   "dashboard.tableTop": "主要类别",
+  "dashboard.tableBuyer": "买家",
+  "dashboard.tableRequest": "需求",
+  "dashboard.metricAvailableVehicles": "可用整车",
+  "dashboard.metricNewInquiries": "新询盘",
+  "dashboard.metricPendingFollowups": "待跟进",
+  "dashboard.metricAiActions": "AI 动作",
+  "dashboard.subExportReady": "{count} 台可出口",
+  "dashboard.subToday": "今日 {count}",
+  "dashboard.subWaiting": "{count} 条等待处理",
+  "dashboard.subNeedAction": "{count} 条需处理",
+  "dashboard.healthTotal": "总数",
+  "dashboard.healthAvailable": "可用",
+  "dashboard.healthMissingPrice": "缺少价格",
+  "dashboard.healthMissingImages": "缺少图片",
+  "dashboard.healthTotalHint": "整车和零配件",
+  "dashboard.healthAvailableHint": "现货或可出口",
+  "dashboard.healthMissingPriceHint": "需要商务补全",
+  "dashboard.healthMissingImagesHint": "需要展示素材",
+  "dashboard.view": "查看",
+  "dashboard.followUp": "跟进",
   "dashboard.segmentVehicles": "整车",
   "dashboard.segmentParts": "零配件",
   "dashboard.segmentInquiries": "询盘",
@@ -1291,6 +1335,59 @@ function openInquiryCount() {
   return (state.data.inquiries || []).filter((row) => !["Won", "Lost", "Invalid"].includes(String(row.status || ""))).length;
 }
 
+function newInquiryCount() {
+  return (state.data.inquiries || []).filter((row) => String(row.status || "New") === "New").length;
+}
+
+function pendingFollowupCount() {
+  return (state.data.inquiries || []).filter((row) => ["New", "Contacted", "Negotiating"].includes(String(row.status || "New"))).length;
+}
+
+function isToday(value) {
+  return String(value || "").slice(0, 10) === todayKey();
+}
+
+function hasMissingPrice(row) {
+  return !String(row.price_min || "").trim() && !String(row.price_max || "").trim();
+}
+
+function hasMissingImages(row) {
+  return !String(row.images || "").trim();
+}
+
+function updateMetric(selector, value) {
+  const node = document.querySelector(selector);
+  if (node) {
+    node.textContent = String(value);
+  }
+}
+
+function updateMetricSub(selector, value) {
+  const node = document.querySelector(selector);
+  if (node) {
+    node.textContent = value;
+  }
+}
+
+function renderDashboardMetrics() {
+  const vehicles = state.data.vehicles || [];
+  const inquiries = state.data.inquiries || [];
+  const aiLogs = state.data.aiLogs || [];
+  const availableVehicles = vehicles.filter(isReadyStock).length;
+  const todayInquiries = inquiries.filter((row) => isToday(row.created_at)).length;
+  const todayAiLogs = aiLogs.filter((row) => isToday(row.created_at)).length;
+  const pending = pendingFollowupCount();
+
+  updateMetric("[data-metric-available-vehicles]", availableVehicles);
+  updateMetricSub("[data-metric-available-vehicles-sub]", t("dashboard.subExportReady", { count: availableVehicles }));
+  updateMetric("[data-metric-new-inquiries]", newInquiryCount());
+  updateMetricSub("[data-metric-new-inquiries-sub]", t("dashboard.subToday", { count: todayInquiries }));
+  updateMetric("[data-metric-pending-followups]", pending);
+  updateMetricSub("[data-metric-pending-followups-sub]", t("dashboard.subNeedAction", { count: pending }));
+  updateMetric("[data-metric-ai-actions]", aiLogs.length);
+  updateMetricSub("[data-metric-ai-actions-sub]", t("dashboard.subToday", { count: todayAiLogs }));
+}
+
 function setDashboardClock() {
   const node = document.querySelector("[data-dashboard-clock]");
   if (node) {
@@ -1306,45 +1403,42 @@ function renderDashboardCatalog() {
 
   const vehicles = state.data.vehicles || [];
   const parts = state.data.parts || [];
-  const inquiries = state.data.inquiries || [];
-  const aiLogs = state.data.aiLogs || [];
-  const today = todayKey();
+  const inventory = [...vehicles, ...parts];
   const rows = [
     {
-      segment: t("dashboard.segmentVehicles"),
-      total: vehicles.length,
-      ready: `${vehicles.filter(isReadyStock).length} ${t("dashboard.readyVehicles")}`,
-      top: topValueLabel(vehicles, "vehicle_type", "vehicle_types"),
+      label: t("dashboard.healthTotal"),
+      value: inventory.length,
+      hint: t("dashboard.healthTotalHint"),
+      tone: "neutral",
     },
     {
-      segment: t("dashboard.segmentParts"),
-      total: parts.length,
-      ready: `${parts.filter(isReadyStock).length} ${t("dashboard.readyParts")}`,
-      top: topValueLabel(parts, "category", "part_categories"),
+      label: t("dashboard.healthAvailable"),
+      value: inventory.filter(isReadyStock).length,
+      hint: t("dashboard.healthAvailableHint"),
+      tone: "good",
     },
     {
-      segment: t("dashboard.segmentInquiries"),
-      total: inquiries.length,
-      ready: `${openInquiryCount()} ${t("dashboard.openInquiries")}`,
-      top: topValueLabel(inquiries, "source"),
+      label: t("dashboard.healthMissingPrice"),
+      value: inventory.filter(hasMissingPrice).length,
+      hint: t("dashboard.healthMissingPriceHint"),
+      tone: "warning",
     },
     {
-      segment: t("dashboard.segmentAiLogs"),
-      total: aiLogs.length,
-      ready: `${aiLogs.filter((row) => String(row.created_at || "").slice(0, 10) === today).length} ${t("dashboard.todayLogs")}`,
-      top: topValueLabel(aiLogs, "module"),
+      label: t("dashboard.healthMissingImages"),
+      value: inventory.filter(hasMissingImages).length,
+      hint: t("dashboard.healthMissingImagesHint"),
+      tone: "danger",
     },
   ];
 
   body.innerHTML = rows
     .map(
       (row) => `
-        <tr>
-          <td><strong>${escapeHtml(row.segment)}</strong></td>
-          <td class="number-cell">${escapeHtml(row.total)}</td>
-          <td>${escapeHtml(row.ready)}</td>
-          <td>${escapeHtml(row.top)}</td>
-        </tr>
+        <div class="inventory-health-card inventory-health-${escapeHtml(row.tone)}">
+          <span>${escapeHtml(row.label)}</span>
+          <strong>${escapeHtml(row.value)}</strong>
+          <small>${escapeHtml(row.hint)}</small>
+        </div>
       `,
     )
     .join("");
@@ -1358,7 +1452,7 @@ function renderDashboardInquiries() {
 
   const rows = [...(state.data.inquiries || [])].sort((a, b) => parseTime(b.created_at) - parseTime(a.created_at)).slice(0, 5);
   if (!rows.length) {
-    body.innerHTML = `<tr><td colspan="4">${escapeHtml(t("dashboard.noData"))}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="6">${escapeHtml(t("dashboard.noData"))}</td></tr>`;
     return;
   }
 
@@ -1366,10 +1460,21 @@ function renderDashboardInquiries() {
     .map(
       (row) => `
         <tr>
-          <td><strong>${escapeHtml(row.name || "--")}</strong></td>
+          <td>
+            <strong>${escapeHtml(row.name || row.email || "--")}</strong>
+            <small class="table-subtext">${escapeHtml(row.country || row.email || "")}</small>
+          </td>
+          <td>${escapeHtml(String(row.message || row.product_type || "--").slice(0, 76))}</td>
           <td>${escapeHtml(row.source || "Website Form")}</td>
           <td><span class="status-pill status-${statusClass(row.status)}">${escapeHtml(statusText(row.status || "New"))}</span></td>
           <td>${escapeHtml(formatDateTime(row.created_at) || "--")}</td>
+          <td>
+            <div class="row-actions compact-actions">
+              <button class="secondary-button" type="button" data-dashboard-view="inquiries">${escapeHtml(t("dashboard.view"))}</button>
+              ${row.email ? `<a class="secondary-button" href="mailto:${escapeHtml(row.email)}">${escapeHtml(t("dashboard.followUp"))}</a>` : ""}
+              <button class="secondary-button" type="button" data-dashboard-quote-id="${escapeHtml(row.id)}">${escapeHtml(t("dashboard.createQuote"))}</button>
+            </div>
+          </td>
         </tr>
       `,
     )
@@ -1462,6 +1567,7 @@ function renderDashboardActivity() {
 
 function renderDashboard() {
   setDashboardClock();
+  renderDashboardMetrics();
   renderDashboardCatalog();
   renderDashboardInquiries();
   renderDashboardFocus();
@@ -1654,13 +1760,6 @@ function switchView(view) {
 }
 
 function renderMetrics() {
-  document.querySelector("[data-metric-vehicles]").textContent = String(state.data.vehicles.length);
-  document.querySelector("[data-metric-parts]").textContent = String(state.data.parts.length);
-  document.querySelector("[data-metric-inquiries]").textContent = String(state.data.inquiries.length);
-  const aiLogsMetric = document.querySelector("[data-metric-ai-logs]");
-  if (aiLogsMetric) {
-    aiLogsMetric.textContent = String(state.data.aiLogs.length);
-  }
   renderDashboard();
 }
 
@@ -2721,6 +2820,24 @@ document.addEventListener("click", async (event) => {
   const viewButton = target.closest("[data-view]");
   if (viewButton) {
     switchView(viewButton.dataset.view);
+    return;
+  }
+
+  const dashboardViewButton = target.closest("[data-dashboard-view]");
+  if (dashboardViewButton) {
+    switchView(dashboardViewButton.dataset.dashboardView);
+    return;
+  }
+
+  const dashboardQuoteButton = target.closest("[data-dashboard-quote]");
+  if (dashboardQuoteButton) {
+    switchView("inquiries");
+    return;
+  }
+
+  const dashboardQuoteIdButton = target.closest("[data-dashboard-quote-id]");
+  if (dashboardQuoteIdButton) {
+    switchView("inquiries");
     return;
   }
 

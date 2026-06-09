@@ -159,13 +159,13 @@
               <span data-i18n="workspace.welcome">Welcome back</span>
               <strong data-welcome-user>admin</strong>
             </div>
-            <div>
+            <div class="muted-utility">
               <span data-i18n="workspace.ipAddress">IP address</span>
               <strong data-client-ip>--</strong>
             </div>
           </div>
           <div class="header-meta">
-            <div class="header-status-card">
+            <div class="header-status-card muted-utility">
               <span data-i18n="workspace.status">Console date</span>
               <strong data-current-date>--</strong>
             </div>
@@ -181,8 +181,13 @@
           <div class="dashboard-hero">
             <div class="dashboard-hero-copy">
               <p class="eyebrow" data-i18n="dashboard.heroEyebrow">Live operations</p>
-              <h2 data-i18n="dashboard.heroTitle">Export Command Center</h2>
+              <h2 data-i18n="dashboard.heroTitle">Export Operation Command Center</h2>
               <p data-i18n="dashboard.heroText">Track catalogue capacity, inquiry pressure and AI activity from one control surface.</p>
+              <div class="dashboard-hero-actions">
+                <button class="primary-button" type="button" data-new-record="vehicles" data-i18n="action.addVehicle">Add Vehicle</button>
+                <button class="secondary-button" type="button" data-dashboard-view="inquiries" data-i18n="dashboard.viewInquiries">View Inquiries</button>
+                <button class="secondary-button" type="button" data-dashboard-quote data-i18n="dashboard.createQuote">Create Quote</button>
+              </div>
             </div>
             <div class="dashboard-hero-status">
               <span data-i18n="dashboard.live">Live</span>
@@ -192,24 +197,24 @@
 
           <div class="metric-grid dashboard-metric-grid">
             <div class="metric-card metric-card-accent">
-              <span data-i18n="nav.vehicles">Vehicles</span>
-              <strong data-metric-vehicles>0</strong>
-              <small data-i18n="metric.vehiclesHint">Export catalogue records</small>
+              <span data-i18n="dashboard.metricAvailableVehicles">Available Vehicles</span>
+              <strong data-metric-available-vehicles>0</strong>
+              <small data-metric-available-vehicles-sub>0 export-ready</small>
             </div>
             <div class="metric-card">
-              <span data-i18n="nav.parts">Auto Parts</span>
-              <strong data-metric-parts>0</strong>
-              <small data-i18n="metric.partsHint">Parts inventory records</small>
+              <span data-i18n="dashboard.metricNewInquiries">New Inquiries</span>
+              <strong data-metric-new-inquiries>0</strong>
+              <small data-metric-new-inquiries-sub>0 today</small>
             </div>
             <div class="metric-card">
-              <span data-i18n="nav.inquiries">Inquiries</span>
-              <strong data-metric-inquiries>0</strong>
-              <small data-i18n="metric.inquiriesHint">Customer request pipeline</small>
+              <span data-i18n="dashboard.metricPendingFollowups">Pending Follow-ups</span>
+              <strong data-metric-pending-followups>0</strong>
+              <small data-metric-pending-followups-sub>0 need action</small>
             </div>
             <div class="metric-card">
-              <span data-i18n="nav.aiLogs">AI Logs</span>
-              <strong data-metric-ai-logs>0</strong>
-              <small data-i18n="metric.aiLogsHint">Traceable assistant actions</small>
+              <span data-i18n="dashboard.metricAiActions">AI Actions</span>
+              <strong data-metric-ai-actions>0</strong>
+              <small data-metric-ai-actions-sub>0 today</small>
             </div>
           </div>
 
@@ -217,23 +222,11 @@
             <div class="panel dashboard-panel">
               <div class="panel-header wrap">
                 <div class="panel-title-stack">
-                  <p class="eyebrow" data-i18n="dashboard.snapshotEyebrow">Snapshot</p>
-                  <h2 data-i18n="dashboard.catalogTitle">Catalogue Overview</h2>
+                  <p class="eyebrow" data-i18n="dashboard.snapshotEyebrow">Inventory</p>
+                  <h2 data-i18n="dashboard.catalogTitle">Inventory Health</h2>
                 </div>
               </div>
-              <div class="dashboard-table-wrap">
-                <table class="dashboard-table">
-                  <thead>
-                    <tr>
-                      <th data-i18n="dashboard.tableSegment">Segment</th>
-                      <th data-i18n="dashboard.tableTotal">Total</th>
-                      <th data-i18n="dashboard.tableReady">Ready</th>
-                      <th data-i18n="dashboard.tableTop">Top Category</th>
-                    </tr>
-                  </thead>
-                  <tbody data-dashboard-catalog-body></tbody>
-                </table>
-              </div>
+              <div class="inventory-health-grid" data-dashboard-catalog-body></div>
             </div>
 
             <div class="panel dashboard-panel">
@@ -247,10 +240,12 @@
                 <table class="dashboard-table">
                   <thead>
                     <tr>
-                      <th data-i18n="table.name">Name</th>
+                      <th data-i18n="dashboard.tableBuyer">Buyer</th>
+                      <th data-i18n="dashboard.tableRequest">Request</th>
                       <th data-i18n="table.source">Source</th>
                       <th data-i18n="table.status">Status</th>
                       <th data-i18n="table.created">Created</th>
+                      <th data-i18n="table.actions">Actions</th>
                     </tr>
                   </thead>
                   <tbody data-dashboard-inquiry-body></tbody>
