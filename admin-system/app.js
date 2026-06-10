@@ -272,10 +272,20 @@ const adminTranslations = {
     "nav.parts": "Auto Parts",
     "nav.inquiries": "Inquiries",
     "nav.leadDiscovery": "AI Lead Discovery",
+    "nav.groupInventory": "Products & Inventory",
+    "nav.groupCustomers": "Customer Operations",
+    "nav.groupAiTools": "AI Tools",
+    "nav.groupTools": "Tools & System",
+    "nav.leadTasks": "Discovery Tasks",
+    "nav.leadPool": "Lead Pool",
     "nav.aiLogs": "AI Logs",
     "nav.aiMaintenance": "AI Maintenance",
     "leadDiscovery.title": "Commercial Vehicle Lead Discovery",
     "leadDiscovery.hint": "Discover commercial vehicle importers, dealers, fleet operators and project buyers by country, vehicle type and industry.",
+    "leadDiscovery.taskCenterTitle": "Lead Discovery Tasks",
+    "leadDiscovery.taskCenterHint": "Configure search tasks, run collection and review task progress.",
+    "leadDiscovery.leadPoolTitle": "Lead Pool & Profiles",
+    "leadDiscovery.leadPoolHint": "Review lead quality, AI profiles, contact details and follow-up records.",
     "leadDiscovery.searchTask": "Search Configuration",
     "leadDiscovery.searchTaskHint": "Configure countries, vehicles and buyer profiles for commercial vehicle export prospecting.",
     "leadDiscovery.keywords": "Keywords",
@@ -297,6 +307,8 @@ const adminTranslations = {
     "leadDiscovery.createTask": "Create Search Task",
     "leadDiscovery.runCrawler": "Run Crawler",
     "leadDiscovery.tasks": "Tasks",
+    "leadDiscovery.recentTasks": "Recent Search Tasks",
+    "leadDiscovery.recentTasksHint": "Run or review recent commercial vehicle lead searches.",
     "leadDiscovery.progress": "Search Progress",
     "leadDiscovery.progressHint": "Run a task to collect websites, contacts, scores and AI profiles.",
     "leadDiscovery.progressIdle": "No crawler task is running.",
@@ -460,10 +472,20 @@ const adminTranslations = {
     "nav.parts": "零配件管理",
     "nav.inquiries": "询盘管理",
     "nav.leadDiscovery": "AI客户发现",
+    "nav.groupInventory": "商品与库存",
+    "nav.groupCustomers": "客户运营",
+    "nav.groupAiTools": "AI工具",
+    "nav.groupTools": "工具与系统",
+    "nav.leadTasks": "发现任务",
+    "nav.leadPool": "客户线索池",
     "nav.aiLogs": "AI日志",
     "nav.aiMaintenance": "AI维护",
     "leadDiscovery.title": "商用车出口客户发现",
     "leadDiscovery.hint": "按国家、车型和行业发现商用车进口商、经销商、车队运营商和项目采购方。",
+    "leadDiscovery.taskCenterTitle": "客户发现任务",
+    "leadDiscovery.taskCenterHint": "配置搜索任务、运行采集并查看任务进度。",
+    "leadDiscovery.leadPoolTitle": "客户线索池与画像",
+    "leadDiscovery.leadPoolHint": "查看客户质量、AI画像、联系方式和跟进记录。",
     "leadDiscovery.searchTask": "搜索配置",
     "leadDiscovery.searchTaskHint": "配置国家、车型和客户画像，用于商用车出口线索开发。",
     "leadDiscovery.keywords": "搜索关键词",
@@ -485,6 +507,8 @@ const adminTranslations = {
     "leadDiscovery.createTask": "创建搜索任务",
     "leadDiscovery.runCrawler": "运行爬虫",
     "leadDiscovery.tasks": "任务",
+    "leadDiscovery.recentTasks": "最近搜索任务",
+    "leadDiscovery.recentTasksHint": "运行或复查最近的商用车客户搜索。",
     "leadDiscovery.progress": "搜索进度",
     "leadDiscovery.progressHint": "运行任务后采集网站、联系人、评分并生成 AI 画像。",
     "leadDiscovery.progressIdle": "当前没有正在运行的爬虫任务。",
@@ -949,6 +973,10 @@ Object.assign(adminTranslations.en, {
   "login.passwordPlaceholder": "Enter password",
   "nav.groupCommerce": "Business Operations",
   "nav.groupSystem": "System Management",
+  "nav.groupInventory": "Products & Inventory",
+  "nav.groupCustomers": "Customer Operations",
+  "nav.groupAiTools": "AI Tools",
+  "nav.groupTools": "Tools & System",
   "workspace.subtitle": "Centralized export operations for vehicles and auto parts.",
   "workspace.account": "Current account",
   "workspace.status": "Console date",
@@ -1103,6 +1131,10 @@ Object.assign(adminTranslations.zh, {
   "login.passwordPlaceholder": "请输入密码",
   "nav.groupCommerce": "业务运营",
   "nav.groupSystem": "系统管理",
+  "nav.groupInventory": "商品与库存",
+  "nav.groupCustomers": "客户运营",
+  "nav.groupAiTools": "AI工具",
+  "nav.groupTools": "工具与系统",
   "workspace.subtitle": "集中管理整车和汽车零配件出口业务。",
   "workspace.account": "当前账号",
   "workspace.status": "控制台日期",
@@ -1473,6 +1505,15 @@ const leadProgressSteps = [
   "Generating AI profile",
 ];
 
+const sidebarCollapsedStorageKey = "admin_sidebar_collapsed";
+const sidebarGroupStorageKey = "admin_sidebar_groups";
+const sidebarGroupViews = {
+  inventory: ["vehicles", "usedVehicles", "parts"],
+  customers: ["inquiries", "leadDiscovery", "leadPool"],
+  ai: ["aiMaintenance", "aiLogs"],
+  system: ["users", "roles", "settings"],
+};
+
 function t(key, values = {}) {
   let text = adminTranslations[state.lang][key] || adminTranslations.en[key] || key;
   Object.entries(values).forEach(([name, value]) => {
@@ -1612,12 +1653,20 @@ function topValueLabel(rows, field, dictionaryType = "") {
   return `${label} · ${count}`;
 }
 
+function normalizedToken(value) {
+  return String(value || "").trim().toLowerCase().replace(/[\s_-]+/g, "");
+}
+
 function isReadyStock(row) {
-  return ["ready-export", "in-stock", "limited-stock"].includes(String(row.stock_status || ""));
+  return new Set(["readyexport", "instock", "limitedstock", "available", "ready", "sellable", "onsale", "现货", "可出口", "可销售"]).has(normalizedToken(row.stock_status));
 }
 
 function isPublished(row) {
-  return String(row.publish_status || "").toLowerCase() === "published";
+  return new Set(["published", "publish", "live", "online", "active", "yes", "true", "1", "已发布", "上架"]).has(normalizedToken(row.publish_status));
+}
+
+function isExplicitlyUnpublished(row) {
+  return new Set(["unpublished", "hidden", "offline", "draft", "disabled", "no", "false", "0", "未发布", "下架", "草稿"]).has(normalizedToken(row.publish_status));
 }
 
 function hasPrice(row) {
@@ -1625,7 +1674,7 @@ function hasPrice(row) {
 }
 
 function isSaleableInventory(row) {
-  return isReadyStock(row) && hasPrice(row) && isPublished(row);
+  return isReadyStock(row) && hasPrice(row) && !isExplicitlyUnpublished(row);
 }
 
 function isIncompleteRecord(row) {
@@ -1655,6 +1704,10 @@ function inventoryStats() {
   return { total, saleable, missingPrice, missingImages, unpublished, incomplete, score };
 }
 
+function inventoryIssueCount() {
+  return dashboardInventory().filter((row) => hasMissingPrice(row) || hasMissingImages(row) || !isPublished(row) || isIncompleteRecord(row)).length;
+}
+
 function openInquiryCount() {
   return (state.data.inquiries || []).filter((row) => !["Won", "Lost", "Invalid"].includes(String(row.status || ""))).length;
 }
@@ -1664,7 +1717,7 @@ function newInquiryCount() {
 }
 
 function pendingFollowupCount() {
-  return (state.data.inquiries || []).filter((row) => ["New", "Contacted", "Negotiating"].includes(String(row.status || "New"))).length;
+  return (state.data.inquiries || []).filter((row) => ["Contacted", "Negotiating"].includes(String(row.status || "New"))).length;
 }
 
 function isToday(value) {
@@ -1707,7 +1760,7 @@ function renderDashboardMetrics() {
   const todayInquiries = inquiries.filter((row) => isToday(row.created_at)).length;
   const todayAiLogs = aiLogs.filter((row) => isToday(row.created_at)).length;
   const stats = inventoryStats();
-  const pendingItems = stats.missingPrice + stats.missingImages + newInquiryCount() + pendingFollowupCount() + todayAiLogs;
+  const pendingItems = inventoryIssueCount() + newInquiryCount() + pendingFollowupCount() + todayAiLogs;
   const saleableCard = document.querySelector("[data-saleable-card]");
 
   updateMetric("[data-metric-total-inventory]", stats.total);
@@ -1855,7 +1908,7 @@ function renderDashboardHeroSummary() {
     return;
   }
   const stats = inventoryStats();
-  const inventoryIssues = stats.missingPrice + stats.missingImages + stats.unpublished + stats.incomplete;
+  const inventoryIssues = inventoryIssueCount();
   const rows = [
     [t("dashboard.metricNewInquiries"), newInquiryCount()],
     [t("dashboard.metricPendingFollowups"), pendingFollowupCount()],
@@ -2167,6 +2220,53 @@ function logout() {
   adminApp.hidden = true;
 }
 
+function readSidebarGroupState() {
+  try {
+    return JSON.parse(localStorage.getItem(sidebarGroupStorageKey) || "{}") || {};
+  } catch {
+    return {};
+  }
+}
+
+function writeSidebarGroupState(groups) {
+  localStorage.setItem(sidebarGroupStorageKey, JSON.stringify(groups));
+}
+
+function setSidebarCollapsed(collapsed) {
+  const sidebarToggle = document.querySelector("[data-sidebar-toggle]");
+  adminApp?.classList.toggle("sidebar-collapsed", collapsed);
+  localStorage.setItem(sidebarCollapsedStorageKey, String(collapsed));
+  if (sidebarToggle) {
+    sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
+    sidebarToggle.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
+  }
+}
+
+function sidebarGroupForView(view) {
+  return Object.entries(sidebarGroupViews).find(([, views]) => views.includes(view))?.[0] || "";
+}
+
+function renderSidebarGroups() {
+  const storedGroups = readSidebarGroupState();
+  const currentGroup = sidebarGroupForView(state.view);
+  document.querySelectorAll("[data-nav-group]").forEach((group) => {
+    const groupName = group.dataset.navGroup;
+    const isCurrentGroup = groupName === currentGroup;
+    const expanded = isCurrentGroup || storedGroups[groupName] === true;
+    const items = group.querySelector(".nav-submenu-items");
+    const toggle = group.querySelector("[data-nav-toggle]");
+
+    group.classList.toggle("expanded", expanded);
+    group.classList.toggle("has-active", isCurrentGroup);
+    if (items) {
+      items.hidden = !expanded;
+    }
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", String(expanded));
+    }
+  });
+}
+
 function switchView(view) {
   state.view = view;
   document.querySelectorAll("[data-view]").forEach((button) => {
@@ -2175,6 +2275,7 @@ function switchView(view) {
   document.querySelectorAll("[data-view-panel]").forEach((panel) => {
     panel.hidden = panel.dataset.viewPanel !== view;
   });
+  renderSidebarGroups();
 }
 
 function renderMetrics() {
@@ -2747,31 +2848,40 @@ function renderTable(type) {
 function renderInquiries() {
   const body = document.querySelector("[data-inquiries-body]");
   if (!state.data.inquiries.length) {
-    body.innerHTML = `<tr><td colspan="8">${t("empty.inquiries")}</td></tr>`;
+    body.innerHTML = `<div class="dashboard-empty-card">${escapeHtml(t("empty.inquiries"))}</div>`;
     return;
   }
 
-  body.innerHTML = state.data.inquiries
+  body.innerHTML = [...state.data.inquiries]
+    .sort((a, b) => parseTime(b.created_at) - parseTime(a.created_at))
     .map(
       (row) => `
-        <tr>
-          <td>
-            <select class="status-select" data-inquiry-status="${escapeHtml(row.id)}">
-              ${["New", "Contacted", "Quoted", "Negotiating", "Won", "Lost", "Invalid"]
-                .map((status) => `<option value="${status}" ${row.status === status ? "selected" : ""}>${statusText(status)}</option>`)
-                .join("")}
-            </select>
-          </td>
-          <td>${escapeHtml(row.name || "")}</td>
-          <td>${escapeHtml(row.email || "")}</td>
-          <td>${escapeHtml(row.country || "")}</td>
-          <td>${escapeHtml(row.source || "Website Form")}</td>
-          <td>${escapeHtml(row.message || "")}</td>
-          <td>${escapeHtml((row.created_at || "").slice(0, 19).replace("T", " "))}</td>
-          <td>
-            <a class="secondary-button" href="mailto:${escapeHtml(row.email || "")}">${t("action.email")}</a>
-          </td>
-        </tr>
+        <article class="inquiry-card inquiry-management-card">
+          <div class="inquiry-card-main">
+            <div class="inquiry-card-head">
+              <div>
+                <strong>${escapeHtml(row.name || row.email || "--")}</strong>
+                <span>${escapeHtml([row.country, row.source || "Website Form"].filter(Boolean).join(" · "))}</span>
+              </div>
+              <select class="status-select" data-inquiry-status="${escapeHtml(row.id)}">
+                ${["New", "Contacted", "Quoted", "Negotiating", "Won", "Lost", "Invalid"]
+                  .map((status) => `<option value="${status}" ${row.status === status ? "selected" : ""}>${statusText(status)}</option>`)
+                  .join("")}
+              </select>
+            </div>
+            <details class="inquiry-summary">
+              <summary>${escapeHtml(summarizeText(row.message || row.product_type || "--", 150))}</summary>
+              <p>${escapeHtml(row.message || row.product_type || "--")}</p>
+            </details>
+            <div class="inquiry-meta-row">
+              <span>${escapeHtml(row.email || "--")}</span>
+              <span>${escapeHtml(formatDateTime(row.created_at) || "--")}</span>
+            </div>
+          </div>
+          <div class="inquiry-card-actions">
+            ${row.email ? `<a class="secondary-button" href="mailto:${escapeHtml(row.email)}">${escapeHtml(t("action.email"))}</a>` : ""}
+          </div>
+        </article>
       `,
     )
     .join("");
@@ -3139,7 +3249,7 @@ function renderLeadsTable() {
   }
   const leads = state.data.leads || [];
   if (!leads.length) {
-    body.innerHTML = `<tr><td colspan="10">${escapeHtml(t("leadDiscovery.selectLead"))}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="7">${escapeHtml(t("leadDiscovery.selectLead"))}</td></tr>`;
     return;
   }
   body.innerHTML = leads
@@ -3150,19 +3260,14 @@ function renderLeadsTable() {
         <tr>
           <td><strong class="lead-company-cell">${escapeHtml(row.company_name || "--")}</strong></td>
           <td class="lead-nowrap">${escapeHtml(row.country || "")}</td>
-          <td>${escapeHtml(row.customer_type || row.industry || "")}</td>
-          <td>${escapeHtml(listValue(row.matched_vehicles) || row.industry || "")}</td>
           <td><span class="score-pill score-${escapeHtml(level.toLowerCase())}">${escapeHtml(level)} · ${escapeHtml(score)}</span></td>
           <td><span class="contact-quality-badge">${escapeHtml(leadContactQuality(row))}</span></td>
-          <td>${row.source_url ? `<a href="${escapeHtml(row.source_url)}" target="_blank" rel="noreferrer">${escapeHtml(sourceDomain(row.source_url))}</a>` : "--"}</td>
           <td><span class="status-pill status-${statusClass(row.follow_status)}">${escapeHtml(row.follow_status || "new")}</span></td>
           <td>${escapeHtml(formatDateTime(row.updated_at || row.created_at))}</td>
           <td class="lead-actions-sticky">
             <div class="row-actions">
               <button class="secondary-button" type="button" data-lead-detail-id="${escapeHtml(row.id)}">${escapeHtml(t("dashboard.view"))}</button>
               <button class="secondary-button" type="button" data-lead-status-id="${escapeHtml(row.id)}" data-lead-status="Verified">${escapeHtml(t("leadDiscovery.verifyLead"))}</button>
-              <button class="secondary-button" type="button" data-lead-profile-id="${escapeHtml(row.id)}">${escapeHtml(t("leadDiscovery.generateOutreach"))}</button>
-              <button class="secondary-button" type="button" data-lead-status-id="${escapeHtml(row.id)}" data-lead-status="Invalid">${escapeHtml(t("leadDiscovery.markInvalid"))}</button>
             </div>
           </td>
         </tr>
@@ -3782,6 +3887,22 @@ document.addEventListener("click", async (event) => {
     }
     renderDictionaryTabs();
     renderDictionaryTable();
+    return;
+  }
+
+  const navToggle = target.closest("[data-nav-toggle]");
+  if (navToggle) {
+    const groupName = navToggle.dataset.navToggle;
+    const group = document.querySelector(`[data-nav-group="${groupName}"]`);
+    const storedGroups = readSidebarGroupState();
+    if (adminApp?.classList.contains("sidebar-collapsed")) {
+      setSidebarCollapsed(false);
+      storedGroups[groupName] = true;
+    } else {
+      storedGroups[groupName] = !group?.classList.contains("expanded");
+    }
+    writeSidebarGroupState(storedGroups);
+    renderSidebarGroups();
     return;
   }
 
